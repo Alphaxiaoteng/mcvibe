@@ -899,6 +899,9 @@
           <span class="mcp-dot" id="mcpDot"></span>
           <span id="mcpStatusText">⚪ 麦当劳账号待连接</span>
         </div>
+        <button class="pixel-btn btn-outline" id="btnHelpGuide" onclick="openGuideModal()" title="查看麦当劳 Token 获取与使用指南" style="border-color:var(--pixel-yellow); color:var(--pixel-yellow);">
+          ❓ 怎么用 / 获取 Token
+        </button>
         <button class="pixel-btn btn-outline" id="btnAudioToggle" title="切换 8-Bit 像素音效">
           🔊 SFX: ON
         </button>
@@ -1228,6 +1231,80 @@
         📅 单日麦门足迹明细
       </h2>
       <div id="dayModalBody" style="font-size:13px; line-height:1.6;"></div>
+    </div>
+  </div>
+
+  <!-- 模态框：新手使用指南与 Token 获取引导 -->
+  <div class="modal-backdrop" id="guideModal" onclick="if(event.target===this) closeGuideModal()">
+    <div class="modal-content" style="max-width: 580px;">
+      <button class="modal-close" onclick="closeGuideModal()">×</button>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <span style="font-size:26px;">🍟</span>
+        <div>
+          <h2 class="section-title pixel-font" style="font-size:15px; color:var(--pixel-yellow);">
+            McVibe 麦门足迹 · 怎么用？
+          </h2>
+          <p style="font-size:12px; color:var(--pixel-subtext); margin-top:2px;">
+            麦当劳 1024 程序员节官方 MCP 仪表盘快速指引
+          </p>
+        </div>
+      </div>
+
+      <div style="background:#13111f; border:2px solid #2d2b3d; padding:14px; margin-bottom:16px; font-size:12px; line-height:1.6;">
+        <p style="margin-bottom:8px; color:#FFF;">
+          欢迎来到 <b>McVibe</b>！本站严格遵循 <b>零隐私收集铁律</b>（无数据库、不收集手机号、不落盘 Token）。
+        </p>
+        <p style="color:var(--pixel-subtext);">
+          只需填入麦当劳官方开放平台的 <b>MCP Token</b>，即可在您本地浏览器中实时生成属于您本人的 <b>53周全景就餐点阵图、时段消费分布、常去餐厅足迹与真实账单</b>。
+        </p>
+      </div>
+
+      <div class="pixel-font" style="font-size:12px; color:var(--pixel-yellow); margin-bottom:10px;">
+        📋 3 步轻松获取你的官方 Token：
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
+        <div style="display:flex; gap:12px; background:#1b1928; border:2px solid #000; padding:10px 14px; align-items:flex-start;">
+          <div class="pixel-font" style="background:var(--pixel-yellow); color:#000; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">1</div>
+          <div style="font-size:12px; line-height:1.5;">
+            <b>访问麦当劳开放平台</b><br>
+            电脑或手机浏览器打开 <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer" style="color:var(--pixel-blue); text-decoration:underline; font-weight:bold;">open.mcd.cn/mcp</a>，使用手机号/微信登录。
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; background:#1b1928; border:2px solid #000; padding:10px 14px; align-items:flex-start;">
+          <div class="pixel-font" style="background:var(--pixel-yellow); color:#000; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">2</div>
+          <div style="font-size:12px; line-height:1.5;">
+            <b>进入控制台激活 Token</b><br>
+            点击页面右上角【控制台】→ 点击【激活】申请个人 MCP 凭证，一键复制生成的 Bearer Token。
+          </div>
+        </div>
+
+        <div style="display:flex; gap:12px; background:#1b1928; border:2px solid #000; padding:10px 14px; align-items:flex-start;">
+          <div class="pixel-font" style="background:var(--pixel-yellow); color:#000; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">3</div>
+          <div style="font-size:12px; line-height:1.5;">
+            <b>粘贴并点亮足迹</b><br>
+            返回本站首屏输入框粘贴 Token，按回车或点击【点亮足迹】，即可瞬间拉取真实点餐记录！
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+        <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--pixel-subtext); cursor:pointer;">
+          <input type="checkbox" id="chkDontShowGuideAgain" onchange="toggleGuideDismiss(this.checked)" />
+          <span>本次设备下次不再主动弹出</span>
+        </label>
+        <span style="font-size:11px; color:var(--pixel-green);">🔒 刷新页面数据即刻销毁</span>
+      </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="pixel-btn" style="flex:1; justify-content:center;" onclick="goToPasteToken()">
+          🔑 立即去粘贴 Token (进入输入)
+        </button>
+        <button class="pixel-btn btn-outline" style="flex:1; justify-content:center;" onclick="loadDemoAndCloseGuide()">
+          🎲 还没有 Token？先体验沙盒演示
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1677,6 +1754,11 @@
         if (token) {
           const inputEl = document.getElementById('inputHeroToken');
           if (inputEl) inputEl.value = token;
+        } else {
+          // 未配置 Token 时弹出引导说明
+          if (!localStorage.getItem('mcd_hide_guide')) {
+            setTimeout(openGuideModal, 500);
+          }
         }
         const headers = token ? { 'x-mcd-token': token } : {};
         const url = `${API_BASE}/api/vibe/summary`;
@@ -1689,6 +1771,9 @@
         console.warn('API 不可用或纯静态部署环境，自动降级为浏览器本地纯净空状态:', err);
         currentSummary = createClientEmptySummary();
         renderDashboard(currentSummary);
+        if (!sessionStorage.getItem('mcd_token') && !localStorage.getItem('mcd_hide_guide')) {
+          setTimeout(openGuideModal, 500);
+        }
       }
     }
 
@@ -2191,6 +2276,43 @@
     }
 
     // -------------------------------------------------------------
+    // 新手指南与 Token 获取引导模态框
+    // -------------------------------------------------------------
+    function openGuideModal() {
+      playBleep(520, 0.05);
+      const modal = document.getElementById('guideModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeGuideModal() {
+      playBleep(330, 0.04);
+      const modal = document.getElementById('guideModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function toggleGuideDismiss(checked) {
+      if (checked) {
+        localStorage.setItem('mcd_hide_guide', '1');
+      } else {
+        localStorage.removeItem('mcd_hide_guide');
+      }
+    }
+
+    function goToPasteToken() {
+      closeGuideModal();
+      const input = document.getElementById('inputHeroToken');
+      if (input) {
+        input.focus();
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    function loadDemoAndCloseGuide() {
+      closeGuideModal();
+      loadDemoPreview();
+    }
+
+    // -------------------------------------------------------------
     // 首屏 Token 控制台事件响应
     // -------------------------------------------------------------
     function toggleHeroTokenVisibility() {
@@ -2204,9 +2326,9 @@
       const alertEl = document.getElementById('tokenConsoleAlert');
       const btn = document.getElementById('btnHeroConnect');
 
-      // 若用户直接按回车或留空点确定，平滑重置为纯净空状态
+      // 若用户未填写 Token 就点击回车或点亮足迹，主动弹出新手使用与获取指南
       if (!token) {
-        await clearTokenFromHero();
+        openGuideModal();
         return;
       }
 
