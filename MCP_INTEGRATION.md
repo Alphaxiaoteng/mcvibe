@@ -1,10 +1,10 @@
-# 麦当劳官方 MCP 协议集成规范 (MCP_INTEGRATION.md)
+# 麦当劳官方 MCP 协议集成说明 (MCP_INTEGRATION.md)
 
-本项目 **McVibe (麦门足迹)** 深度接入麦当劳官方 Model Context Protocol (MCP) 服务端（`https://mcp.mcd.cn`），实现全天候时段感知、积分与卡券资产体检、餐品微量营养追踪与一键极速重温点餐。
+本项目接入麦当劳官方 Model Context Protocol (MCP) 服务端（`https://mcp.mcd.cn`），用于获取营业时段、用户积分、优惠券列表、菜单详情、价格试算及订单生成。
 
 ---
 
-## 1. 接入拓扑与协议说明
+## 1. 架构与调用流程
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -15,7 +15,7 @@
 ┌────────────────────────────────────────────────────────┐
 │           McVibe Core Aggregator & MCP Client          │
 └───────────────────────────┬────────────────────────────┘
-                            │ Bearer Token / Sandbox Fallback
+                            │ Bearer Token / 本地沙盒自动降级
                             ▼
 ┌────────────────────────────────────────────────────────┐
 │         McDonald's Official MCP (mcp.mcd.cn)           │
@@ -29,29 +29,29 @@
 
 ---
 
-## 2. 核心调用的 8 个官方 MCP 工具
+## 2. 调用的 8 个官方 MCP 工具
 
-| 工具名称 (Tool Name) | 调用时机 | 业务输入参数 | 核心产出与足迹计算价值 |
+| 工具名称 | 调用场景 | 参数 | 核心作用 |
 | :--- | :--- | :--- | :--- |
-| `now-time-info` | 仪表盘启动/定时轮询 | `{}` | 获取当前门店营业状态、判断是否为 10:30 早餐临界点，控制面板时段徽章。 |
-| `get-user-points` | 用户资产看板加载 | `{}` | 查询用户当前积分余额（3,420）、临期清零积分（450）及会员等级（GOLD_MAIMEN）。 |
-| `query-user-coupons` | 优惠券核销精算 | `{}` | 提取用户卡包内全部可用抵扣券，实时统计可白嫖总资产与临期提醒。 |
-| `query-menu-list` | 菜单索引与品类分类 | `{ category?: string }` | 索引全部汉堡、咖啡、小食、早餐元数据，支撑吃麦品类构成计算。 |
-| `query-meal-detail` | 餐品热量与营养分析 | `{ mealId: string }` | 查询单品热量（kcal）、蛋白质与脂肪，计算今日精力 HP/MP 槽。 |
-| `auto-bind-coupons` | 快速吃麦打卡 | `{ orderAmount: number }` | 自动匹配满减最优券，精算用户本次打卡真实省下的金额。 |
-| `calculate-price` | 订单核销结算 | `{ items: CartItem[] }` | 严格校验原价、优惠抵扣与实付金额，防止数据偏差。 |
-| `create-order` | 快速重温下单 | `{ items: CartItem[] }` | 生成订单编号与到店取餐号（Pickup Code），实现极速取餐。 |
+| `now-time-info` | 页面初次加载 / 轮询 | `{}` | 查询门店是否营业，以及当前属于早餐还是正餐时段。 |
+| `get-user-points` | 个人资产看板 | `{}` | 查询当前积分余额、即将过期积分与会员等级。 |
+| `query-user-coupons` | 卡包资产与试算 | `{}` | 获取当前可用的优惠券列表与满减门槛。 |
+| `query-menu-list` | 菜单索引与品类统计 | `{ category?: string }` | 索引汉堡、咖啡、小食、早餐元数据，支撑消费构成计算。 |
+| `query-meal-detail` | 餐品营养与特制查询 | `{ mealId: string }` | 查询单品热量、蛋白质和特制选项（如去沙拉酱）。 |
+| `auto-bind-coupons` | 吃麦打卡与预订 | `{ orderAmount: number }` | 自动匹配满减最优券，计算本次就餐节省金额。 |
+| `calculate-price` | 结算金额校验 | `{ items: CartItem[] }` | 校验原价、优惠券抵扣与实付金额。 |
+| `create-order` | 模拟/真实下单 | `{ items: CartItem[] }` | 生成订单编号与到店取餐号（Pickup Code）。 |
 
 ---
 
-## 3. 环境变量与安全脱敏
+## 3. 环境变量与安全配置
 
-本项目严格遵循大赛信息安全红线，严禁硬编码任何真实 Token：
+遵循信息安全规范，配置文件与代码中均不包含真实 Token：
 
 ```bash
-# 环境变量配置 (可选，留空则自动启用本地高拟真沙盒)
+# 环境变量配置 (可选，留空则自动启用本地沙盒)
 export MCD_MCP_TOKEN="YOUR_MCD_MCP_TOKEN_HERE"
 export MCD_MCP_URL="https://mcp.mcd.cn"
 ```
 
-当未提供 `MCD_MCP_TOKEN` 时，系统自动优雅降级至内建沙盒提供者（`MockProvider`），确保评审官与开发者在离线或无 Token 状态下**开箱即用，100% 体验全部像素交互与完整数据流**。
+当未提供 `MCD_MCP_TOKEN` 时，系统会自动运行在内建的 Mock 沙盒模式，返回拟真数据，方便在没有 Token 或断网情况下本地调试与运行。
