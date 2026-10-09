@@ -2,11 +2,19 @@
 
 > 一个 8-Bit 像素风格的麦当劳个人消费足迹与用量看板，灵感来自 GitHub 贡献图与 vibeusage。支持麦当劳官方 MCP 协议（`https://mcp.mcd.cn`）实时账号与订单联动，亦可本地纯净沙盒离线运行。
 
+[![Live Demo](https://img.shields.io/badge/Demo-Live%20Online-brightgreen?style=flat-square&logo=github-pages&logoColor=white)](https://alphaxiaoteng.github.io/mcvibe/)
+[![GitHub Stars](https://img.shields.io/github/stars/Alphaxiaoteng/mcvibe?style=flat-square&logo=github&color=FFC72C)](https://github.com/Alphaxiaoteng/mcvibe/stargazers)
 [![1024 Developer Challenge](https://img.shields.io/badge/McDonald's-1024_Challenge_2026-DA291C?style=flat-square&logo=mcdonalds&logoColor=white)](https://github.com/M-China/mcd-developer-innovation-challenge)
 [![MCP Server](https://img.shields.io/badge/MCP-mcp.mcd.cn-FFC72C?style=flat-square)](https://mcp.mcd.cn)
 [![License: MIT](https://img.shields.io/badge/License-MIT-2ECC71?style=flat-square)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-11%20Passing-brightgreen?style=flat-square)](tests/vibe.test.ts)
+[![Tests](https://img.shields.io/badge/Tests-17%20Passing-brightgreen?style=flat-square)](tests/vibe.test.ts)
 [![PWA Ready](https://img.shields.io/badge/PWA-Installable-blue?style=flat-square)](src/web/public/manifest.json)
+
+<p align="center">
+  <a href="https://alphaxiaoteng.github.io/mcvibe/" target="_blank">
+    <img src="https://img.shields.io/badge/🍟_点我直接在线体验-McVibe_麦门足迹-DA291C?style=for-the-badge&logoColor=white" height="38"/>
+  </a>
+</p>
 
 平时写代码总爱点麦当劳。看习惯了终端里的 Token 消耗和 GitHub 绿格子，就顺手写了这个小工具，把个人吃麦历史、常点单品、优惠券使用和积分变化做成了一个复古像素风的用量看板。
 
@@ -131,3 +139,9 @@ PORT=3001 npm run web
 ## 开源协议
 
 本项目基于 [MIT License](LICENSE) 开源。
+
+---
+
+## 🌟 Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Alphaxiaoteng/mcvibe&type=Date)](https://star-history.com/#Alphaxiaoteng/mcvibe&Date)
