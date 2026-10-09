@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>McVibe · 麦门足迹 | 麦当劳生活与消费用量全景仪表盘</title>
   <!-- 官方像素 Favicon (经典金拱门红底金黄 M) -->
   <link rel="icon" type="image/svg+xml" href="./logo-mcd-pixel.svg">
@@ -879,8 +882,8 @@
       <div class="brand">
         <img src="./logo-mcd-pixel.svg" alt="McDonald's Golden Arches" class="brand-icon-pixel" onclick="playCoin()" title="麦当劳官方金拱门 8-Bit 像素徽标 (点击播放金币音效)" />
         <div>
-          <h1 class="brand-title pixel-font">McVibe · 麦门足迹</h1>
-          <p class="brand-tagline">8-Bit 像素级麦当劳就餐足迹与消费用量仪表盘</p>
+          <h1 class="brand-title pixel-font">McVibe · 麦门足迹 <span style="font-size:10px; background:#242236; color:var(--pixel-yellow); padding:3px 7px; border:1px solid #3d3a54; vertical-align:middle; border-radius:2px; font-weight:normal;">v1.2.0 直连版</span></h1>
+          <p class="brand-tagline">8-Bit 像素级麦当劳就餐足迹与消费用量仪表盘 · 官方 MCP 直连</p>
         </div>
       </div>
 
@@ -2175,12 +2178,11 @@
               麦门足迹待连接 (0 信息采集 · 每个人打开都是纯净空状态)
             </div>
             <p style="font-size:12px; color:var(--pixel-subtext); line-height:1.6; max-width:540px; margin:0 auto 16px;">
-              本站绝不采集或储存任何访客的隐私信息，Token 仅保存在您当前浏览器的单次会话中。<br>
-              请点击右上角【⚙️ 设置】填入官方 MCP Bearer Token，即可实时拉取真实吃麦足迹！
+              本站绝不采集或储存任何隐私信息，Token 仅保存在您当前浏览器的单次会话中。<br>
+              请点击下方按钮填入麦当劳官方开放平台 MCP Token，即可实时拉取真实吃麦足迹与消费点阵！
             </p>
-            <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
-              <button class="pixel-btn btn-sm" onclick="openSettingsModal()">⚙️ 连接麦当劳账号 (输入 Token)</button>
-              <button class="pixel-btn btn-outline btn-sm" onclick="loadDemoPreview()">🎲 查看沙盒模拟演示</button>
+            <div style="display:flex; justify-content:center; gap:12px;">
+              <button class="pixel-btn btn-sm" onclick="openSettingsModal()" style="background:var(--pixel-yellow); color:#000; border-color:#000; font-weight:bold;">🔑 连接麦当劳账号 (输入 Token 点亮)</button>
             </div>
           </div>
         `;
