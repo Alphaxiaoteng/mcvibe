@@ -24,10 +24,13 @@
 
 ## 📸 顶级像素交互预览 (Live Screenshots)
 
-### 1. 主仪表盘 (24周麦门热力图 + 极客生命槽 + 8-Bit 勋章馆)
-![McVibe 主仪表盘](docs/mcvibe_dashboard_preview.png)
+### 1. 深度优化主仪表盘 (动态工位看板娘 + 24周热力图 + 极客生命槽 + Token能量换算)
+![McVibe 深度优化主仪表盘](docs/mcvibe_deep_polish_preview.png)
 
-### 2. 拍立得像素战绩卡 (一键生成可分享的 8-Bit 社交名片)
+### 2. 自由搭配点餐台与券包自动抵扣
+![自由搭配点餐打卡器](docs/mcvibe_custom_builder_preview.png)
+
+### 3. 拍立得像素战绩卡 (一键生成可分享的 8-Bit 社交名片)
 ![麦门像素战绩卡](docs/mcvibe_share_modal_preview.png)
 
 ---

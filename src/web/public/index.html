@@ -18,6 +18,7 @@
       --pixel-green: #2ECC71;
       --pixel-blue: #00D2D3;
       --pixel-purple: #9B59B6;
+      --pixel-orange: #E67E22;
       --pixel-text: #F1F2F6;
       --pixel-subtext: #A4B0BE;
       --pixel-shadow: 4px 4px 0px #000000;
@@ -41,20 +42,19 @@
       position: relative;
     }
 
-    /* 像素字体专区 */
     .pixel-font {
       font-family: 'Press Start 2P', 'Silkscreen', monospace, sans-serif;
       letter-spacing: -0.5px;
     }
 
-    /* 复古 CRT 扫描线滤镜 */
+    /* 复古 CRT 电视扫描线滤镜 */
     .crt-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: linear-gradient(rgba(18, 16, 26, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background: linear-gradient(rgba(18, 16, 26, 0) 50%, rgba(0, 0, 0, 0.22) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
       background-size: 100% 3px, 3px 100%;
       pointer-events: none;
       z-index: 999;
@@ -65,14 +65,13 @@
       display: none;
     }
 
-    /* 容器布局 */
     .container {
       max-width: 1180px;
       margin: 0 auto;
       padding: 24px 20px;
     }
 
-    /* 像素边框卡片通用类 */
+    /* 像素卡片与通用组件 */
     .pixel-card {
       background-color: var(--card-bg);
       border: 3px solid #000;
@@ -95,13 +94,13 @@
       gap: 8px;
       text-decoration: none;
       font-size: 13px;
-      transition: transform 0.08s, box-shadow 0.08s;
+      transition: transform 0.08s, box-shadow 0.08s, background-color 0.1s;
       user-select: none;
     }
     .pixel-btn:hover {
       transform: translate(-2px, -2px);
       box-shadow: 6px 6px 0px #000;
-      filter: brightness(1.05);
+      filter: brightness(1.06);
     }
     .pixel-btn:active {
       transform: translate(2px, 2px);
@@ -116,6 +115,10 @@
       color: var(--pixel-text);
       border-color: #000;
     }
+    .pixel-btn.btn-sm {
+      padding: 6px 12px;
+      font-size: 11px;
+    }
 
     /* 头部导航 */
     header {
@@ -124,7 +127,7 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 16px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       border-bottom: 3px solid #2d2b3d;
       padding-bottom: 20px;
     }
@@ -134,7 +137,7 @@
       gap: 14px;
     }
     .brand-icon {
-      font-size: 36px;
+      font-size: 38px;
       filter: drop-shadow(3px 3px 0 #000);
       animation: float 2.5s ease-in-out infinite;
     }
@@ -156,7 +159,7 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
     .mcp-pill {
@@ -183,6 +186,82 @@
       50% { opacity: 0.3; }
     }
 
+    /* 极客像素工作台看板娘 Banner */
+    .hero-banner {
+      background-color: #1b1928;
+      border: 3px solid #000;
+      box-shadow: var(--pixel-shadow);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    #mascotCanvas {
+      background-color: #12111d;
+      border: 2px solid #000;
+      box-shadow: var(--pixel-shadow-sm);
+      cursor: pointer;
+      display: block;
+      image-rendering: pixelated;
+    }
+    .mascot-bubble {
+      background-color: #242236;
+      border: 2px solid #000;
+      padding: 10px 14px;
+      position: relative;
+      max-width: 480px;
+      box-shadow: var(--pixel-shadow-sm);
+    }
+    .mascot-bubble::before {
+      content: '';
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-width: 6px;
+      border-style: solid;
+      border-color: transparent #242236 transparent transparent;
+    }
+    .bubble-text {
+      font-size: 12px;
+      line-height: 1.5;
+      color: #FFF;
+    }
+    .bubble-sub {
+      font-size: 11px;
+      color: var(--pixel-yellow);
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .hero-quick-stats {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--pixel-subtext);
+    }
+    .hero-stat-badge {
+      background-color: #12111b;
+      border: 2px solid #000;
+      padding: 8px 14px;
+      text-align: center;
+    }
+    .hero-stat-val {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--pixel-yellow);
+      margin-top: 2px;
+    }
+
     /* 四宫格用量面板 */
     .metrics-grid {
       display: grid;
@@ -197,6 +276,10 @@
       padding: 18px 20px;
       position: relative;
       overflow: hidden;
+      transition: transform 0.1s;
+    }
+    .metric-card:hover {
+      transform: translateY(-2px);
     }
     .metric-card::after {
       content: '';
@@ -270,7 +353,7 @@
     .fill-hp { background-color: var(--pixel-red); }
     .fill-mp { background-color: var(--pixel-blue); }
 
-    /* 热力图主角容器 */
+    /* 热力图卡片 */
     .heatmap-card {
       background-color: var(--card-bg);
       border: 3px solid #000;
@@ -287,12 +370,36 @@
       margin-bottom: 18px;
     }
     .section-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: var(--pixel-yellow);
       display: flex;
       align-items: center;
       gap: 10px;
+    }
+    .heatmap-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+    .range-selector {
+      display: flex;
+      border: 2px solid #000;
+      background-color: #171524;
+    }
+    .range-tab {
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      color: var(--pixel-subtext);
+      user-select: none;
+      transition: background 0.1s, color 0.1s;
+    }
+    .range-tab.active {
+      background-color: var(--pixel-yellow);
+      color: #000;
+      font-weight: bold;
     }
     .heatmap-legend {
       display: flex;
@@ -307,10 +414,34 @@
       border: 1px solid #000;
     }
 
-    /* 热力图网格 */
-    .heatmap-wrapper {
+    /* 热力图容器与坐标系 */
+    .heatmap-board {
+      display: flex;
+      gap: 10px;
       overflow-x: auto;
-      padding-bottom: 10px;
+      padding-bottom: 8px;
+    }
+    .weekday-labels {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 126px;
+      font-size: 10px;
+      color: var(--pixel-subtext);
+      padding-top: 20px;
+      user-select: none;
+    }
+    .heatmap-main-view {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .month-labels-row {
+      display: flex;
+      height: 14px;
+      font-size: 10px;
+      color: var(--pixel-subtext);
+      user-select: none;
     }
     .heatmap-grid {
       display: grid;
@@ -334,15 +465,19 @@
       z-index: 10;
       outline: 2px solid #FFF;
     }
+    .heat-cell.selected {
+      outline: 2px solid var(--pixel-blue);
+      transform: scale(1.25);
+    }
 
-    /* 热力等级色阶 (麦门金红体系) */
+    /* 热力色阶 (麦门金红) */
     .heat-lvl-0 { background-color: #1f1d2c; }
     .heat-lvl-1 { background-color: #635016; }
     .heat-lvl-2 { background-color: #bfa11b; }
     .heat-lvl-3 { background-color: #FFC72C; }
     .heat-lvl-4 { background-color: #DA291C; }
 
-    /* 热力图悬浮浮窗 Tooltip */
+    /* Tooltip */
     #pixel-tooltip {
       position: fixed;
       display: none;
@@ -372,6 +507,53 @@
       font-size: 11px;
     }
 
+    /* VibeCoding Token ↔ Burger 专属彩蛋卡 */
+    .vibe-energy-card {
+      background: linear-gradient(135deg, #1b1928 0%, #151320 100%);
+      border: 3px solid #000;
+      box-shadow: var(--pixel-shadow);
+      padding: 20px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .vibe-energy-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .token-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .token-item {
+      background-color: #11101b;
+      border: 2px solid #000;
+      padding: 14px;
+    }
+    .token-item-title {
+      font-size: 11px;
+      color: var(--pixel-subtext);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .token-item-val {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--pixel-blue);
+      margin-bottom: 4px;
+    }
+    .token-item-desc {
+      font-size: 11px;
+      color: var(--pixel-subtext);
+      line-height: 1.4;
+    }
+
     /* 双栏分栏 */
     .two-cols {
       display: grid;
@@ -385,7 +567,7 @@
       }
     }
 
-    /* 吃麦品类分解进度条 */
+    /* 品类构成 */
     .cat-bar-item {
       margin-bottom: 14px;
     }
@@ -407,7 +589,7 @@
       transition: width 0.8s ease;
     }
 
-    /* MVP 英雄榜列表 */
+    /* MVP 英雄榜 */
     .champ-item {
       display: flex;
       align-items: center;
@@ -456,7 +638,7 @@
       color: var(--pixel-subtext);
     }
 
-    /* 像素成就墙 */
+    /* 成就墙 */
     .badges-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -528,7 +710,7 @@
       left: 0;
       width: 100vw;
       height: 100vh;
-      background-color: rgba(0, 0, 0, 0.75);
+      background-color: rgba(0, 0, 0, 0.78);
       display: none;
       align-items: center;
       justify-content: center;
@@ -540,7 +722,7 @@
       border: 4px solid #000;
       box-shadow: 8px 8px 0px #000;
       width: 100%;
-      max-width: 520px;
+      max-width: 540px;
       padding: 24px;
       position: relative;
       max-height: 90vh;
@@ -563,18 +745,72 @@
       justify-content: center;
     }
 
-    /* 拍立得战绩卡 Canvas 预览 */
-    #shareCanvas {
-      max-width: 100%;
-      height: auto;
-      border: 3px solid #000;
-      box-shadow: 4px 4px 0px #000;
-      display: block;
-      margin: 0 auto 16px;
-      background-color: #FFF;
+    /* 选项卡 */
+    .modal-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #2d2b3d;
+      padding-bottom: 8px;
+    }
+    .m-tab {
+      padding: 6px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      border: 2px solid #000;
+      background-color: #211f30;
+      color: var(--pixel-subtext);
+      font-weight: bold;
+    }
+    .m-tab.active {
+      background-color: var(--pixel-yellow);
+      color: #000;
     }
 
-    /* 快捷打卡选项 */
+    /* 自定义选餐步进器列表 */
+    .custom-builder-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 240px;
+      overflow-y: auto;
+      padding-right: 6px;
+      margin-bottom: 16px;
+    }
+    .custom-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background-color: #211f30;
+      border: 2px solid #000;
+    }
+    .stepper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .stepper-btn {
+      width: 24px;
+      height: 24px;
+      background-color: #35324c;
+      border: 1px solid #000;
+      color: #FFF;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .stepper-val {
+      font-size: 13px;
+      width: 20px;
+      text-align: center;
+      font-weight: bold;
+      color: var(--pixel-yellow);
+    }
+
+    /* 快捷预设按钮 */
     .preset-order-btn {
       background-color: #232133;
       border: 2px solid #000;
@@ -594,7 +830,32 @@
     .p-desc { font-size: 11px; color: var(--pixel-subtext); margin-top: 3px; }
     .p-price { font-size: 14px; font-weight: bold; color: var(--pixel-yellow); }
 
-    /* 页脚 */
+    /* 拍立得 Canvas */
+    #shareCanvas {
+      max-width: 100%;
+      height: auto;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0px #000;
+      display: block;
+      margin: 0 auto 16px;
+      background-color: #FFF;
+    }
+
+    /* 飘字动效 */
+    .floating-text {
+      position: absolute;
+      font-weight: 800;
+      font-size: 14px;
+      pointer-events: none;
+      animation: floatUp 1.2s ease-out forwards;
+      z-index: 100;
+      text-shadow: 2px 2px 0 #000;
+    }
+    @keyframes floatUp {
+      0% { opacity: 1; transform: translate(0, 0); }
+      100% { opacity: 0; transform: translate(0, -40px); }
+    }
+
     footer {
       text-align: center;
       font-size: 11px;
@@ -647,6 +908,32 @@
         </button>
       </div>
     </header>
+
+    <!-- 极客像素工位看板娘微动效 Banner -->
+    <section class="hero-banner" id="heroBanner">
+      <div class="hero-left">
+        <canvas id="mascotCanvas" width="96" height="72" title="点击工位喂食程序员！"></canvas>
+        <div class="mascot-bubble">
+          <div class="bubble-text" id="mascotBubbleText">
+            "正在全力 Vibe Coding！双屏终端已就绪，下午敲代码必须来杯鲜煮黑咖维持专注！"
+          </div>
+          <div class="bubble-sub pixel-font" id="mascotActionHint">
+            [点击工位看板娘即可投喂补给 ⚡]
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-quick-stats">
+        <div class="hero-stat-badge">
+          <div class="pixel-font" style="font-size:10px;">MAIMEN RANK</div>
+          <div class="hero-stat-val" id="rankBadgeText">Lv.7 黄金架构师</div>
+        </div>
+        <div class="hero-stat-badge">
+          <div class="pixel-font" style="font-size:10px;">ACTIVE DAYS</div>
+          <div class="hero-stat-val" id="activeDaysText">89 天</div>
+        </div>
+      </div>
+    </section>
 
     <!-- 四宫格指标 -->
     <section class="metrics-grid">
@@ -724,23 +1011,83 @@
     <section class="heatmap-card">
       <div class="heatmap-title-row">
         <div class="section-title pixel-font">
-          <span>📅 24-Week McDonald's Activity Heatmap</span>
-          <span style="font-size:12px; color:var(--pixel-subtext); font-weight:normal;">(近 168 天吃麦全景)</span>
+          <span>📅 McDonald's Activity Heatmap</span>
+          <span style="font-size:12px; color:var(--pixel-subtext); font-weight:normal;">(吃麦足迹点阵谱)</span>
         </div>
-        <div class="heatmap-legend pixel-font">
-          <span>Less</span>
-          <div class="legend-box heat-lvl-0"></div>
-          <div class="legend-box heat-lvl-1"></div>
-          <div class="legend-box heat-lvl-2"></div>
-          <div class="legend-box heat-lvl-3"></div>
-          <div class="legend-box heat-lvl-4"></div>
-          <span>More</span>
+
+        <div class="heatmap-controls">
+          <div class="range-selector">
+            <div class="range-tab active" data-weeks="24" onclick="setHeatmapRange(24, this)">近 24 周</div>
+            <div class="range-tab" data-weeks="12" onclick="setHeatmapRange(12, this)">近 12 周</div>
+            <div class="range-tab" data-weeks="4" onclick="setHeatmapRange(4, this)">近 4 周</div>
+          </div>
+
+          <div class="heatmap-legend pixel-font">
+            <span>Less</span>
+            <div class="legend-box heat-lvl-0"></div>
+            <div class="legend-box heat-lvl-1"></div>
+            <div class="legend-box heat-lvl-2"></div>
+            <div class="legend-box heat-lvl-3"></div>
+            <div class="legend-box heat-lvl-4"></div>
+            <span>More</span>
+          </div>
         </div>
       </div>
 
-      <div class="heatmap-wrapper">
-        <div class="heatmap-grid" id="heatmapGrid">
-          <!-- 动态注入 168 个方块 -->
+      <div class="heatmap-board">
+        <div class="weekday-labels">
+          <span>日</span>
+          <span>二</span>
+          <span>四</span>
+          <span>六</span>
+        </div>
+        <div class="heatmap-main-view">
+          <div class="month-labels-row" id="monthLabelsRow"></div>
+          <div class="heatmap-grid" id="heatmapGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VibeCoding 程序员硬核能量等价计 (独创特色) -->
+    <section class="vibe-energy-card">
+      <div class="vibe-energy-header">
+        <div class="section-title pixel-font" style="color:var(--pixel-blue);">
+          <span>⚡ VibeCoding 能量与生产力转换计</span>
+        </div>
+        <div style="font-size:11px; color:var(--pixel-subtext);">
+          基于 LLM Token 与热量物理学公式动态换算
+        </div>
+      </div>
+
+      <div class="token-grid">
+        <div class="token-item">
+          <div class="token-item-title">
+            <span>🧠 等价 AI Token 产能</span>
+          </div>
+          <div class="token-item-val" id="valEquivalentTokens">184.8 M</div>
+          <div class="token-item-desc">
+            你本月消耗的汉堡热量足以驱动 184M 个 Claude 3.7 / GPT-4o Token 的代码生成！
+          </div>
+        </div>
+
+        <div class="token-item">
+          <div class="token-item-title">
+            <span>☕ 鲜煮黑咖专注力加成</span>
+          </div>
+          <div class="token-item-val" id="valFocusHours">320 hrs</div>
+          <div class="token-item-desc">
+            美式黑咖注入带来无食困（Zero Food Coma）的高能脑力工作时长。
+          </div>
+        </div>
+
+        <div class="token-item">
+          <div class="token-item-title">
+            <span>💻 研发 Bug 清零战绩</span>
+          </div>
+          <div class="token-item-val" id="valCommitsSolved">142 Commits</div>
+          <div class="token-item-desc">
+            平均每消灭 1 个 P0 阻断缺陷消耗 1.2 个双层吉士堡与 2 包番茄酱。
+          </div>
         </div>
       </div>
     </section>
@@ -752,9 +1099,7 @@
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
           <span>📊 吃麦构成占比 (Category Share)</span>
         </div>
-        <div id="categoryContainer">
-          <!-- 动态注入进度条 -->
-        </div>
+        <div id="categoryContainer"></div>
       </div>
 
       <!-- 常驻英雄榜 -->
@@ -762,9 +1107,7 @@
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
           <span>👑 麦门常驻英雄榜 (Top Champions)</span>
         </div>
-        <div id="championsContainer">
-          <!-- 动态注入排行榜 -->
-        </div>
+        <div id="championsContainer"></div>
       </div>
     </section>
 
@@ -773,9 +1116,7 @@
       <div class="section-title pixel-font" style="margin-bottom: 18px;">
         <span>🏆 麦门成就勋章馆 (8-Bit Badges)</span>
       </div>
-      <div class="badges-grid" id="badgesContainer">
-        <!-- 动态注入勋章卡片 -->
-      </div>
+      <div class="badges-grid" id="badgesContainer"></div>
     </section>
 
     <!-- 页脚 -->
@@ -785,45 +1126,72 @@
     </footer>
   </div>
 
-  <!-- 模态框 1：快速吃麦打卡 -->
+  <!-- 模态框 1：吃麦打卡 (含预设 & 自由搭配) -->
   <div class="modal-backdrop" id="recordModal">
     <div class="modal-content">
       <button class="modal-close" onclick="closeRecordModal()">×</button>
       <h2 class="section-title pixel-font" style="margin-bottom: 14px;">🍟 记录一顿麦当劳</h2>
-      <p style="font-size:12px; color:var(--pixel-subtext); margin-bottom: 16px;">
-        选择你今天享用的麦当劳组合，系统将实时更新热力图、积分与 HP/MP：
-      </p>
-
-      <div class="preset-order-btn" onclick="submitPreset('poor')">
-        <div>
-          <div class="p-title">🛡️ 穷鬼套餐 1+1 经典组合</div>
-          <div class="p-desc">双层吉士堡 + 鲜煮美式咖啡 (立省¥8.5)</div>
-        </div>
-        <div class="p-price">¥22.5</div>
+      
+      <div class="modal-tabs">
+        <div class="m-tab active" id="tabPreset" onclick="switchRecordTab('preset')">经典套餐预设</div>
+        <div class="m-tab" id="tabCustom" onclick="switchRecordTab('custom')">自由搭配点单</div>
       </div>
 
-      <div class="preset-order-btn" onclick="submitPreset('geek')">
-        <div>
-          <div class="p-title">🥗 极客抗困低GI特制午餐</div>
-          <div class="p-desc">板烧鸡腿堡(去酱) + 甜玉米杯 + 鲜煮黑咖</div>
+      <!-- 预设模式 -->
+      <div id="presetContainer">
+        <div class="preset-order-btn" onclick="submitPreset('poor')">
+          <div>
+            <div class="p-title">🛡️ 穷鬼套餐 1+1 经典组合</div>
+            <div class="p-desc">双层吉士堡 + 鲜煮美式咖啡 (立省¥8.5)</div>
+          </div>
+          <div class="p-price">¥22.5</div>
         </div>
-        <div class="p-price">¥32.5</div>
+
+        <div class="preset-order-btn" onclick="submitPreset('geek')">
+          <div>
+            <div class="p-title">🥗 极客抗困低GI特制午餐</div>
+            <div class="p-desc">板烧鸡腿堡(去酱) + 甜玉米杯 + 鲜煮黑咖</div>
+          </div>
+          <div class="p-price">¥32.5</div>
+        </div>
+
+        <div class="preset-order-btn" onclick="submitPreset('thursday')">
+          <div>
+            <div class="p-title">⚡ 疯狂星期四放纵全餐</div>
+            <div class="p-desc">双吉 + 麦辣鸡翅(2块) + 麦乐鸡 + 冰可乐</div>
+          </div>
+          <div class="p-price">¥39.0</div>
+        </div>
+
+        <div class="preset-order-btn" onclick="submitPreset('breakfast')">
+          <div>
+            <div class="p-title">🥞 晨光元气麦满分两件套</div>
+            <div class="p-desc">猪柳蛋麦满分 + 鲜煮咖啡 (早安特惠减¥7)</div>
+          </div>
+          <div class="p-price">¥19.0</div>
+        </div>
       </div>
 
-      <div class="preset-order-btn" onclick="submitPreset('thursday')">
-        <div>
-          <div class="p-title">⚡ 疯狂星期四放纵全餐</div>
-          <div class="p-desc">双吉 + 麦辣鸡翅(2块) + 麦乐鸡 + 冰可乐</div>
+      <!-- 自定义搭配模式 -->
+      <div id="customContainer" style="display:none;">
+        <div class="custom-builder-list" id="customBuilderList"></div>
+        <div style="background:#13111e; border:2px solid #000; padding:12px; margin-bottom:14px; font-size:12px;">
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="color:var(--pixel-subtext);">原价总计:</span>
+            <span id="custOriginalPrice">¥0.0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <span style="color:var(--pixel-green);">自动券包抵扣:</span>
+            <span id="custDiscountPrice" style="color:var(--pixel-green);">-¥0.0</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:14px; border-top:1px dashed #2d2b3d; padding-top:6px;">
+            <span>实付预估:</span>
+            <span id="custFinalPrice" style="color:var(--pixel-yellow);">¥0.0</span>
+          </div>
         </div>
-        <div class="p-price">¥39.0</div>
-      </div>
-
-      <div class="preset-order-btn" onclick="submitPreset('breakfast')">
-        <div>
-          <div class="p-title">🥞 晨光元气麦满分两件套</div>
-          <div class="p-desc">猪柳蛋麦满分 + 鲜煮咖啡 (早安特惠减¥7)</div>
-        </div>
-        <div class="p-price">¥19.0</div>
+        <button class="pixel-btn" style="width:100%; justify-content:center;" onclick="submitCustomOrder()">
+          🍟 确认吃这顿！
+        </button>
       </div>
     </div>
   </div>
@@ -852,9 +1220,20 @@
     </div>
   </div>
 
+  <!-- 模态框 3：单日足迹回忆抽屉 -->
+  <div class="modal-backdrop" id="dayDetailModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeDayModal()">×</button>
+      <h2 class="section-title pixel-font" style="margin-bottom: 14px;" id="dayModalTitle">
+        📅 单日麦门足迹明细
+      </h2>
+      <div id="dayModalBody" style="font-size:13px; line-height:1.6;"></div>
+    </div>
+  </div>
+
   <script>
     // -------------------------------------------------------------
-    // 8-Bit Web Audio 合成器 (零外部依赖，纯原生振荡器)
+    // 8-Bit Web Audio 合成器 (扩展拟真音效)
     // -------------------------------------------------------------
     let audioCtx = null;
     let sfxEnabled = true;
@@ -865,7 +1244,7 @@
       }
     }
 
-    function playBleep(freq = 440, duration = 0.06, type = 'square') {
+    function playBleep(freq = 440, duration = 0.05, type = 'square') {
       if (!sfxEnabled) return;
       try {
         initAudio();
@@ -901,6 +1280,25 @@
       } catch (e) {}
     }
 
+    function playChomp() {
+      if (!sfxEnabled) return;
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(now + 0.12);
+      } catch (e) {}
+    }
+
     function playFanfare() {
       if (!sfxEnabled) return;
       try {
@@ -926,6 +1324,20 @@
     // 全局数据状态
     // -------------------------------------------------------------
     let currentSummary = null;
+    let selectedWeeks = 24;
+
+    const MENU_PRESETS = [
+      { id: 'M01', name: '双层吉士堡', price: 21.0, cal: 450, cat: 'burger' },
+      { id: 'M02', name: '板烧鸡腿堡', price: 24.5, cal: 400, cat: 'burger' },
+      { id: 'M03', name: '麦辣鸡腿堡', price: 22.0, cal: 510, cat: 'burger' },
+      { id: 'M05', name: '鲜煮美式咖啡', price: 10.0, cal: 15, cat: 'drink' },
+      { id: 'M06', name: '拿铁咖啡(中)', price: 15.0, cal: 130, cat: 'drink' },
+      { id: 'M08', name: '麦辣鸡翅(2块)', price: 14.5, cal: 230, cat: 'snack' },
+      { id: 'M11', name: '甜玉米杯(大)', price: 12.0, cal: 110, cat: 'snack' },
+      { id: 'M10', name: '大份薯条', price: 15.0, cal: 340, cat: 'snack' },
+      { id: 'M12', name: '猪柳蛋麦满分', price: 16.0, cal: 380, cat: 'breakfast' }
+    ];
+    let customCart = {};
 
     async function loadSummary() {
       try {
@@ -938,7 +1350,6 @@
       }
     }
 
-    // 渲染主仪表盘
     function renderDashboard(data) {
       // 头部 MCP 状态
       const statusPill = document.getElementById('mcpStatusText');
@@ -964,25 +1375,65 @@
       document.getElementById('mPointsBalance').textContent = data.user.points.toLocaleString();
       document.getElementById('mLongestStreak').textContent = data.stats.longestStreak;
 
-      // 渲染 24 周热力图
-      renderHeatmap(data.heatmap);
+      document.getElementById('rankBadgeText').textContent = data.user.title;
+      document.getElementById('activeDaysText').textContent = `${data.stats.activeDays} 天`;
 
-      // 渲染品类构成
+      // Token 换算彩蛋数据
+      const approxTokens = ((data.stats.totalCalories * 4000) / 1000000).toFixed(1);
+      document.getElementById('valEquivalentTokens').textContent = `${approxTokens} M`;
+      document.getElementById('valFocusHours').textContent = `${Math.round(data.stats.totalOrders * 2.5)} hrs`;
+      document.getElementById('valCommitsSolved').textContent = `${data.stats.totalOrders} Commits`;
+
+      // 渲染热力图
+      renderHeatmap(data.heatmap, selectedWeeks);
+
+      // 渲染品类构成与排行榜
       renderCategories(data.breakdown);
-
-      // 渲染常驻英雄
       renderChampions(data.topItems);
-
-      // 渲染成就徽章
       renderBadges(data.achievements);
     }
 
-    // 渲染热力图网格
-    function renderHeatmap(heatmapDays) {
-      const grid = document.getElementById('heatmapGrid');
-      grid.innerHTML = '';
+    // -------------------------------------------------------------
+    // 热力图与月份刻度
+    // -------------------------------------------------------------
+    function setHeatmapRange(weeks, tabElem) {
+      playBleep(520, 0.04);
+      selectedWeeks = weeks;
+      document.querySelectorAll('.range-tab').forEach(t => t.classList.remove('active'));
+      tabElem.classList.add('active');
+      if (currentSummary) {
+        renderHeatmap(currentSummary.heatmap, weeks);
+      }
+    }
 
-      heatmapDays.forEach(day => {
+    function renderHeatmap(allDays, weeks) {
+      const sliceDays = allDays.slice(- (weeks * 7));
+      const grid = document.getElementById('heatmapGrid');
+      const monthRow = document.getElementById('monthLabelsRow');
+      grid.innerHTML = '';
+      monthRow.innerHTML = '';
+
+      // 生成月份刻度
+      const monthWidth = 14 + 4; // 方格宽 + 间隔
+      let lastMonth = '';
+      for (let w = 0; w < weeks; w++) {
+        const firstDayOfWeek = sliceDays[w * 7];
+        if (firstDayOfWeek) {
+          const m = new Date(firstDayOfWeek.date).getMonth() + 1;
+          const monthText = `${m}月`;
+          const span = document.createElement('span');
+          span.style.width = `${monthWidth}px`;
+          span.style.display = 'inline-block';
+          if (monthText !== lastMonth && (w % 4 === 0 || w === 0)) {
+            span.textContent = monthText;
+            lastMonth = monthText;
+          }
+          monthRow.appendChild(span);
+        }
+      }
+
+      // 注入方格
+      sliceDays.forEach(day => {
         const cell = document.createElement('div');
         cell.className = `heat-cell heat-lvl-${day.intensity}`;
         
@@ -992,11 +1443,16 @@
         });
         cell.addEventListener('mouseleave', hideTooltip);
 
+        // 点击打开单日足迹回忆
+        cell.addEventListener('click', () => {
+          playCoin();
+          openDayDetail(day);
+        });
+
         grid.appendChild(cell);
       });
     }
 
-    // Tooltip 控制
     const tooltip = document.getElementById('pixel-tooltip');
     function showTooltip(e, day) {
       const dateText = `${day.date} (周${['日','一','二','三','四','五','六'][day.dayOfWeek]})`;
@@ -1019,11 +1475,48 @@
       tooltip.style.display = 'none';
     }
 
-    // 渲染品类构成
+    function openDayDetail(day) {
+      const modal = document.getElementById('dayDetailModal');
+      const title = document.getElementById('dayModalTitle');
+      const body = document.getElementById('dayModalBody');
+
+      title.textContent = `📅 ${day.date} 吃麦日志`;
+      if (day.count === 0) {
+        body.innerHTML = `
+          <div style="padding:20px; text-align:center; color:var(--pixel-subtext);">
+            该日无麦当劳就餐记录。<br>
+            提示：多吃麦当劳才能点亮全彩点阵图并保持 Streak 连击！
+          </div>
+        `;
+      } else {
+        body.innerHTML = `
+          <div style="background:#222032; border:2px solid #000; padding:14px; margin-bottom:12px;">
+            <div style="font-weight:bold; color:var(--pixel-yellow); margin-bottom:6px;">餐品明细:</div>
+            <div style="margin-bottom:10px;">• ${day.itemHighlights.join('<br>• ')}</div>
+            <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--pixel-subtext); border-top:1px dashed #3a3754; padding-top:8px;">
+              <span>实付金额: <b style="color:#FFF;">¥${day.totalSpent}</b></span>
+              <span>优惠抵扣: <b style="color:var(--pixel-green);">¥${day.savedAmount}</b></span>
+              <span>热量摄入: <b style="color:var(--pixel-blue);">${day.calories} kcal</b></span>
+            </div>
+          </div>
+          <div style="font-size:11px; color:var(--pixel-subtext);">
+            * 数据源自麦当劳官方 MCP 历史订单同步。
+          </div>
+        `;
+      }
+      modal.style.display = 'flex';
+    }
+    function closeDayModal() {
+      playBleep(330, 0.04);
+      document.getElementById('dayDetailModal').style.display = 'none';
+    }
+
+    // -------------------------------------------------------------
+    // 品类与英雄榜
+    // -------------------------------------------------------------
     function renderCategories(breakdown) {
       const container = document.getElementById('categoryContainer');
       container.innerHTML = '';
-
       breakdown.forEach(item => {
         const div = document.createElement('div');
         div.className = 'cat-bar-item';
@@ -1040,11 +1533,9 @@
       });
     }
 
-    // 渲染常驻英雄
     function renderChampions(topItems) {
       const container = document.getElementById('championsContainer');
       container.innerHTML = '';
-
       topItems.forEach((item, idx) => {
         const div = document.createElement('div');
         div.className = 'champ-item';
@@ -1066,11 +1557,9 @@
       });
     }
 
-    // 渲染成就徽章
     function renderBadges(achievements) {
       const container = document.getElementById('badgesContainer');
       container.innerHTML = '';
-
       achievements.forEach(ach => {
         const div = document.createElement('div');
         div.className = `badge-card ${ach.unlocked ? 'unlocked' : 'locked'}`;
@@ -1092,8 +1581,220 @@
     }
 
     // -------------------------------------------------------------
-    // 打卡预设提交
+    // 工位看板娘微动效与投喂
     // -------------------------------------------------------------
+    const mascotCanvas = document.getElementById('mascotCanvas');
+    const mctx = mascotCanvas.getContext('2d');
+    let steamTick = 0;
+
+    function drawMascot() {
+      mctx.fillStyle = '#12111d';
+      mctx.fillRect(0, 0, 96, 72);
+
+      // 绘制双屏显示器
+      mctx.fillStyle = '#222035';
+      mctx.fillRect(8, 14, 34, 26);
+      mctx.fillRect(46, 14, 34, 26);
+      mctx.fillStyle = '#0a0912';
+      mctx.fillRect(10, 16, 30, 22);
+      mctx.fillRect(48, 16, 30, 22);
+
+      // 显示器上流动的绿代码 (Matrix Lines)
+      mctx.fillStyle = '#2ECC71';
+      for (let i = 0; i < 4; i++) {
+        const offset = (steamTick * 0.5 + i * 4) % 18;
+        mctx.fillRect(12, 18 + offset, 16, 2);
+        mctx.fillRect(50, 18 + offset, 20, 2);
+      }
+
+      // 桌子
+      mctx.fillStyle = '#3a354d';
+      mctx.fillRect(4, 44, 88, 6);
+
+      // 咖啡杯与蒸汽动效
+      mctx.fillStyle = '#DA291C';
+      mctx.fillRect(12, 36, 10, 8); // 红色 McCafe 杯
+      mctx.fillStyle = '#FFF';
+      mctx.fillRect(13, 35, 8, 2); // 盖子
+      // 飘散蒸汽
+      const steamY = 32 - ((steamTick % 30) / 30) * 12;
+      mctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      mctx.fillRect(15 + Math.sin(steamTick * 0.1) * 2, steamY, 2, 3);
+
+      // 汉堡
+      mctx.fillStyle = '#E67E22';
+      mctx.fillRect(26, 38, 12, 4); // 上面包
+      mctx.fillStyle = '#2ECC71';
+      mctx.fillRect(26, 41, 12, 1); // 生菜
+      mctx.fillStyle = '#6E2C00';
+      mctx.fillRect(26, 42, 12, 2); // 牛肉饼
+      mctx.fillStyle = '#E67E22';
+      mctx.fillRect(26, 43, 12, 2); // 下面包
+
+      // 程序员小人 (背影/侧影)
+      mctx.fillStyle = '#2980B9'; // 蓝卫衣
+      mctx.fillRect(52, 40, 22, 24);
+      mctx.fillStyle = '#F5B041'; // 肤色
+      mctx.fillRect(56, 32, 14, 10);
+      mctx.fillStyle = '#FFC72C'; // 麦当劳黄帽子
+      mctx.fillRect(54, 30, 18, 5);
+
+      steamTick++;
+      requestAnimationFrame(drawMascot);
+    }
+    drawMascot();
+
+    // 点击看板娘投喂
+    const quotes = [
+      "双屏代码飞速敲击中！汉堡能量 +15 HP！",
+      "美式黑咖注入，下午困意完全消除！",
+      "今日打卡已入账，麦门积分又涨了！",
+      "疯狂星期四冲一波，写代码更有动力！"
+    ];
+    mascotCanvas.addEventListener('click', (e) => {
+      playChomp();
+      const q = quotes[Math.floor(Math.random() * quotes.length)];
+      document.getElementById('mascotBubbleText').textContent = `"${q}"`;
+
+      // 产生飘字动效
+      const floatEl = document.createElement('div');
+      floatEl.className = 'floating-text pixel-font';
+      floatEl.style.color = '#2ECC71';
+      floatEl.style.left = `${e.clientX - 20}px`;
+      floatEl.style.top = `${e.clientY - 20}px`;
+      floatEl.textContent = '+15 HP!';
+      document.body.appendChild(floatEl);
+      setTimeout(() => floatEl.remove(), 1200);
+    });
+
+    // -------------------------------------------------------------
+    // 打卡模态框与自定义点餐
+    // -------------------------------------------------------------
+    function switchRecordTab(tab) {
+      playBleep(440, 0.04);
+      const tabPreset = document.getElementById('tabPreset');
+      const tabCustom = document.getElementById('tabCustom');
+      const presetC = document.getElementById('presetContainer');
+      const customC = document.getElementById('customContainer');
+
+      if (tab === 'preset') {
+        tabPreset.classList.add('active');
+        tabCustom.classList.remove('active');
+        presetC.style.display = 'block';
+        customC.style.display = 'none';
+      } else {
+        tabPreset.classList.remove('active');
+        tabCustom.classList.add('active');
+        presetC.style.display = 'none';
+        customC.style.display = 'block';
+        initCustomBuilder();
+      }
+    }
+
+    function initCustomBuilder() {
+      const container = document.getElementById('customBuilderList');
+      container.innerHTML = '';
+      customCart = {};
+
+      MENU_PRESETS.forEach(item => {
+        customCart[item.id] = 0;
+        const div = document.createElement('div');
+        div.className = 'custom-item-row';
+        div.innerHTML = `
+          <div>
+            <div style="font-weight:bold; font-size:13px; color:#FFF;">${item.name}</div>
+            <div style="font-size:11px; color:var(--pixel-subtext);">¥${item.price} · ${item.cal} kcal</div>
+          </div>
+          <div class="stepper">
+            <button class="stepper-btn" onclick="updateItemCount('${item.id}', -1)">-</button>
+            <span class="stepper-val" id="cnt_${item.id}">0</span>
+            <button class="stepper-btn" onclick="updateItemCount('${item.id}', 1)">+</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+      recalcCustomPrices();
+    }
+
+    function updateItemCount(id, delta) {
+      playBleep(600, 0.03);
+      customCart[id] = Math.max(0, (customCart[id] || 0) + delta);
+      document.getElementById(`cnt_${id}`).textContent = customCart[id];
+      recalcCustomPrices();
+    }
+
+    function recalcCustomPrices() {
+      let orig = 0;
+      Object.entries(customCart).forEach(([id, count]) => {
+        const item = MENU_PRESETS.find(p => p.id === id);
+        if (item) orig += item.price * count;
+      });
+
+      let discount = 0;
+      if (orig >= 35) discount = 14.0;
+      else if (orig >= 20) discount = 8.5;
+      else if (orig > 0) discount = 5.0;
+
+      const finalPrice = Math.max(5, orig - discount);
+      document.getElementById('custOriginalPrice').textContent = `¥${orig.toFixed(1)}`;
+      document.getElementById('custDiscountPrice').textContent = `-¥${discount.toFixed(1)}`;
+      document.getElementById('custFinalPrice').textContent = `¥${(orig > 0 ? finalPrice : 0).toFixed(1)}`;
+    }
+
+    async function submitCustomOrder() {
+      const items = [];
+      let orig = 0;
+      Object.entries(customCart).forEach(([id, count]) => {
+        if (count > 0) {
+          const item = MENU_PRESETS.find(p => p.id === id);
+          if (item) {
+            items.push({
+              id: item.id,
+              name: item.name,
+              category: item.cat,
+              count,
+              price: item.price,
+              calories: item.cal
+            });
+            orig += item.price * count;
+          }
+        }
+      });
+
+      if (items.length === 0) {
+        alert('请至少挑选 1 样餐品！');
+        return;
+      }
+
+      let discount = orig >= 35 ? 14.0 : (orig >= 20 ? 8.5 : 5.0);
+      const paid = Math.max(5, orig - discount);
+
+      closeRecordModal();
+      playCoin();
+
+      try {
+        const res = await fetch('/api/vibe/record', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            items,
+            totalPrice: orig,
+            discountAmount: discount,
+            paidAmount: paid,
+            couponUsed: discount >= 14 ? '午餐满35立减14元券' : '随心配立减券'
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentSummary = data.summary;
+          renderDashboard(data.summary);
+          playFanfare();
+        }
+      } catch (err) {
+        console.error('Custom record failed:', err);
+      }
+    }
+
     async function submitPreset(presetType) {
       playCoin();
       let payload = {};
@@ -1167,7 +1868,7 @@
     }
 
     // -------------------------------------------------------------
-    // 拍立得像素战绩卡 Canvas 绘制
+    // 拍立得像素海报导出
     // -------------------------------------------------------------
     function renderShareCard() {
       const canvas = document.getElementById('shareCanvas');
@@ -1175,18 +1876,15 @@
       const w = canvas.width;
       const h = canvas.height;
 
-      // 拍立得复古米白背景
       ctx.fillStyle = '#16151f';
       ctx.fillRect(0, 0, w, h);
 
-      // 内框复古画框
       ctx.fillStyle = '#222030';
       ctx.fillRect(16, 16, w - 32, h - 32);
       ctx.strokeStyle = '#FFC72C';
       ctx.lineWidth = 4;
       ctx.strokeRect(16, 16, w - 32, h - 32);
 
-      // 顶部大标题
       ctx.fillStyle = '#FFC72C';
       ctx.font = 'bold 18px monospace';
       ctx.textAlign = 'center';
@@ -1196,7 +1894,6 @@
       ctx.font = '11px monospace';
       ctx.fillText('1024 DEVELOPER CHALLENGE PASS', w / 2, 74);
 
-      // 分割线
       ctx.strokeStyle = '#38344e';
       ctx.lineWidth = 2;
       ctx.beginPath();
@@ -1204,7 +1901,6 @@
       ctx.lineTo(w - 32, 88);
       ctx.stroke();
 
-      // 用户 ID 与头衔
       ctx.textAlign = 'left';
       ctx.fillStyle = '#FFF';
       ctx.font = 'bold 14px monospace';
@@ -1214,10 +1910,9 @@
       ctx.font = '11px monospace';
       ctx.fillText(`RANK: ${currentSummary ? currentSummary.user.title : 'Lv.7 麦门黄金架构师'}`, 36, 136);
 
-      // 8-Bit 像素汉堡小插画 (纯 Canvas 点阵绘制)
+      // 点阵汉堡
       drawPixelBurger(ctx, w / 2 - 40, 155, 5);
 
-      // 统计数据方框
       ctx.fillStyle = '#171622';
       ctx.fillRect(36, 260, w - 72, 160);
       ctx.strokeStyle = '#000';
@@ -1246,20 +1941,15 @@
       ctx.fillStyle = '#DA291C';
       ctx.fillText(`${stats.currentStreak} DAYS 🔥`, 260, 380);
 
-      // 像素点阵条形码
       drawPixelBarcode(ctx, 36, 440, w - 72, 38);
 
-      // 底部认证戳
       ctx.textAlign = 'center';
       ctx.fillStyle = '#FFC72C';
       ctx.font = '10px monospace';
       ctx.fillText('OFFICIAL MCP VERIFIED · MCP.MCD.CN', w / 2, 505);
     }
 
-    // 绘制像素汉堡
     function drawPixelBurger(ctx, startX, startY, pixelSize = 4) {
-      // 16x14 点阵汉堡调色板
-      // 1: 顶层面包 (金黄) 2: 生菜 (绿) 3: 芝士 (橙黄) 4: 肉饼 (深褐) 5: 底层面包
       const burgerMatrix = [
         [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
         [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
@@ -1274,14 +1964,7 @@
         [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
         [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0]
       ];
-
-      const colors = {
-        1: '#E67E22', // 面包焦黄
-        2: '#2ECC71', // 翡翠生菜
-        3: '#F1C40F', // 香浓芝士
-        4: '#6E2C00'  // 优质牛肉饼
-      };
-
+      const colors = { 1: '#E67E22', 2: '#2ECC71', 3: '#F1C40F', 4: '#6E2C00' };
       for (let r = 0; r < burgerMatrix.length; r++) {
         for (let c = 0; c < burgerMatrix[r].length; c++) {
           const val = burgerMatrix[r][c];
@@ -1293,11 +1976,9 @@
       }
     }
 
-    // 绘制点阵条形码
     function drawPixelBarcode(ctx, x, y, width, height) {
       ctx.fillStyle = '#000';
       ctx.fillRect(x, y, width, height);
-
       ctx.fillStyle = '#FFF';
       let cx = x + 8;
       while (cx < x + width - 8) {
@@ -1327,7 +2008,7 @@
     }
 
     // -------------------------------------------------------------
-    // 弹窗与事件绑定
+    // 弹窗与事件
     // -------------------------------------------------------------
     const recordModal = document.getElementById('recordModal');
     const shareModal = document.getElementById('shareModal');
@@ -1351,7 +2032,6 @@
       shareModal.style.display = 'none';
     }
 
-    // 扫描线滤镜切换
     const btnCrt = document.getElementById('btnCrtToggle');
     btnCrt.onclick = () => {
       playBleep(600, 0.04);
@@ -1360,7 +2040,6 @@
       btnCrt.textContent = `📺 CRT: ${isOn ? 'ON' : 'OFF'}`;
     };
 
-    // 音效开关
     const btnAudio = document.getElementById('btnAudioToggle');
     btnAudio.onclick = () => {
       sfxEnabled = !sfxEnabled;
@@ -1368,7 +2047,6 @@
       if (sfxEnabled) playCoin();
     };
 
-    // 初始化加载
     loadSummary();
   </script>
 </body>
