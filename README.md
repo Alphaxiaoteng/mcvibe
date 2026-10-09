@@ -66,6 +66,13 @@
 - **macOS Safari**：点击【文件】→【添加到程序坞 (Add to Dock)】；
 - **iOS / Android**：点击【分享】→【添加到主屏幕】。
 
+### 6. macOS 状态栏集成 (类似 VibeUsage)
+如果你是 macOS 用户，支持通过 SwiftBar 或 xbar 将吃麦数据挂在系统菜单栏：
+1. 安装开源状态栏工具 [SwiftBar](https://github.com/swiftbar/SwiftBar)；
+2. 将仓库中的 `integrations/mcvibe-menubar.10m.sh` 脚本复制到你的 SwiftBar Plugins 目录；
+3. 修改脚本内的 `MCVIBE_DIR` 路径，并在 SwiftBar 环境变量中配置 `MCD_MCP_TOKEN`。
+完成后，你的系统状态栏将每 10 分钟自动刷新一次当前积分与极客连击榜。
+
 ---
 
 ## MCP 官方协议对接

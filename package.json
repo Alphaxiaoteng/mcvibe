@@ -12,6 +12,7 @@
     "start": "npx tsx src/web/server.ts",
     "web": "npx tsx src/web/server.ts",
     "cli": "npx tsx src/cli/index.ts",
+    "xbar": "npx tsx src/cli/xbar.ts",
     "test": "node --import tsx --test tests/*.test.ts",
     "build": "npx tsc"
   },
