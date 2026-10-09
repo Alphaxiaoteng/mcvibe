@@ -1187,18 +1187,39 @@
     </div>
   </div>
 
-  <!-- 模态框：连接麦当劳官方账号 (极简产品体验) -->
+  <!-- 模态框：连接麦当劳官方账号 (含 123 步使用指引与极简闭环) -->
   <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeSettingsModal()">
-    <div class="modal-content" style="max-width: 440px; padding: 22px;">
+    <div class="modal-content" style="max-width: 480px; padding: 22px;">
       <button class="modal-close" onclick="closeSettingsModal()">×</button>
       
-      <div style="margin-bottom: 16px;">
-        <h2 class="section-title pixel-font" style="font-size: 15px; color: var(--pixel-yellow); margin-bottom: 8px;">
+      <div style="margin-bottom: 14px;">
+        <h2 class="section-title pixel-font" style="font-size: 15px; color: var(--pixel-yellow); margin-bottom: 6px;">
           🍔 连接麦当劳官方账号
         </h2>
-        <p style="font-size: 12px; color: var(--pixel-subtext); line-height: 1.5;">
-          请在 <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer" style="color: var(--pixel-yellow); text-decoration: underline; font-weight: bold;">open.mcd.cn/mcp ↗</a> 控制台激活并复制 Bearer Token
+        <p style="font-size: 12px; color: var(--pixel-subtext);">
+          填入个人官方 MCP Token，瞬间点亮你的 53 周就餐点阵图
         </p>
+      </div>
+
+      <!-- 1 2 3 步使用指引 -->
+      <div style="background: #141220; border: 2px solid #2d2b3d; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; line-height: 1.6;">
+        <div class="pixel-font" style="color: var(--pixel-yellow); font-size: 11px; margin-bottom: 8px;">
+          📋 3 步获取你的官方 Token：
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; color: var(--pixel-text);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: var(--pixel-yellow); color: #000; font-size: 10px; font-weight: bold; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; flex-shrink: 0;">1</span>
+            <span>打开 <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer" style="color: var(--pixel-blue); text-decoration: underline; font-weight: bold;">open.mcd.cn/mcp ↗</a> 登录手机号</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: var(--pixel-yellow); color: #000; font-size: 10px; font-weight: bold; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; flex-shrink: 0;">2</span>
+            <span>点击右上角【控制台】→ 点击【激活】一键复制 Bearer Token</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="background: var(--pixel-yellow); color: #000; font-size: 10px; font-weight: bold; width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; border-radius: 2px; flex-shrink: 0;">3</span>
+            <span>在下方粘贴，点击【点亮足迹】即可同步</span>
+          </div>
+        </div>
       </div>
 
       <!-- Token 输入区域 -->
@@ -1207,7 +1228,7 @@
           <input 
             type="password" 
             id="inputSettingsToken" 
-            placeholder="在此粘贴 Bearer Token..." 
+            placeholder="在此粘贴官方 Bearer Token..." 
             autocomplete="off"
             spellcheck="false"
             class="token-input"
