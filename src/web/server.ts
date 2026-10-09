@@ -82,6 +82,37 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/api/vibe/token' && req.method === 'POST') {
+    let body = '';
+    req.on('data', chunk => { body += chunk; });
+    req.on('end', async () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const token = typeof payload.token === 'string' ? payload.token.trim() : null;
+        mcpClient.setToken(token);
+        
+        let testResult = { success: true, message: '已切换为本地沙盒演示模式' };
+        if (token) {
+          testResult = await mcpClient.testConnection();
+        }
+
+        const summary = await VibeAggregator.computeSummary(currentOrders, mcpClient);
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify({
+          success: testResult.success,
+          message: testResult.message,
+          isSandbox: mcpClient.isUsingSandbox(),
+          tokenMasked: mcpClient.getMaskedToken(),
+          summary
+        }));
+      } catch (err: any) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: err.message }));
+      }
+    });
+    return;
+  }
+
   if (pathname === '/api/vibe/reset' && req.method === 'POST') {
     currentOrders = generateRealisticOrderHistory();
     const summary = await VibeAggregator.computeSummary(currentOrders, mcpClient);

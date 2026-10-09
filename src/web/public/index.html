@@ -890,10 +890,13 @@
       </div>
 
       <div class="header-actions">
-        <div class="mcp-pill pixel-font">
-          <span class="mcp-dot"></span>
+        <div class="mcp-pill pixel-font" id="mcpPill">
+          <span class="mcp-dot" id="mcpDot"></span>
           <span id="mcpStatusText">MCP ONLINE</span>
         </div>
+        <button class="pixel-btn btn-outline" id="btnTokenModal" style="border-color:var(--pixel-yellow); color:var(--pixel-yellow);" onclick="openTokenModal()">
+          🔑 绑定官方 Token
+        </button>
         <button class="pixel-btn btn-outline" id="btnAudioToggle" title="切换 8-Bit 像素音效">
           🔊 SFX: ON
         </button>
@@ -1231,6 +1234,45 @@
     </div>
   </div>
 
+  <!-- 模态框 4：MCP Token 绑定与账号连接 -->
+  <div class="modal-backdrop" id="tokenModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeTokenModal()">×</button>
+      <h2 class="section-title pixel-font" style="margin-bottom: 14px;">
+        🔑 绑定麦当劳官方 MCP Token
+      </h2>
+      <div style="font-size:12px; color:var(--pixel-subtext); line-height:1.6; margin-bottom:14px; background:#181626; border:2px solid #000; padding:12px;">
+        <div style="font-weight:bold; color:var(--pixel-yellow); margin-bottom:6px;">如何获取你的 Token：</div>
+        1. 访问 <a href="https://mcp.mcd.cn" target="_blank" style="color:var(--pixel-blue); text-decoration:underline; font-weight:bold;">mcp.mcd.cn</a> 使用手机号登录<br>
+        2. 点击右上角【控制台】并点击【激活】申请 Token<br>
+        3. 复制生成的 MCP Token，粘贴到下方输入框
+      </div>
+
+      <div style="margin-bottom:14px;">
+        <label style="font-size:11px; color:var(--pixel-subtext); display:block; margin-bottom:6px;" class="pixel-font">
+          MCD_MCP_TOKEN
+        </label>
+        <div style="display:flex; gap:8px;">
+          <input type="password" id="inputMcpToken" placeholder="粘贴你的 Bearer Token..." style="flex:1; background:#12101e; border:2px solid #000; color:#FFF; padding:10px 12px; font-size:12px; font-family:monospace; outline:none;" />
+          <button class="pixel-btn btn-outline" style="padding:8px 12px; font-size:11px;" onclick="toggleTokenVisibility()">
+            👁️
+          </button>
+        </div>
+      </div>
+
+      <div id="tokenStatusAlert" style="display:none; font-size:11px; padding:8px 10px; border:2px solid #000; margin-bottom:14px;"></div>
+
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button class="pixel-btn" id="btnSaveToken" style="justify-content:center;" onclick="saveTokenAndConnect()">
+          ⚡ 验证并切换真实数据
+        </button>
+        <button class="pixel-btn btn-outline" style="justify-content:center; font-size:11px;" onclick="resetToSandbox()">
+          🎲 恢复本地沙盒演示数据 (Sandbox)
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
     // -------------------------------------------------------------
     // 8-Bit Web Audio 合成器 (扩展拟真音效)
@@ -1353,8 +1395,35 @@
     function renderDashboard(data) {
       // 头部 MCP 状态
       const statusPill = document.getElementById('mcpStatusText');
+      const mcpDot = document.getElementById('mcpDot');
+      const btnToken = document.getElementById('btnTokenModal');
+
       if (data.mcpStatus) {
-        statusPill.textContent = `MCP ONLINE · ${data.mcpStatus.timePeriod === 'breakfast' ? '早餐时段' : '正餐时段'} · 券包: ${data.mcpStatus.couponsAvailable}`;
+        if (data.mcpStatus.tokenConfigured && !data.mcpStatus.isSandbox) {
+          statusPill.textContent = `🟢 官方真实 MCP (${data.mcpStatus.tokenMasked || 'LIVE'}) · ${data.mcpStatus.timePeriod === 'breakfast' ? '早餐' : '正餐'}`;
+          if (statusPill.parentElement) {
+            statusPill.parentElement.style.borderColor = 'var(--pixel-green)';
+            statusPill.parentElement.style.color = 'var(--pixel-green)';
+          }
+          if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-green)';
+          if (btnToken) {
+            btnToken.textContent = '⚙️ 管理 Token';
+            btnToken.style.borderColor = 'var(--pixel-green)';
+            btnToken.style.color = 'var(--pixel-green)';
+          }
+        } else {
+          statusPill.textContent = `🟡 沙盒演示 (MOCK) · ${data.mcpStatus.timePeriod === 'breakfast' ? '早餐' : '正餐'}`;
+          if (statusPill.parentElement) {
+            statusPill.parentElement.style.borderColor = 'var(--pixel-yellow)';
+            statusPill.parentElement.style.color = 'var(--pixel-yellow)';
+          }
+          if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-yellow)';
+          if (btnToken) {
+            btnToken.textContent = '🔑 绑定官方 Token';
+            btnToken.style.borderColor = 'var(--pixel-yellow)';
+            btnToken.style.color = 'var(--pixel-yellow)';
+          }
+        }
       }
 
       // 四宫格指标
@@ -2046,6 +2115,111 @@
       btnAudio.textContent = `🔊 SFX: ${sfxEnabled ? 'ON' : 'OFF'}`;
       if (sfxEnabled) playCoin();
     };
+
+    // -------------------------------------------------------------
+    // Token 绑定弹窗控制
+    // -------------------------------------------------------------
+    const tokenModal = document.getElementById('tokenModal');
+    function openTokenModal() {
+      playBleep(520, 0.05);
+      const alertEl = document.getElementById('tokenStatusAlert');
+      alertEl.style.display = 'none';
+      tokenModal.style.display = 'flex';
+    }
+
+    function closeTokenModal() {
+      playBleep(330, 0.04);
+      tokenModal.style.display = 'none';
+    }
+
+    function toggleTokenVisibility() {
+      playBleep(440, 0.03);
+      const input = document.getElementById('inputMcpToken');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    async function saveTokenAndConnect() {
+      const token = document.getElementById('inputMcpToken').value.trim();
+      const alertEl = document.getElementById('tokenStatusAlert');
+      const btn = document.getElementById('btnSaveToken');
+
+      if (!token) {
+        alertEl.style.display = 'block';
+        alertEl.style.backgroundColor = '#38161b';
+        alertEl.style.borderColor = 'var(--pixel-red)';
+        alertEl.style.color = '#FFF';
+        alertEl.textContent = '请先输入有效的 MCP Token';
+        return;
+      }
+
+      btn.textContent = '⏳ 正在连接官方接口...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/vibe/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token })
+        });
+        const data = await res.json();
+        btn.textContent = '⚡ 验证并切换真实数据';
+        btn.disabled = false;
+
+        alertEl.style.display = 'block';
+        if (data.success && !data.isSandbox) {
+          alertEl.style.backgroundColor = '#12261b';
+          alertEl.style.borderColor = 'var(--pixel-green)';
+          alertEl.style.color = 'var(--pixel-green)';
+          alertEl.textContent = `✓ 成功连接官方 MCP！Token 尾号: ${data.tokenMasked || '已隐藏'}`;
+          currentSummary = data.summary;
+          renderDashboard(data.summary);
+          playFanfare();
+          setTimeout(closeTokenModal, 1200);
+        } else {
+          alertEl.style.backgroundColor = '#382816';
+          alertEl.style.borderColor = 'var(--pixel-yellow)';
+          alertEl.style.color = 'var(--pixel-yellow)';
+          alertEl.textContent = `提示: ${data.message || '连接未成功，已继续保持沙盒模式'}`;
+          if (data.summary) {
+            currentSummary = data.summary;
+            renderDashboard(data.summary);
+          }
+        }
+      } catch (err) {
+        btn.textContent = '⚡ 验证并切换真实数据';
+        btn.disabled = false;
+        alertEl.style.display = 'block';
+        alertEl.style.backgroundColor = '#38161b';
+        alertEl.style.borderColor = 'var(--pixel-red)';
+        alertEl.style.color = '#FFF';
+        alertEl.textContent = `请求失败: ${err.message}`;
+      }
+    }
+
+    async function resetToSandbox() {
+      playCoin();
+      document.getElementById('inputMcpToken').value = '';
+      const alertEl = document.getElementById('tokenStatusAlert');
+      alertEl.style.display = 'block';
+      alertEl.style.backgroundColor = '#12261b';
+      alertEl.style.borderColor = 'var(--pixel-green)';
+      alertEl.style.color = 'var(--pixel-green)';
+      alertEl.textContent = '已切回本地沙盒演示模式';
+
+      try {
+        const res = await fetch('/api/vibe/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: '' })
+        });
+        const data = await res.json();
+        if (data.summary) {
+          currentSummary = data.summary;
+          renderDashboard(data.summary);
+        }
+        setTimeout(closeTokenModal, 800);
+      } catch (err) {}
+    }
 
     loadSummary();
   </script>

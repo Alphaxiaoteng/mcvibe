@@ -21,6 +21,56 @@ export class McpClient {
     return this.isSandbox;
   }
 
+  public setToken(token: string | null): void {
+    this.token = token && token.trim().length > 0 ? token.trim() : null;
+    this.isSandbox = !this.token;
+  }
+
+  public getToken(): string | null {
+    return this.token;
+  }
+
+  public getMaskedToken(): string | null {
+    if (!this.token) return null;
+    if (this.token.length <= 8) return '****';
+    return `${this.token.slice(0, 4)}...${this.token.slice(-4)}`;
+  }
+
+  public async testConnection(): Promise<{ success: boolean; message: string }> {
+    if (!this.token) {
+      this.isSandbox = true;
+      return { success: false, message: '未配置 Token，已切换为本地沙盒模式' };
+    }
+    try {
+      const response = await fetch(this.baseUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.token}`
+        },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'tools/call',
+          params: {
+            name: 'now-time-info',
+            arguments: {}
+          },
+          id: Date.now()
+        })
+      });
+      if (response.ok) {
+        this.isSandbox = false;
+        return { success: true, message: '成功连接到麦当劳官方 MCP (mcp.mcd.cn)' };
+      } else {
+        this.isSandbox = true;
+        return { success: false, message: `官方接口返回 HTTP ${response.status}，已切回沙盒` };
+      }
+    } catch (err: any) {
+      this.isSandbox = true;
+      return { success: false, message: `网络连接失败 (${err.message})，已切回沙盒` };
+    }
+  }
+
   public async callTool(toolName: string, args: Record<string, any> = {}): Promise<any> {
     if (this.isSandbox || !this.token) {
       return this.dispatchMock(toolName, args);

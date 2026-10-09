@@ -271,6 +271,8 @@ export class VibeAggregator {
       mcpStatus: {
         isConnected: true,
         isSandbox: mcpClient.isUsingSandbox(),
+        tokenConfigured: !!mcpClient.getToken(),
+        tokenMasked: mcpClient.getMaskedToken() || undefined,
         timePeriod: mcpTime?.timePeriod || 'regular',
         couponsAvailable: mcpCoupons?.totalCoupons || 5,
         currentTime: mcpTime?.currentTime || new Date().toISOString()

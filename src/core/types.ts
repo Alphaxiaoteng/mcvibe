@@ -99,6 +99,8 @@ export interface VibeSummary {
   mcpStatus: {
     isConnected: boolean;
     isSandbox: boolean;
+    tokenConfigured: boolean;
+    tokenMasked?: string;
     timePeriod: string;
     couponsAvailable: number;
     currentTime: string;
