@@ -885,24 +885,27 @@
       </div>
 
       <div class="header-actions">
-        <div class="mcp-pill pixel-font" id="mcpPill" onclick="openSettingsModal()" style="cursor:pointer;" title="点击打开账号与 MCP 设置">
-          <span class="mcp-dot" id="mcpDot"></span>
-          <span id="mcpStatusText">⚪ 麦当劳账号待连接</span>
-        </div>
-        <button class="pixel-btn btn-outline" id="btnOpenSettings" onclick="openSettingsModal()" title="设置麦当劳 MCP Token 与账号连接" style="border-color:var(--pixel-yellow); color:var(--pixel-yellow);">
-          ⚙️ 设置
-        </button>
-        <button class="pixel-btn btn-outline" id="btnHelpGuide" onclick="openGuideModal()" title="查看麦当劳 Token 获取与使用指南">
-          ❓ 使用指南
+        <button class="pixel-btn" id="btnHeaderConnect" onclick="openSettingsModal()" title="连接麦当劳账号并点亮个人足迹" style="background:var(--pixel-yellow); color:#000; border-color:#000; font-weight:bold;">
+          <span id="headerConnectIcon">🔑</span>
+          <span id="headerConnectText">连接麦当劳账号</span>
         </button>
         <button class="pixel-btn btn-outline" id="btnAudioToggle" title="切换 8-Bit 像素音效">
-          🔊 SFX: ON
+          🔊 音效: 开
         </button>
-        <button class="pixel-btn btn-red" id="btnShareModal">
-          💾 导出战绩卡
+        <button class="pixel-btn btn-red" id="btnShareModal" title="导出 8-Bit 麦门像素战绩海报">
+          📊 导出战绩卡
         </button>
       </div>
     </header>
+
+    <!-- 尚未连接提示横幅 (空状态醒目呼应) -->
+    <div id="unconnectedBanner" onclick="openSettingsModal()" style="display:none; cursor:pointer; background:#181625; border:2px dashed var(--pixel-yellow); padding:10px 16px; margin-bottom:16px; align-items:center; justify-content:space-between; gap:12px;" title="点击立即输入 Token 点亮足迹">
+      <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--pixel-yellow);">
+        <span>🔑</span>
+        <span><b>麦当劳账号待连接</b>：点击此处输入官方 MCP Token，即可瞬间点亮你的 53 周就餐点阵谱与消费用量</span>
+      </div>
+      <span class="pixel-btn btn-sm" style="background:var(--pixel-yellow); color:#000; font-size:11px; padding:3px 10px; border-color:#000; flex-shrink:0;">立即输入 ↗</span>
+    </div>
 
     <!-- 全局时间范围筛选控制台 (联动指标、时段用量、门店足迹、单品榜与订单流水) -->
     <section class="time-filter-hero" id="timeFilterHero">
@@ -1181,104 +1184,46 @@
     </div>
   </div>
 
-  <!-- 模态框：新手使用指南与 Token 获取引导 -->
-  <div class="modal-backdrop" id="guideModal" onclick="if(event.target===this) closeGuideModal()">
-    <div class="modal-content" style="max-width: 580px;">
-      <button class="modal-close" onclick="closeGuideModal()">×</button>
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-        <span style="font-size:26px;">🍟</span>
-        <div>
-          <h2 class="section-title pixel-font" style="font-size:15px; color:var(--pixel-yellow);">
-            McVibe 麦门足迹 · 使用指南
-          </h2>
-          <p style="font-size:12px; color:var(--pixel-subtext); margin-top:2px;">
-            麦当劳 1024 程序员节官方 MCP 仪表盘快速指引
-          </p>
-        </div>
-      </div>
-
-      <div style="background:#13111f; border:2px solid #2d2b3d; padding:14px; margin-bottom:16px; font-size:12px; line-height:1.6;">
-        <p style="margin-bottom:8px; color:#FFF;">
-          欢迎来到 <b>McVibe</b>！本站严格遵循 <b>零隐私收集铁律</b>（无数据库、不收集手机号、不落盘 Token）。
-        </p>
-        <p style="color:var(--pixel-subtext);">
-          只需填入麦当劳官方开放平台的 <b>MCP Token</b>，即可在您本地浏览器中实时生成属于您本人的 <b>53周全景就餐点阵图、时段消费分布、常去餐厅足迹与真实账单</b>。
-        </p>
-      </div>
-
-      <div class="pixel-font" style="font-size:12px; color:var(--pixel-yellow); margin-bottom:10px;">
-        📋 3 步轻松获取你的官方 Token：
-      </div>
-
-      <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:18px;">
-        <div style="display:flex; gap:12px; background:#1b1928; border:2px solid #000; padding:10px 14px; align-items:flex-start;">
-          <div class="pixel-font" style="background:var(--pixel-yellow); color:#000; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">1</div>
-          <div style="font-size:12px; line-height:1.5;">
-            <b>访问麦当劳开放平台</b><br>
-            电脑或手机浏览器打开 <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer" style="color:var(--pixel-blue); text-decoration:underline; font-weight:bold;">open.mcd.cn/mcp</a>，使用手机号/微信登录。
-          </div>
-        </div>
-
-        <div style="display:flex; gap:12px; background:#1b1928; border:2px solid #000; padding:10px 14px; align-items:flex-start;">
-          <div class="pixel-font" style="background:var(--pixel-yellow); color:#000; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">2</div>
-          <div style="font-size:12px; line-height:1.5;">
-            <b>进入控制台激活 Token</b><br>
-            点击页面右上角【控制台】→ 点击【激活】申请个人 MCP 凭证，一键复制生成的 Bearer Token。
-          </div>
-        </div>
-
-        <div style="display:flex; gap:12px; background:#1b1928; border:2px solid #000; padding:10px 14px; align-items:flex-start;">
-          <div class="pixel-font" style="background:var(--pixel-yellow); color:#000; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">3</div>
-          <div style="font-size:12px; line-height:1.5;">
-            <b>粘贴并点亮足迹</b><br>
-            点击右上角【⚙️ 设置】粘贴 Token，保存即可瞬间拉取真实点餐记录！
-          </div>
-        </div>
-      </div>
-
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
-        <label style="display:flex; align-items:center; gap:6px; font-size:11px; color:var(--pixel-subtext); cursor:pointer;">
-          <input type="checkbox" id="chkDontShowGuideAgain" onchange="toggleGuideDismiss(this.checked)" />
-          <span>本次设备下次不再主动弹出</span>
-        </label>
-        <span style="font-size:11px; color:var(--pixel-green);">🔒 刷新页面数据即刻销毁</span>
-      </div>
-
-      <div style="display:flex; gap:10px; flex-wrap:wrap;">
-        <button class="pixel-btn" style="flex:1; justify-content:center;" onclick="goToPasteToken()">
-          🔑 立即配置 Token (前往设置)
-        </button>
-        <button class="pixel-btn btn-outline" style="flex:1; justify-content:center;" onclick="loadDemoAndCloseGuide()">
-          🎲 无 Token 快速体验 (沙盒演示)
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 模态框：麦当劳账号与服务设置 (右上角设置弹窗) -->
+  <!-- 模态框：连接麦当劳官方账号与 Token 设置 (一体化极简面板) -->
   <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeSettingsModal()">
     <div class="modal-content" style="max-width: 540px;">
       <button class="modal-close" onclick="closeSettingsModal()">×</button>
-      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
-        <span style="font-size:24px;">⚙️</span>
+      
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+        <span style="font-size:26px;">🍟</span>
         <div>
-          <h2 class="section-title pixel-font" style="font-size:15px; color:var(--pixel-yellow); margin-bottom:2px;">
-            麦当劳账号与 MCP 设置
+          <h2 class="section-title pixel-font" style="font-size:16px; color:var(--pixel-yellow); margin-bottom:2px;">
+            连接麦当劳官方账号
           </h2>
           <p style="font-size:12px; color:var(--pixel-subtext);">
-            直连麦当劳官方开放平台，实时同步本人吃麦足迹
+            填入个人 MCP Token，实时点亮你的 53 周就餐点阵图与消费用量
           </p>
         </div>
       </div>
 
-      <!-- 零隐私声明 -->
-      <div style="background:#11261b; border:1px solid var(--pixel-green); padding:10px 14px; margin-bottom:16px; font-size:12px; color:var(--pixel-green); display:flex; align-items:center; gap:8px; line-height:1.5;">
-        <span style="font-size:16px;">🔒</span>
-        <span><b>零隐私收集铁律</b>：Token 仅在浏览器本地内存运行，绝不入库、绝不落盘、刷新即焚。</span>
+      <!-- 3 步极简获取指南 -->
+      <div style="background:#13111f; border:2px solid #2d2b3d; padding:12px 14px; margin-bottom:14px; font-size:12px; line-height:1.6;">
+        <div class="pixel-font" style="color:var(--pixel-yellow); font-size:11px; margin-bottom:6px;">
+          📋 3 步获取你的官方 Token：
+        </div>
+        <div style="display:flex; flex-direction:column; gap:6px; color:var(--pixel-text); font-size:12px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="background:var(--pixel-yellow); color:#000; font-size:10px; font-weight:bold; padding:0 5px; border-radius:2px;">1</span>
+            <span>浏览器打开 <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer" style="color:var(--pixel-blue); text-decoration:underline; font-weight:bold;">open.mcd.cn/mcp ↗</a> (登录手机号)</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="background:var(--pixel-yellow); color:#000; font-size:10px; font-weight:bold; padding:0 5px; border-radius:2px;">2</span>
+            <span>点击右上角【控制台】→ 点击【激活】一键复制 Bearer Token</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="background:var(--pixel-yellow); color:#000; font-size:10px; font-weight:bold; padding:0 5px; border-radius:2px;">3</span>
+            <span>在下方粘贴，点击保存即可瞬间拉取真实点餐数据</span>
+          </div>
+        </div>
       </div>
 
       <!-- Token 输入区域 -->
-      <div style="margin-bottom:16px;">
+      <div style="margin-bottom:14px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
           <label style="font-size:12px; font-weight:bold; color:var(--pixel-text);">
             麦当劳官方 MCP Bearer Token:
@@ -1289,7 +1234,7 @@
           <input 
             type="password" 
             id="inputSettingsToken" 
-            placeholder="粘贴你的官方 MCP Token (open.mcd.cn/mcp)..." 
+            placeholder="在此粘贴你的官方 MCP Token (open.mcd.cn/mcp)..." 
             autocomplete="off"
             spellcheck="false"
             class="token-input"
@@ -1300,41 +1245,36 @@
             👁️
           </button>
         </div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:11px;">
-          <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer" style="color:var(--pixel-blue); text-decoration:underline;">
-            🌐 前往 open.mcd.cn/mcp 获取 Token ↗
-          </a>
-          <a href="javascript:void(0)" onclick="openGuideModal(); closeSettingsModal();" style="color:var(--pixel-yellow); text-decoration:underline;">
-            ❓ 查看 3 步获取图文指引
-          </a>
-        </div>
       </div>
 
       <!-- 操作按钮区 -->
-      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-        <button class="pixel-btn" id="btnSettingsConnect" onclick="saveTokenFromSettings()" style="flex:1; justify-content:center;">
+      <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
+        <button class="pixel-btn" id="btnSettingsConnect" onclick="saveTokenFromSettings()" style="flex:1; justify-content:center; background:var(--pixel-yellow); color:#000; border-color:#000; font-weight:bold;">
           ⚡ 保存并点亮足迹
         </button>
         <button class="pixel-btn btn-outline" id="btnSettingsClear" onclick="clearTokenFromSettings()" style="border-color:var(--pixel-red); color:var(--pixel-red);" title="清空并彻底销毁当前 Token">
-          ✕ 清空数据
-        </button>
-        <button class="pixel-btn btn-outline" id="btnSettingsDemo" onclick="loadDemoFromSettings()" title="加载沙盒演示数据">
-          🎲 示例体验
+          ✕ 清空断开
         </button>
       </div>
 
-      <!-- 提示信息条 -->
-      <div id="settingsAlert" style="display:none; padding:10px 12px; font-size:12px; border:2px solid #000; margin-bottom:14px; line-height:1.5;"></div>
+      <!-- 提示反馈条 -->
+      <div id="settingsAlert" style="display:none; padding:10px 12px; font-size:12px; border:2px solid #000; margin-bottom:12px; line-height:1.5;"></div>
 
-      <!-- 底部端点设置与辅助信息 -->
-      <div style="border-top:1px dashed #2d2b3d; padding-top:12px; font-size:11px; color:var(--pixel-subtext); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <!-- 零隐私声明 -->
+      <div style="background:#0f1d15; border:1px dashed var(--pixel-green); padding:8px 12px; margin-bottom:12px; font-size:11px; color:var(--pixel-green); display:flex; align-items:center; gap:8px;">
+        <span>🔒</span>
+        <span><b>零数据留存铁律</b>：Token 仅在本地浏览器内存中运行，绝不入库、绝不落盘、刷新即焚。</span>
+      </div>
+
+      <!-- 底部辅助 -->
+      <div style="border-top:1px dashed #2d2b3d; padding-top:10px; font-size:11px; color:var(--pixel-subtext); display:flex; justify-content:space-between; align-items:center;">
         <div>
-          <span>后端服务: </span>
+          <span>API 代理: </span>
           <span id="currentApiLabel" style="color:var(--pixel-blue); cursor:pointer; text-decoration:underline;" onclick="configureApiEndpoint()" title="点击自定义或切换 API 代理端点">
-            ⚡ 云端 Serverless 代理
+            ⚡ 云端 Serverless
           </span>
         </div>
-        <button class="pixel-btn btn-outline btn-sm" onclick="closeSettingsModal()" style="font-size:11px; padding:4px 12px;">
+        <button class="pixel-btn btn-outline btn-sm" onclick="closeSettingsModal()" style="font-size:11px; padding:3px 10px;">
           关闭
         </button>
       </div>
@@ -1881,37 +1821,75 @@
 
     function renderDashboard(data) {
       updateApiEndpointLabel();
-      // 头部 MCP 状态
+      // 头部连接状态与引导横幅响应
+      const btnHeaderConnect = document.getElementById('btnHeaderConnect');
+      const headerConnectIcon = document.getElementById('headerConnectIcon');
+      const headerConnectText = document.getElementById('headerConnectText');
+      const unconnectedBanner = document.getElementById('unconnectedBanner');
       const statusPill = document.getElementById('mcpStatusText');
       const mcpDot = document.getElementById('mcpDot');
       const activeStatus = document.getElementById('tokenActiveStatus');
 
-      if (data.mcpStatus) {
-        if (data.mcpStatus.tokenConfigured && !data.mcpStatus.isSandbox) {
+      const isConnected = !!(data.mcpStatus && data.mcpStatus.tokenConfigured && !data.mcpStatus.isSandbox);
+      const isSandbox = !!(data.mcpStatus && data.mcpStatus.isSandbox);
+
+      if (isConnected) {
+        if (headerConnectIcon) headerConnectIcon.textContent = '🟢';
+        if (headerConnectText) headerConnectText.textContent = `官方账号 (${data.mcpStatus.tokenMasked || 'LIVE'}) · 设置`;
+        if (btnHeaderConnect) {
+          btnHeaderConnect.style.background = '#11261b';
+          btnHeaderConnect.style.color = 'var(--pixel-green)';
+          btnHeaderConnect.style.borderColor = 'var(--pixel-green)';
+          btnHeaderConnect.title = '已连接官方 MCP，点击打开设置与 Token 管理';
+        }
+        if (unconnectedBanner) unconnectedBanner.style.display = 'none';
+        if (statusPill) {
           statusPill.textContent = `🟢 官方真实 MCP (${data.mcpStatus.tokenMasked || 'LIVE'})`;
           if (statusPill.parentElement) {
             statusPill.parentElement.style.borderColor = 'var(--pixel-green)';
             statusPill.parentElement.style.color = 'var(--pixel-green)';
           }
-          if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-green)';
-          if (activeStatus) activeStatus.innerHTML = `<span style="color:var(--pixel-green);">✓ 已直连官方 MCP (${data.mcpStatus.tokenMasked || 'LIVE'})</span>`;
-        } else if (data.mcpStatus.isSandbox) {
+        }
+        if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-green)';
+        if (activeStatus) activeStatus.innerHTML = `<span style="color:var(--pixel-green);">✓ 已直连官方 MCP (${data.mcpStatus.tokenMasked || 'LIVE'})</span>`;
+      } else if (isSandbox) {
+        if (headerConnectIcon) headerConnectIcon.textContent = '🟡';
+        if (headerConnectText) headerConnectText.textContent = '沙盒演示 · 输入真实 Token';
+        if (btnHeaderConnect) {
+          btnHeaderConnect.style.background = '#2a2717';
+          btnHeaderConnect.style.color = 'var(--pixel-yellow)';
+          btnHeaderConnect.style.borderColor = 'var(--pixel-yellow)';
+          btnHeaderConnect.title = '当前处于沙盒模拟，点击连接你的真实麦当劳账号';
+        }
+        if (unconnectedBanner) unconnectedBanner.style.display = 'flex';
+        if (statusPill) {
           statusPill.textContent = `🟡 沙盒模拟预览 (DEMO)`;
           if (statusPill.parentElement) {
             statusPill.parentElement.style.borderColor = 'var(--pixel-yellow)';
             statusPill.parentElement.style.color = 'var(--pixel-yellow)';
           }
-          if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-yellow)';
-          if (activeStatus) activeStatus.innerHTML = `<span style="color:var(--pixel-yellow);">正在浏览沙盒示例数据</span>`;
-        } else {
+        }
+        if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-yellow)';
+        if (activeStatus) activeStatus.innerHTML = `<span style="color:var(--pixel-yellow);">正在浏览沙盒示例数据</span>`;
+      } else {
+        if (headerConnectIcon) headerConnectIcon.textContent = '🔑';
+        if (headerConnectText) headerConnectText.textContent = '连接麦当劳账号';
+        if (btnHeaderConnect) {
+          btnHeaderConnect.style.background = 'var(--pixel-yellow)';
+          btnHeaderConnect.style.color = '#000';
+          btnHeaderConnect.style.borderColor = '#000';
+          btnHeaderConnect.title = '连接麦当劳账号并点亮个人足迹';
+        }
+        if (unconnectedBanner) unconnectedBanner.style.display = 'flex';
+        if (statusPill) {
           statusPill.textContent = `⚪ 麦当劳账号待连接`;
           if (statusPill.parentElement) {
             statusPill.parentElement.style.borderColor = 'var(--pixel-subtext)';
             statusPill.parentElement.style.color = 'var(--pixel-subtext)';
           }
-          if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-subtext)';
-          if (activeStatus) activeStatus.textContent = `状态：纯净空状态 (0 数据采集)`;
         }
+        if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-subtext)';
+        if (activeStatus) activeStatus.textContent = `状态：纯净空状态 (0 数据采集)`;
       }
       updateSettingsStatusText();
 
@@ -2456,18 +2434,14 @@
     }
 
     // -------------------------------------------------------------
-    // 新手指南与 Token 获取引导模态框
+    // 新手指南与 Token 获取引导模态框 (统一整合至一站式设置面板)
     // -------------------------------------------------------------
     function openGuideModal() {
-      playBleep(520, 0.05);
-      const modal = document.getElementById('guideModal');
-      if (modal) modal.style.display = 'flex';
+      openSettingsModal();
     }
 
     function closeGuideModal() {
-      playBleep(330, 0.04);
-      const modal = document.getElementById('guideModal');
-      if (modal) modal.style.display = 'none';
+      closeSettingsModal();
     }
 
     function toggleGuideDismiss(checked) {
@@ -2479,12 +2453,11 @@
     }
 
     function goToPasteToken() {
-      closeGuideModal();
       openSettingsModal();
     }
 
     function loadDemoAndCloseGuide() {
-      closeGuideModal();
+      closeSettingsModal();
       loadDemoPreview();
     }
 
