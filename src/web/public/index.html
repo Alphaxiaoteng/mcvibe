@@ -1485,8 +1485,13 @@
     // API 请求端点与全局时间筛选状态
     // -------------------------------------------------------------
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const DEFAULT_CLOUD_API = 'https://mcvibe-api.chenpaiteng.workers.dev';
     let customApiBase = safeStorage.get('local', 'mcd_api_base');
-    let API_BASE = customApiBase !== null ? customApiBase : (isLocalhost ? '' : 'https://temporary-fleet-tempest-e28gun2.vercel.app');
+    if (customApiBase && (customApiBase.includes('temporary-fleet') || customApiBase.includes('vercel.app'))) {
+      safeStorage.remove('local', 'mcd_api_base');
+      customApiBase = null;
+    }
+    let API_BASE = customApiBase !== null ? customApiBase : (isLocalhost ? '' : DEFAULT_CLOUD_API);
 
     function updateApiEndpointLabel() {
       const label = document.getElementById('currentApiLabel');
