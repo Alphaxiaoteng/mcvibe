@@ -184,63 +184,7 @@
       50% { opacity: 0.3; }
     }
 
-    /* 首屏 Token 直连控制台 */
-    .token-console-hero {
-      background-color: #171524;
-      border: 3px solid #000;
-      box-shadow: var(--pixel-shadow);
-      padding: 20px 24px;
-      margin-bottom: 26px;
-      position: relative;
-      overflow: hidden;
-    }
-    .token-console-hero::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 4px;
-      background: linear-gradient(90deg, var(--pixel-yellow), var(--pixel-red), var(--pixel-green));
-    }
-    .console-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 14px;
-    }
-    .console-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--pixel-yellow);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .privacy-tag {
-      font-size: 11px;
-      color: var(--pixel-green);
-      background-color: #11261b;
-      border: 1px solid var(--pixel-green);
-      padding: 4px 10px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .console-input-row {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .console-input-wrap {
-      flex: 1;
-      min-width: 280px;
-      display: flex;
-      position: relative;
-    }
+    /* Token 输入与密码眼睛样式 (供设置弹窗使用) */
     .token-input {
       width: 100%;
       background-color: #0f0e16;
@@ -270,34 +214,6 @@
     }
     .btn-toggle-eye:hover {
       color: #FFF;
-    }
-    .console-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .console-hint-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 10px;
-      font-size: 11px;
-      color: var(--pixel-subtext);
-    }
-    .console-hint-row a {
-      color: var(--pixel-blue);
-      text-decoration: underline;
-      font-weight: 600;
-    }
-    #tokenConsoleAlert {
-      display: none;
-      margin-top: 12px;
-      padding: 8px 12px;
-      border: 2px solid #000;
-      font-size: 12px;
-      line-height: 1.5;
     }
 
     /* 全局时间范围筛选条 */
@@ -895,12 +811,15 @@
       </div>
 
       <div class="header-actions">
-        <div class="mcp-pill pixel-font" id="mcpPill">
+        <div class="mcp-pill pixel-font" id="mcpPill" onclick="openSettingsModal()" style="cursor:pointer;" title="点击打开账号与 MCP 设置">
           <span class="mcp-dot" id="mcpDot"></span>
           <span id="mcpStatusText">⚪ 麦当劳账号待连接</span>
         </div>
-        <button class="pixel-btn btn-outline" id="btnHelpGuide" onclick="openGuideModal()" title="查看麦当劳 Token 获取与使用指南" style="border-color:var(--pixel-yellow); color:var(--pixel-yellow);">
-          ❓ 怎么用 / 获取 Token
+        <button class="pixel-btn btn-outline" id="btnOpenSettings" onclick="openSettingsModal()" title="设置麦当劳 MCP Token 与账号连接" style="border-color:var(--pixel-yellow); color:var(--pixel-yellow);">
+          ⚙️ 设置
+        </button>
+        <button class="pixel-btn btn-outline" id="btnHelpGuide" onclick="openGuideModal()" title="查看麦当劳 Token 获取与使用指南">
+          ❓ 怎么用
         </button>
         <button class="pixel-btn btn-outline" id="btnAudioToggle" title="切换 8-Bit 像素音效">
           🔊 SFX: ON
@@ -910,65 +829,6 @@
         </button>
       </div>
     </header>
-
-    <!-- 首屏前置：Token 直连控制台 (突出置顶，拒绝繁琐弹窗) -->
-    <section class="token-console-hero" id="tokenConsole">
-      <div class="console-header">
-        <div class="console-title pixel-font">
-          <span>⚡ 官方 MCP 直连控制台 (Token Direct Connect)</span>
-        </div>
-        <div class="privacy-tag">
-          <span>🔒 纯本地浏览器处理 · 零收集零落盘 · 刷新即焚</span>
-        </div>
-      </div>
-
-      <div class="console-input-row">
-        <div class="console-input-wrap">
-          <input 
-            type="password" 
-            id="inputHeroToken" 
-            placeholder="粘贴你的麦当劳官方 MCP Token (open.mcd.cn/mcp)..." 
-            autocomplete="off"
-            spellcheck="false"
-            class="token-input"
-            onkeydown="if(event.key==='Enter') saveTokenFromHero()"
-          />
-          <button class="btn-toggle-eye" type="button" onclick="toggleHeroTokenVisibility()" title="查看/隐藏 Token">
-            👁️
-          </button>
-        </div>
-        <div class="console-actions">
-          <button class="pixel-btn" id="btnHeroConnect" onclick="saveTokenFromHero()">
-            ⚡ 点亮足迹 (Enter)
-          </button>
-          <button class="pixel-btn btn-outline btn-sm" id="btnHeroClear" onclick="clearTokenFromHero()" title="清空并彻底销毁当前 Token">
-            ✕ 清空数据
-          </button>
-          <button class="pixel-btn btn-outline btn-sm" id="btnHeroDemo" onclick="loadDemoPreview()" title="加载沙盒演示数据">
-            🎲 示例数据
-          </button>
-        </div>
-      </div>
-
-      <div class="console-hint-row">
-        <div>
-          <span>💡 如何获取 Token：登录 </span>
-          <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer">open.mcd.cn/mcp</a>
-          <span> → 点击右上角【控制台】→ 点击【激活】申请并复制 MCP Token</span>
-        </div>
-        <div id="tokenActiveStatus" style="color:var(--pixel-subtext);">
-          状态：等待输入
-        </div>
-        <div style="font-size:11px;">
-          <span style="color:var(--pixel-subtext);">后端服务: </span>
-          <span id="currentApiLabel" style="color:var(--pixel-blue); cursor:pointer; text-decoration:underline;" onclick="configureApiEndpoint()" title="点击自定义或切换 API 代理端点">
-            ⚡ 云端 Serverless 代理
-          </span>
-        </div>
-      </div>
-
-      <div id="tokenConsoleAlert"></div>
-    </section>
 
     <!-- 全局时间范围筛选控制台 (联动指标、时段用量、门店足迹、单品榜与订单流水) -->
     <section class="time-filter-hero" id="timeFilterHero">
@@ -1284,7 +1144,7 @@
           <div class="pixel-font" style="background:var(--pixel-yellow); color:#000; width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">3</div>
           <div style="font-size:12px; line-height:1.5;">
             <b>粘贴并点亮足迹</b><br>
-            返回本站首屏输入框粘贴 Token，按回车或点击【点亮足迹】，即可瞬间拉取真实点餐记录！
+            点击右上角【⚙️ 设置】粘贴 Token，保存即可瞬间拉取真实点餐记录！
           </div>
         </div>
       </div>
@@ -1299,10 +1159,96 @@
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="pixel-btn" style="flex:1; justify-content:center;" onclick="goToPasteToken()">
-          🔑 立即去粘贴 Token (进入输入)
+          🔑 立即去粘贴 Token (进入设置)
         </button>
         <button class="pixel-btn btn-outline" style="flex:1; justify-content:center;" onclick="loadDemoAndCloseGuide()">
           🎲 还没有 Token？先体验沙盒演示
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模态框：麦当劳账号与服务设置 (右上角设置弹窗) -->
+  <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeSettingsModal()">
+    <div class="modal-content" style="max-width: 540px;">
+      <button class="modal-close" onclick="closeSettingsModal()">×</button>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+        <span style="font-size:24px;">⚙️</span>
+        <div>
+          <h2 class="section-title pixel-font" style="font-size:15px; color:var(--pixel-yellow); margin-bottom:2px;">
+            麦当劳账号与 MCP 设置
+          </h2>
+          <p style="font-size:12px; color:var(--pixel-subtext);">
+            直连麦当劳官方开放平台，实时同步本人吃麦足迹
+          </p>
+        </div>
+      </div>
+
+      <!-- 零隐私声明 -->
+      <div style="background:#11261b; border:1px solid var(--pixel-green); padding:10px 14px; margin-bottom:16px; font-size:12px; color:var(--pixel-green); display:flex; align-items:center; gap:8px; line-height:1.5;">
+        <span style="font-size:16px;">🔒</span>
+        <span><b>零隐私收集铁律</b>：Token 仅在浏览器本地内存运行，绝不入库、绝不落盘、刷新即焚。</span>
+      </div>
+
+      <!-- Token 输入区域 -->
+      <div style="margin-bottom:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+          <label style="font-size:12px; font-weight:bold; color:var(--pixel-text);">
+            麦当劳官方 MCP Bearer Token:
+          </label>
+          <span id="settingsTokenStatus" style="font-size:11px; color:var(--pixel-subtext);">状态: 待连接</span>
+        </div>
+        <div style="display:flex; position:relative;">
+          <input 
+            type="password" 
+            id="inputSettingsToken" 
+            placeholder="粘贴你的官方 MCP Token (open.mcd.cn/mcp)..." 
+            autocomplete="off"
+            spellcheck="false"
+            class="token-input"
+            style="width:100%; background:#0f0e16; border:2px solid #000; color:#FFF; font-size:13px; font-family:monospace; padding:10px 42px 10px 12px; outline:none;"
+            onkeydown="if(event.key==='Enter') saveTokenFromSettings()"
+          />
+          <button class="btn-toggle-eye" type="button" onclick="toggleSettingsTokenVisibility()" title="查看/隐藏 Token" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--pixel-subtext); cursor:pointer; font-size:14px; padding:4px;">
+            👁️
+          </button>
+        </div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px; font-size:11px;">
+          <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer" style="color:var(--pixel-blue); text-decoration:underline;">
+            🌐 前往 open.mcd.cn/mcp 获取 Token ↗
+          </a>
+          <a href="javascript:void(0)" onclick="openGuideModal(); closeSettingsModal();" style="color:var(--pixel-yellow); text-decoration:underline;">
+            ❓ 查看 3 步获取图文指引
+          </a>
+        </div>
+      </div>
+
+      <!-- 操作按钮区 -->
+      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+        <button class="pixel-btn" id="btnSettingsConnect" onclick="saveTokenFromSettings()" style="flex:1; justify-content:center;">
+          ⚡ 保存并点亮足迹
+        </button>
+        <button class="pixel-btn btn-outline" id="btnSettingsClear" onclick="clearTokenFromSettings()" style="border-color:var(--pixel-red); color:var(--pixel-red);" title="清空并彻底销毁当前 Token">
+          ✕ 清空数据
+        </button>
+        <button class="pixel-btn btn-outline" id="btnSettingsDemo" onclick="loadDemoFromSettings()" title="加载沙盒演示数据">
+          🎲 示例体验
+        </button>
+      </div>
+
+      <!-- 提示信息条 -->
+      <div id="settingsAlert" style="display:none; padding:10px 12px; font-size:12px; border:2px solid #000; margin-bottom:14px; line-height:1.5;"></div>
+
+      <!-- 底部端点设置与辅助信息 -->
+      <div style="border-top:1px dashed #2d2b3d; padding-top:12px; font-size:11px; color:var(--pixel-subtext); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div>
+          <span>后端服务: </span>
+          <span id="currentApiLabel" style="color:var(--pixel-blue); cursor:pointer; text-decoration:underline;" onclick="configureApiEndpoint()" title="点击自定义或切换 API 代理端点">
+            ⚡ 云端 Serverless 代理
+          </span>
+        </div>
+        <button class="pixel-btn btn-outline btn-sm" onclick="closeSettingsModal()" style="font-size:11px; padding:4px 12px;">
+          关闭
         </button>
       </div>
     </div>
@@ -1752,7 +1698,7 @@
       try {
         const token = sessionStorage.getItem('mcd_token') || '';
         if (token) {
-          const inputEl = document.getElementById('inputHeroToken');
+          const inputEl = document.getElementById('inputSettingsToken');
           if (inputEl) inputEl.value = token;
         } else {
           // 未配置 Token 时弹出引导说明
@@ -1811,6 +1757,7 @@
           if (activeStatus) activeStatus.textContent = `状态：纯净空状态 (0 数据采集)`;
         }
       }
+      updateSettingsStatusText();
 
       // 实时资产（积分与优惠券）
       if (document.getElementById('mPointsBalance')) document.getElementById('mPointsBalance').textContent = Number(data.user.points).toLocaleString();
@@ -2018,10 +1965,10 @@
             </div>
             <p style="font-size:12px; color:var(--pixel-subtext); line-height:1.6; max-width:540px; margin:0 auto 16px;">
               本站绝不采集或储存任何访客的隐私信息，Token 仅保存在您当前浏览器的单次会话中。<br>
-              请在上方输入您的 MCP Bearer Token，即可实时拉取真实吃麦足迹！
+              请点击右上角【⚙️ 设置】填入官方 MCP Bearer Token，即可实时拉取真实吃麦足迹！
             </p>
             <div style="display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
-              <button class="pixel-btn btn-sm" onclick="document.getElementById('inputHeroToken').focus()">🔑 输入官方 Token</button>
+              <button class="pixel-btn btn-sm" onclick="openSettingsModal()">⚙️ 连接麦当劳账号 (输入 Token)</button>
               <button class="pixel-btn btn-outline btn-sm" onclick="loadDemoPreview()">🎲 查看沙盒模拟演示</button>
             </div>
           </div>
@@ -2300,11 +2247,7 @@
 
     function goToPasteToken() {
       closeGuideModal();
-      const input = document.getElementById('inputHeroToken');
-      if (input) {
-        input.focus();
-        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
+      openSettingsModal();
     }
 
     function loadDemoAndCloseGuide() {
@@ -2313,27 +2256,72 @@
     }
 
     // -------------------------------------------------------------
-    // 首屏 Token 控制台事件响应
+    // 右上角设置模态框 (Settings Modal) 交互响应
     // -------------------------------------------------------------
-    function toggleHeroTokenVisibility() {
-      playBleep(440, 0.03);
-      const input = document.getElementById('inputHeroToken');
-      input.type = input.type === 'password' ? 'text' : 'password';
+    function openSettingsModal() {
+      playBleep(520, 0.04);
+      const modal = document.getElementById('settingsModal');
+      if (!modal) return;
+      const token = sessionStorage.getItem('mcd_token') || '';
+      const input = document.getElementById('inputSettingsToken');
+      if (input) input.value = token;
+      updateApiEndpointLabel();
+      updateSettingsStatusText();
+      const alertEl = document.getElementById('settingsAlert');
+      if (alertEl) alertEl.style.display = 'none';
+      modal.style.display = 'flex';
+      if (input && !token) {
+        setTimeout(() => input.focus(), 120);
+      }
     }
 
-    async function saveTokenFromHero() {
-      const token = document.getElementById('inputHeroToken').value.trim();
-      const alertEl = document.getElementById('tokenConsoleAlert');
-      const btn = document.getElementById('btnHeroConnect');
+    function closeSettingsModal() {
+      playBleep(330, 0.04);
+      const modal = document.getElementById('settingsModal');
+      if (modal) modal.style.display = 'none';
+    }
 
-      // 若用户未填写 Token 就点击回车或点亮足迹，主动弹出新手使用与获取指南
+    function toggleSettingsTokenVisibility() {
+      playBleep(440, 0.03);
+      const input = document.getElementById('inputSettingsToken');
+      if (input) {
+        input.type = input.type === 'password' ? 'text' : 'password';
+      }
+    }
+
+    function updateSettingsStatusText() {
+      const statusEl = document.getElementById('settingsTokenStatus');
+      if (!statusEl) return;
+      if (currentSummary?.mcpStatus?.tokenConfigured && !currentSummary?.mcpStatus?.isSandbox) {
+        statusEl.innerHTML = `<span style="color:var(--pixel-green);">✓ 已直连 (${currentSummary.mcpStatus.tokenMasked || 'LIVE'})</span>`;
+      } else if (currentSummary?.mcpStatus?.isSandbox) {
+        statusEl.innerHTML = `<span style="color:var(--pixel-yellow);">🟡 沙盒模拟中</span>`;
+      } else {
+        statusEl.innerHTML = `<span style="color:var(--pixel-subtext);">⚪ 待连接 (纯净空状态)</span>`;
+      }
+    }
+
+    async function saveTokenFromSettings() {
+      const input = document.getElementById('inputSettingsToken');
+      const token = input ? input.value.trim() : '';
+      const alertEl = document.getElementById('settingsAlert');
+      const btn = document.getElementById('btnSettingsConnect');
+
       if (!token) {
-        openGuideModal();
+        if (alertEl) {
+          alertEl.style.display = 'block';
+          alertEl.style.backgroundColor = '#382816';
+          alertEl.style.borderColor = 'var(--pixel-yellow)';
+          alertEl.style.color = 'var(--pixel-yellow)';
+          alertEl.textContent = '提示：请先粘贴您的麦当劳官方 MCP Token！';
+        }
         return;
       }
 
-      btn.textContent = '⏳ 连接中...';
-      btn.disabled = true;
+      if (btn) {
+        btn.textContent = '⏳ 连接中...';
+        btn.disabled = true;
+      }
 
       try {
         const res = await fetch(`${API_BASE}/api/vibe/token`, {
@@ -2342,51 +2330,68 @@
           body: JSON.stringify({ token })
         });
         const data = await res.json();
-        btn.textContent = '⚡ 点亮足迹 (Enter)';
-        btn.disabled = false;
+        if (btn) {
+          btn.textContent = '⚡ 保存并点亮足迹';
+          btn.disabled = false;
+        }
 
-        alertEl.style.display = 'block';
+        if (alertEl) alertEl.style.display = 'block';
+
         if (data.success && !data.isSandbox) {
-          // 仅保存在当前浏览器 session，绝不收集到任何外部数据库
           sessionStorage.setItem('mcd_token', token);
-          alertEl.style.backgroundColor = '#12261b';
-          alertEl.style.borderColor = 'var(--pixel-green)';
-          alertEl.style.color = 'var(--pixel-green)';
-          alertEl.textContent = `✓ 成功连接官方 MCP！Token 尾号: ${data.tokenMasked || '已脱敏'}，已同步 ${data.summary?.recentOrders?.length || 0} 笔真实订单！`;
+          if (alertEl) {
+            alertEl.style.backgroundColor = '#12261b';
+            alertEl.style.borderColor = 'var(--pixel-green)';
+            alertEl.style.color = 'var(--pixel-green)';
+            alertEl.textContent = `✓ 成功连接官方 MCP！Token 尾号: ${data.tokenMasked || '已脱敏'}，已同步 ${data.summary?.recentOrders?.length || 0} 笔真实订单！`;
+          }
           currentSummary = data.summary;
           renderDashboard(data.summary);
           playFanfare();
+          setTimeout(() => {
+            closeSettingsModal();
+          }, 1200);
         } else {
-          alertEl.style.backgroundColor = '#382816';
-          alertEl.style.borderColor = 'var(--pixel-yellow)';
-          alertEl.style.color = 'var(--pixel-yellow)';
-          alertEl.textContent = `提示: ${data.message || '连接未成功'}`;
+          if (alertEl) {
+            alertEl.style.backgroundColor = '#382816';
+            alertEl.style.borderColor = 'var(--pixel-yellow)';
+            alertEl.style.color = 'var(--pixel-yellow)';
+            alertEl.textContent = `提示: ${data.message || '连接未成功'}`;
+          }
           if (data.summary) {
             currentSummary = data.summary;
             renderDashboard(data.summary);
           }
         }
+        updateSettingsStatusText();
       } catch (err) {
-        btn.textContent = '⚡ 点亮足迹 (Enter)';
-        btn.disabled = false;
-        alertEl.style.display = 'block';
-        alertEl.style.backgroundColor = '#38161b';
-        alertEl.style.borderColor = 'var(--pixel-red)';
-        alertEl.style.color = '#FFF';
-        alertEl.textContent = `请求失败: ${err.message} (当前 API 端点: ${API_BASE || '本地/同源'})`;
+        if (btn) {
+          btn.textContent = '⚡ 保存并点亮足迹';
+          btn.disabled = false;
+        }
+        if (alertEl) {
+          alertEl.style.display = 'block';
+          alertEl.style.backgroundColor = '#38161b';
+          alertEl.style.borderColor = 'var(--pixel-red)';
+          alertEl.style.color = '#FFF';
+          alertEl.textContent = `请求失败: ${err.message} (当前 API 端点: ${API_BASE || '本地/同源'})`;
+        }
       }
     }
 
-    async function clearTokenFromHero() {
+    async function clearTokenFromSettings() {
       playBleep(350, 0.08);
       sessionStorage.removeItem('mcd_token');
-      document.getElementById('inputHeroToken').value = '';
-      const alertEl = document.getElementById('tokenConsoleAlert');
-      alertEl.style.display = 'block';
-      alertEl.style.backgroundColor = '#12261b';
-      alertEl.style.borderColor = 'var(--pixel-green)';
-      alertEl.style.color = 'var(--pixel-green)';
-      alertEl.textContent = '✓ Token 已彻底清空，数据已重置为纯净空状态！';
+      const input = document.getElementById('inputSettingsToken');
+      if (input) input.value = '';
+      const alertEl = document.getElementById('settingsAlert');
+      if (alertEl) {
+        alertEl.style.display = 'block';
+        alertEl.style.backgroundColor = '#12261b';
+        alertEl.style.borderColor = 'var(--pixel-green)';
+        alertEl.style.color = 'var(--pixel-green)';
+        alertEl.textContent = '✓ Token 已彻底清空，数据已重置为纯净空状态！';
+      }
 
       try {
         const res = await fetch(`${API_BASE}/api/vibe/token`, {
@@ -2406,25 +2411,42 @@
         currentSummary = createClientEmptySummary();
         renderDashboard(currentSummary);
       }
+      updateSettingsStatusText();
     }
 
-    async function loadDemoPreview() {
+    async function loadDemoFromSettings() {
       playCoin();
-      const alertEl = document.getElementById('tokenConsoleAlert');
+      const alertEl = document.getElementById('settingsAlert');
       try {
         const res = await fetch(`${API_BASE}/api/vibe/summary?demo=true`);
         const data = await res.json();
         currentSummary = data;
         renderDashboard(data);
-        alertEl.style.display = 'block';
-        alertEl.style.backgroundColor = '#2a2717';
-        alertEl.style.borderColor = 'var(--pixel-yellow)';
-        alertEl.style.color = 'var(--pixel-yellow)';
-        alertEl.textContent = 'ℹ️ 当前已载入沙盒模拟演示数据，输入真实 Token 即可一键切换到本人账单。';
+        if (alertEl) {
+          alertEl.style.display = 'block';
+          alertEl.style.backgroundColor = '#2a2717';
+          alertEl.style.borderColor = 'var(--pixel-yellow)';
+          alertEl.style.color = 'var(--pixel-yellow)';
+          alertEl.textContent = 'ℹ️ 已载入沙盒模拟演示数据！';
+        }
+        updateSettingsStatusText();
+        setTimeout(closeSettingsModal, 900);
       } catch (err) {
-        alert('无法加载演示: ' + err.message);
+        if (alertEl) {
+          alertEl.style.display = 'block';
+          alertEl.style.backgroundColor = '#38161b';
+          alertEl.style.borderColor = 'var(--pixel-red)';
+          alertEl.style.color = '#FFF';
+          alertEl.textContent = '无法加载演示: ' + err.message;
+        }
       }
     }
+
+    // 兼容别名
+    function saveTokenFromHero() { return saveTokenFromSettings(); }
+    function clearTokenFromHero() { return clearTokenFromSettings(); }
+    function toggleHeroTokenVisibility() { return toggleSettingsTokenVisibility(); }
+    function loadDemoPreview() { return loadDemoFromSettings(); }
 
     // -------------------------------------------------------------
     // 拍立得像素海报导出
