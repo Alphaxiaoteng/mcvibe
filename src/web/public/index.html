@@ -749,6 +749,12 @@
       justify-content: center;
       z-index: 1001;
       padding: 20px;
+      opacity: 0;
+      transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-backdrop.active {
+      display: flex;
+      opacity: 1;
     }
     .modal-content {
       background-color: var(--card-bg);
@@ -760,6 +766,36 @@
       position: relative;
       max-height: 90vh;
       overflow-y: auto;
+      transform: scale(0.94) translateY(10px);
+      transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .modal-backdrop.active .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    @keyframes pixelIgnite {
+      0% {
+        transform: scale(0.2);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.4);
+        box-shadow: 0 0 14px var(--pixel-yellow);
+        filter: brightness(1.7);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% {
+        box-shadow: 0 0 4px var(--pixel-green);
+      }
+      50% {
+        box-shadow: 0 0 16px var(--pixel-green), 0 0 24px rgba(46, 204, 113, 0.6);
+      }
     }
     .modal-close {
       position: absolute;
@@ -1263,6 +1299,9 @@
     </div>
   </div>
 
+  <!-- 全屏 8-Bit 像素庆典彩屑 Canvas (点亮仪式感) -->
+  <canvas id="pixelConfettiCanvas" style="position:fixed; top:0; left:0; width:100vw; height:100vh; pointer-events:none; z-index:99999; display:none;"></canvas>
+
   <script>
     // -------------------------------------------------------------
     // 全局异常捕获与安全存储防护 (Safe Storage & Error Guard)
@@ -1365,21 +1404,131 @@
       if (!sfxEnabled) return;
       try {
         initAudio();
-        const notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C
-        notes.forEach((freq, idx) => {
+        // 8-Bit 经典街机胜利和弦 (C5 -> E5 -> G5 -> C6 -> E6 -> G6)
+        const notes = [
+          { f: 523.25, d: 0.10 },
+          { f: 659.25, d: 0.10 },
+          { f: 783.99, d: 0.12 },
+          { f: 1046.50, d: 0.14 },
+          { f: 1318.51, d: 0.18 },
+          { f: 1567.98, d: 0.38 }
+        ];
+        const start = audioCtx.currentTime;
+        notes.forEach((n, idx) => {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
-          const t = audioCtx.currentTime + idx * 0.09;
+          const t = start + idx * 0.075;
           osc.type = 'square';
-          osc.frequency.setValueAtTime(freq, t);
-          gain.gain.setValueAtTime(0.1, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+          osc.frequency.setValueAtTime(n.f, t);
+          gain.gain.setValueAtTime(0.12, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + n.d);
           osc.connect(gain);
           gain.connect(audioCtx.destination);
           osc.start(t);
-          osc.stop(t + 0.22);
+          osc.stop(t + n.d);
         });
       } catch (e) {}
+    }
+
+    // 全屏 8-Bit 像素彩屑烟花粒子引擎
+    function launchPixelConfetti() {
+      const canvas = document.getElementById('pixelConfettiCanvas');
+      if (!canvas) return;
+      canvas.style.display = 'block';
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const ctx = canvas.getContext('2d');
+      const colors = ['#FFC72C', '#DA291C', '#2ECC71', '#FFFFFF', '#00D2D3'];
+      const particles = [];
+      const particleCount = 130;
+
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * 260,
+          y: canvas.height * 0.42,
+          vx: (Math.random() - 0.5) * 18,
+          vy: -Math.random() * 15 - 5,
+          size: Math.floor(Math.random() * 6) + 4,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          gravity: 0.38,
+          rotation: Math.random() * 360,
+          rotSpeed: (Math.random() - 0.5) * 14,
+          opacity: 1
+        });
+      }
+
+      const start = performance.now();
+      function update(now) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let alive = 0;
+
+        for (let p of particles) {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.vx *= 0.985;
+          p.rotation += p.rotSpeed;
+          if (p.y > canvas.height * 0.65) {
+            p.opacity -= 0.025;
+          }
+
+          if (p.opacity > 0 && p.y < canvas.height + 60) {
+            alive++;
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rotation * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = Math.max(0, p.opacity);
+            ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+            ctx.restore();
+          }
+        }
+
+        if (alive > 0 && now - start < 3200) {
+          requestAnimationFrame(update);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          canvas.style.display = 'none';
+        }
+      }
+      requestAnimationFrame(update);
+    }
+
+    // 顺滑数字翻滚跳动动画
+    function animateNumber(elementId, targetValue, duration = 650, isCurrency = false, suffix = '') {
+      const el = document.getElementById(elementId);
+      if (!el) return;
+      const startVal = 0;
+      const startTime = performance.now();
+      const numTarget = Number(targetValue) || 0;
+
+      function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
+        const current = startVal + (numTarget - startVal) * easeProgress;
+
+        if (isCurrency) {
+          el.textContent = `¥ ${current.toFixed(1)}`;
+        } else if (Number.isInteger(numTarget)) {
+          el.textContent = `${Math.round(current).toLocaleString()}${suffix}`;
+        } else {
+          el.textContent = `${current.toFixed(1)}${suffix}`;
+        }
+
+        if (progress < 1) {
+          requestAnimationFrame(update);
+        } else {
+          if (isCurrency) {
+            el.textContent = `¥ ${numTarget.toFixed(1)}`;
+          } else if (Number.isInteger(numTarget)) {
+            el.textContent = `${numTarget.toLocaleString()}${suffix}`;
+          } else {
+            el.textContent = `${numTarget.toFixed(1)}${suffix}`;
+          }
+        }
+      }
+      requestAnimationFrame(update);
     }
 
     // -------------------------------------------------------------
@@ -1670,7 +1819,7 @@
       });
     }
 
-    function filterAndRenderDashboard() {
+    function filterAndRenderDashboard(triggerCelebration = false) {
       if (!currentSummary) return;
 
       const allOrders = currentSummary.allOrders || currentSummary.recentOrders || [];
@@ -1731,10 +1880,16 @@
       const savingRate = (totalSpent + totalSaved) > 0 ? ((totalSaved / (totalSpent + totalSaved)) * 100).toFixed(1) : '0.0';
       const activeDays = new Set(filtered.map(o => o.date || (o.timestamp ? o.timestamp.split('T')[0] : ''))).size;
 
-      if (document.getElementById('mTotalSpent')) document.getElementById('mTotalSpent').textContent = totalSpent.toFixed(1);
-      if (document.getElementById('mTotalOrders')) document.getElementById('mTotalOrders').textContent = totalOrders;
-      if (document.getElementById('mAvgPrice')) document.getElementById('mAvgPrice').textContent = avgPrice;
-      if (document.getElementById('mTotalSaved')) document.getElementById('mTotalSaved').textContent = totalSaved.toFixed(1);
+      if (triggerCelebration) {
+        animateNumber('mTotalSpent', totalSpent, 700);
+        animateNumber('mTotalOrders', totalOrders, 600);
+        animateNumber('mTotalSaved', totalSaved, 700);
+      } else {
+        if (document.getElementById('mTotalSpent')) document.getElementById('mTotalSpent').textContent = totalSpent.toFixed(1);
+        if (document.getElementById('mTotalOrders')) document.getElementById('mTotalOrders').textContent = totalOrders;
+        if (document.getElementById('mAvgPrice')) document.getElementById('mAvgPrice').textContent = avgPrice;
+        if (document.getElementById('mTotalSaved')) document.getElementById('mTotalSaved').textContent = totalSaved.toFixed(1);
+      }
       if (document.getElementById('mSavingRate')) document.getElementById('mSavingRate').textContent = `${savingRate}%`;
       if (document.getElementById('mFreeBurgers')) {
         document.getElementById('mFreeBurgers').textContent = (totalSaved / 21).toFixed(1);
@@ -1806,7 +1961,7 @@
       }
     }
 
-    function renderDashboard(data) {
+    function renderDashboard(data, triggerCelebration = false) {
       updateApiEndpointLabel();
       // 头部连接状态与引导横幅响应
       const btnHeaderConnect = document.getElementById('btnHeaderConnect');
@@ -1881,20 +2036,25 @@
       updateSettingsStatusText();
 
       // 实时资产（积分与优惠券）
-      if (document.getElementById('mPointsBalance')) document.getElementById('mPointsBalance').textContent = Number(data.user.points).toLocaleString();
+      if (triggerCelebration) {
+        animateNumber('mPointsBalance', data.user.points, 750);
+        animateNumber('mCouponsCount', data.mcpStatus?.couponsAvailable ?? 0, 600);
+      } else {
+        if (document.getElementById('mPointsBalance')) document.getElementById('mPointsBalance').textContent = Number(data.user.points).toLocaleString();
+        if (document.getElementById('mCouponsCount')) {
+          document.getElementById('mCouponsCount').textContent = data.mcpStatus?.couponsAvailable ?? 0;
+        }
+      }
       if (document.getElementById('mAccumPoints')) {
         document.getElementById('mAccumPoints').textContent = Number(data.user.accumulativePoints || data.user.points).toLocaleString();
       }
       if (document.getElementById('mExpiredPoints')) {
         document.getElementById('mExpiredPoints').textContent = Number(data.user.expiredPoints || 0).toLocaleString();
       }
-      if (document.getElementById('mCouponsCount')) {
-        document.getElementById('mCouponsCount').textContent = data.mcpStatus?.couponsAvailable ?? 0;
-      }
       if (document.getElementById('mCurrentStreak')) document.getElementById('mCurrentStreak').textContent = data.stats.currentStreak;
 
       // 渲染年度热力图
-      renderHeatmapView();
+      renderHeatmapView(triggerCelebration);
 
       // 渲染成就徽章
       renderBadges(data.achievements || []);
@@ -1902,7 +2062,7 @@
       // 初始化全量订单与月份下拉菜单，执行当前时间筛选渲染
       currentSummary.allOrders = [...(data.recentOrders || [])];
       populateMonthDropdown(currentSummary.allOrders);
-      filterAndRenderDashboard();
+      filterAndRenderDashboard(triggerCelebration);
     }
 
     // -------------------------------------------------------------
@@ -2276,7 +2436,7 @@
       renderHeatmapView();
     }
 
-    function renderHeatmapView() {
+    function renderHeatmapView(triggerCelebration = false) {
       if (!currentSummary) return;
 
       let days = [];
@@ -2338,12 +2498,17 @@
         }
       }
 
-      // 渲染点阵方格
-      days.forEach(day => {
+      // 渲染点阵方格 (含波浪次序扩散点亮动画)
+      days.forEach((day, idx) => {
         const cell = document.createElement('div');
         cell.className = `heat-cell heat-lvl-${day.intensity}`;
         if (day.count > 0) {
           cell.setAttribute('data-has-order', 'true');
+        }
+
+        if (triggerCelebration && day.count > 0) {
+          const colIndex = Math.floor(idx / 7);
+          cell.style.animation = `pixelIgnite 0.45s ease-out ${colIndex * 18}ms backwards`;
         }
 
         cell.addEventListener('mouseenter', (e) => {
@@ -2461,16 +2626,37 @@
       updateSettingsStatusText();
       const alertEl = document.getElementById('settingsAlert');
       if (alertEl) alertEl.style.display = 'none';
+      const btn = document.getElementById('btnSettingsConnect');
+      if (btn) {
+        btn.textContent = '⚡ 点亮足迹';
+        btn.disabled = false;
+        btn.style.boxShadow = '';
+        btn.style.background = 'var(--pixel-yellow)';
+        btn.style.borderColor = '#000';
+        btn.style.color = '#000';
+      }
       modal.style.display = 'flex';
+      requestAnimationFrame(() => {
+        modal.classList.add('active');
+      });
       if (input && !token) {
         setTimeout(() => input.focus(), 120);
       }
     }
 
-    function closeSettingsModal() {
+    function closeSettingsModal(fast = false) {
       playBleep(330, 0.04);
       const modal = document.getElementById('settingsModal');
-      if (modal) modal.style.display = 'none';
+      if (!modal) return;
+      if (fast) {
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+        return;
+      }
+      modal.classList.remove('active');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 220);
     }
 
     function toggleSettingsTokenVisibility() {
@@ -2507,8 +2693,9 @@
       }
 
       if (btn) {
-        btn.textContent = '⏳ 连接中...';
+        btn.textContent = '⚡ 正在连接官方 MCP...';
         btn.disabled = true;
+        btn.style.boxShadow = '0 0 14px var(--pixel-yellow)';
       }
 
       try {
@@ -2518,29 +2705,48 @@
           body: JSON.stringify({ token })
         }, 8000);
         const data = await res.json();
-        if (btn) {
-          btn.textContent = '⚡ 点亮足迹';
-          btn.disabled = false;
-        }
-
-        if (alertEl) alertEl.style.display = 'block';
 
         if (data.success && !data.isSandbox) {
           safeStorage.set('session', 'mcd_token', token);
+          if (btn) {
+            btn.style.boxShadow = '0 0 18px var(--pixel-green)';
+            btn.style.background = 'var(--pixel-green)';
+            btn.style.borderColor = 'var(--pixel-green)';
+            btn.style.color = '#000';
+            btn.textContent = '✓ 认证成功 · 正在点亮！';
+          }
           if (alertEl) {
+            alertEl.style.display = 'block';
             alertEl.style.backgroundColor = '#12261b';
             alertEl.style.borderColor = 'var(--pixel-green)';
             alertEl.style.color = 'var(--pixel-green)';
-            alertEl.textContent = `✓ 连接成功！已同步 ${data.summary?.recentOrders?.length || 0} 笔官方订单`;
+            alertEl.textContent = `🎉 官方数据已就绪！已同步 ${data.summary?.recentOrders?.length || 0} 笔官方订单，点亮中...`;
           }
-          currentSummary = data.summary;
-          renderDashboard(data.summary);
+
+          // 1. 播放欢快胜利和弦琶音
           playFanfare();
+
+          // 2. 绽放全屏 8-Bit 像素彩屑烟花
+          launchPixelConfetti();
+
+          // 3. 延迟 500ms 优雅淡出关闭弹窗，波浪次序点亮主界面并滚动翻转数字
           setTimeout(() => {
             closeSettingsModal();
-          }, 1000);
+            currentSummary = data.summary;
+            renderDashboard(data.summary, true);
+          }, 550);
+
         } else {
+          if (btn) {
+            btn.style.boxShadow = '';
+            btn.style.background = 'var(--pixel-yellow)';
+            btn.style.borderColor = '#000';
+            btn.style.color = '#000';
+            btn.textContent = '⚡ 点亮足迹';
+            btn.disabled = false;
+          }
           if (alertEl) {
+            alertEl.style.display = 'block';
             alertEl.style.backgroundColor = '#382816';
             alertEl.style.borderColor = 'var(--pixel-yellow)';
             alertEl.style.color = 'var(--pixel-yellow)';
@@ -2554,6 +2760,10 @@
         updateSettingsStatusText();
       } catch (err) {
         if (btn) {
+          btn.style.boxShadow = '';
+          btn.style.background = 'var(--pixel-yellow)';
+          btn.style.borderColor = '#000';
+          btn.style.color = '#000';
           btn.textContent = '⚡ 点亮足迹';
           btn.disabled = false;
         }
