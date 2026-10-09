@@ -4,17 +4,20 @@ export interface McpClientOptions {
   token?: string;
   baseUrl?: string;
   forceSandbox?: boolean;
+  timeoutMs?: number;
 }
 
 export class McpClient {
   private token: string | null;
   private baseUrl: string;
   private isSandbox: boolean;
+  private timeoutMs: number;
 
   constructor(options: McpClientOptions = {}) {
     this.token = options.token || process.env.MCD_MCP_TOKEN || null;
     this.baseUrl = options.baseUrl || process.env.MCD_MCP_URL || 'https://mcp.mcd.cn';
     this.isSandbox = options.forceSandbox ?? !this.token;
+    this.timeoutMs = options.timeoutMs ?? 5000;
   }
 
   public isUsingSandbox(): boolean {
@@ -56,7 +59,8 @@ export class McpClient {
             arguments: {}
           },
           id: Date.now()
-        })
+        }),
+        signal: AbortSignal.timeout(this.timeoutMs)
       });
       if (response.ok) {
         this.isSandbox = false;
@@ -67,7 +71,9 @@ export class McpClient {
       }
     } catch (err: any) {
       this.isSandbox = true;
-      return { success: false, message: `网络连接失败 (${err.message})，已切回沙盒` };
+      const isTimeout = err?.name === 'TimeoutError' || err?.name === 'AbortError';
+      const msg = isTimeout ? `连接官方 MCP 超时 (${this.timeoutMs}ms)` : `网络连接失败 (${err.message})`;
+      return { success: false, message: `${msg}，已切回沙盒` };
     }
   }
 
@@ -96,7 +102,8 @@ export class McpClient {
             arguments: args
           },
           id: Date.now()
-        })
+        }),
+        signal: AbortSignal.timeout(this.timeoutMs)
       });
 
       if (!response.ok) {

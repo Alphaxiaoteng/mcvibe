@@ -165,10 +165,10 @@ export class VibeAggregator {
       const orderId = order.orderId || `MCD-OFFICIAL-${index}`;
       const createTime = order.createTime || new Date().toISOString();
       const dateStr = createTime.includes(' ') ? createTime.split(' ')[0] : createTime.split('T')[0];
-      const paid = parseFloat(order.realTotalAmount) || 0;
+      const paid = Math.max(0, parseFloat(order.realTotalAmount) || 0);
 
       const items: any[] = [];
-      const productList = order.orderProductList || [];
+      const productList = Array.isArray(order.orderProductList) ? order.orderProductList : [];
 
       for (const prod of productList) {
         if (Array.isArray(prod.comboItemList) && prod.comboItemList.length > 0) {
@@ -179,7 +179,7 @@ export class VibeAggregator {
               id: sub.productCode || `P-${Math.random().toString(36).slice(2, 7)}`,
               name,
               category: cat,
-              count: sub.quantity || 1,
+              count: Math.max(1, parseInt(sub.quantity, 10) || 1),
               price: Math.max(1, Math.round(paid / (prod.comboItemList.length || 1))),
               calories: this.estimateCalories(cat, name)
             });
@@ -191,7 +191,7 @@ export class VibeAggregator {
             id: prod.productCode || `P-${Math.random().toString(36).slice(2, 7)}`,
             name,
             category: cat,
-            count: prod.quantity || 1,
+            count: Math.max(1, parseInt(prod.quantity, 10) || 1),
             price: Math.max(1, Math.round(paid / Math.max(1, productList.length))),
             calories: this.estimateCalories(cat, name)
           });
@@ -209,7 +209,7 @@ export class VibeAggregator {
         });
       }
 
-      const originalTotal = Math.max(paid, items.reduce((s: number, i: any) => s + i.price * i.count, 0));
+      const originalTotal = Math.max(paid, items.reduce((s: number, i: any) => s + (Number(i.price) || 0) * (Number(i.count) || 1), 0));
       const discount = Math.max(0, Number((originalTotal - paid).toFixed(1)));
 
       return {
@@ -489,17 +489,25 @@ export class VibeAggregator {
     const todayStr = new Date().toISOString().split('T')[0];
     const todayOrders = effectiveOrders.filter(o => o.date === todayStr);
 
-    const todaySpent = Number(todayOrders.reduce((sum, o) => sum + o.paidAmount, 0).toFixed(1));
-    const todaySaved = Number(todayOrders.reduce((sum, o) => sum + o.discountAmount, 0).toFixed(1));
+    const todaySpent = Number(todayOrders.reduce((sum, o) => {
+      const p = Number(o.paidAmount);
+      return sum + (Number.isFinite(p) ? Math.max(0, p) : 0);
+    }, 0).toFixed(1));
+    const todaySaved = Number(todayOrders.reduce((sum, o) => {
+      const d = Number(o.discountAmount);
+      return sum + (Number.isFinite(d) ? Math.max(0, d) : 0);
+    }, 0).toFixed(1));
     let todayCalories = 0;
     let coffeeToday = 0;
     let latestMeal = '';
 
     for (const order of todayOrders) {
       for (const item of order.items) {
-        todayCalories += item.calories * item.count;
-        if (item.name.includes('咖啡') || item.name.includes('美式')) {
-          coffeeToday += item.count;
+        const c = Number(item.calories);
+        const cnt = Number(item.count);
+        todayCalories += (Number.isFinite(c) ? c : 0) * (Number.isFinite(cnt) ? cnt : 1);
+        if (item.name && (item.name.includes('咖啡') || item.name.includes('美式'))) {
+          coffeeToday += Number.isFinite(cnt) ? cnt : 1;
         }
       }
       latestMeal = order.items.map(i => i.name).join(' + ');
@@ -510,25 +518,40 @@ export class VibeAggregator {
     }
 
     // 基础 HP (生命/能量值): 满分 100，根据摄入与适量能量动态计算
-    const hp = todayOrders.length > 0 ? Math.min(100, Math.max(40, 95 - Math.max(0, todayCalories - 900) / 25)) : (effectiveOrders.length > 0 ? 85 : 60);
+    const rawHp = todayOrders.length > 0 ? Math.min(100, Math.max(40, 95 - Math.max(0, todayCalories - 900) / 25)) : (effectiveOrders.length > 0 ? 85 : 60);
+    const hp = Number.isFinite(rawHp) ? rawHp : 60;
     // 咖啡因/MP (魔法/专注力): 每杯黑咖啡提供 45 点 MP
-    const mp = Math.min(100, coffeeToday * 45 + (todayOrders.length > 0 ? 20 : (latestMeal.includes('咖') ? 60 : 30)));
+    const rawMp = Math.min(100, coffeeToday * 45 + (todayOrders.length > 0 ? 20 : (latestMeal && latestMeal.includes('咖') ? 60 : 30)));
+    const mp = Number.isFinite(rawMp) ? rawMp : 30;
 
     const totalOrders = effectiveOrders.length;
-    const totalSpent = Number(effectiveOrders.reduce((sum, o) => sum + o.paidAmount, 0).toFixed(1));
-    const totalSaved = Number(effectiveOrders.reduce((sum, o) => sum + o.discountAmount, 0).toFixed(1));
-    const totalOriginal = Number(effectiveOrders.reduce((sum, o) => sum + o.totalPrice, 0).toFixed(1));
+    const totalSpent = Number(effectiveOrders.reduce((sum, o) => {
+      const p = Number(o.paidAmount);
+      return sum + (Number.isFinite(p) ? Math.max(0, p) : 0);
+    }, 0).toFixed(1));
+    const totalSaved = Number(effectiveOrders.reduce((sum, o) => {
+      const d = Number(o.discountAmount);
+      return sum + (Number.isFinite(d) ? Math.max(0, d) : 0);
+    }, 0).toFixed(1));
+    const totalOriginal = Number(effectiveOrders.reduce((sum, o) => {
+      const t = Number(o.totalPrice);
+      return sum + (Number.isFinite(t) ? Math.max(0, t) : 0);
+    }, 0).toFixed(1));
     const savingRate = totalOriginal > 0 ? Number(((totalSaved / totalOriginal) * 100).toFixed(1)) : 0;
 
     let totalCalories = 0;
     for (const o of effectiveOrders) {
       for (const item of o.items) {
-        totalCalories += item.calories * item.count;
+        const c = Number(item.calories);
+        const cnt = Number(item.count);
+        totalCalories += (Number.isFinite(c) ? c : 0) * (Number.isFinite(cnt) ? cnt : 1);
       }
     }
 
-    // 计算连续打卡天数
-    const uniqueDates = Array.from(new Set(effectiveOrders.map(o => o.date))).sort();
+    // 计算连续打卡天数 (只对格式合法的 YYYY-MM-DD 执行统计)
+    const uniqueDates = Array.from(new Set(effectiveOrders.map(o => o.date).filter(Boolean)))
+      .filter(d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d))
+      .sort();
     let currentStreak = 0;
     let longestStreak = 0;
     let tempStreak = 0;
@@ -566,9 +589,10 @@ export class VibeAggregator {
     // 计算月度用量支出
     const monthlyMap = new Map<string, { spent: number; orders: number }>();
     for (const o of effectiveOrders) {
+      if (!o.date || typeof o.date !== 'string') continue;
       const ym = o.date.slice(0, 7);
       const mVal = monthlyMap.get(ym) || { spent: 0, orders: 0 };
-      mVal.spent = Number((mVal.spent + o.paidAmount).toFixed(1));
+      mVal.spent = Number((mVal.spent + (Number(o.paidAmount) || 0)).toFixed(1));
       mVal.orders += 1;
       monthlyMap.set(ym, mVal);
     }
@@ -576,9 +600,12 @@ export class VibeAggregator {
       .map(([month, val]) => ({ month, spent: val.spent, orders: val.orders }))
       .sort((a, b) => b.month.localeCompare(a.month));
 
-    const userPoints = parseFloat(mcpPoints?.availablePoint ?? mcpPoints?.totalPoints ?? (isSandbox ? 3420 : 0));
-    const accumulativePoints = parseFloat(mcpPoints?.accumulativePoint ?? (isSandbox ? 12890 : userPoints));
-    const expiredPoints = parseFloat(mcpPoints?.expiredPoint ?? (isSandbox ? 450 : 0));
+    const rawUserPoints = parseFloat(mcpPoints?.availablePoint ?? mcpPoints?.totalPoints ?? (isSandbox ? 3420 : 0));
+    const userPoints = Number.isFinite(rawUserPoints) ? rawUserPoints : 0;
+    const rawAccum = parseFloat(mcpPoints?.accumulativePoint ?? (isSandbox ? 12890 : userPoints));
+    const accumulativePoints = Number.isFinite(rawAccum) ? rawAccum : userPoints;
+    const rawExpired = parseFloat(mcpPoints?.expiredPoint ?? (isSandbox ? 450 : 0));
+    const expiredPoints = Number.isFinite(rawExpired) ? rawExpired : 0;
     const expiryRatePercent = accumulativePoints > 0 ? Number(((expiredPoints / accumulativePoints) * 100).toFixed(1)) : 0;
 
     return {

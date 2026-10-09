@@ -840,6 +840,15 @@
       gap: 6px;
     }
 
+    #shareCanvas {
+      max-width: 100%;
+      height: auto;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+      border: 2px solid #000;
+      box-shadow: 4px 4px 0px #000;
+    }
+
     footer {
       text-align: center;
       margin-top: 40px;
@@ -1334,6 +1343,55 @@
 
   <script>
     // -------------------------------------------------------------
+    // 全局异常捕获与安全存储防护 (Safe Storage & Error Guard)
+    // -------------------------------------------------------------
+    window.addEventListener('error', (e) => {
+      console.warn('[McVibe] Global error caught:', e.message);
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      console.warn('[McVibe] Unhandled promise rejection:', e.reason);
+    });
+
+    const safeStorage = {
+      get(type, key) {
+        try {
+          const store = type === 'session' ? window.sessionStorage : window.localStorage;
+          return store ? store.getItem(key) : null;
+        } catch {
+          return null;
+        }
+      },
+      set(type, key, value) {
+        try {
+          const store = type === 'session' ? window.sessionStorage : window.localStorage;
+          if (store) store.setItem(key, value);
+        } catch {}
+      },
+      remove(type, key) {
+        try {
+          const store = type === 'session' ? window.sessionStorage : window.localStorage;
+          if (store) store.removeItem(key);
+        } catch {}
+      }
+    };
+
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 8000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const response = await fetch(url, { ...options, signal: controller.signal });
+        clearTimeout(timer);
+        return response;
+      } catch (err) {
+        clearTimeout(timer);
+        if (err.name === 'AbortError') {
+          throw new Error(`网络请求超时 (${timeoutMs / 1000}秒)`);
+        }
+        throw err;
+      }
+    }
+
+    // -------------------------------------------------------------
     // 8-Bit Web Audio 合成器
     // -------------------------------------------------------------
     let audioCtx = null;
@@ -1526,7 +1584,7 @@
     // API 请求端点与全局时间筛选状态
     // -------------------------------------------------------------
     const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-    let customApiBase = localStorage.getItem('mcd_api_base');
+    let customApiBase = safeStorage.get('local', 'mcd_api_base');
     let API_BASE = customApiBase !== null ? customApiBase : (isLocalhost ? '' : 'https://temporary-fleet-tempest-e28gun2.vercel.app');
 
     function updateApiEndpointLabel() {
@@ -1544,7 +1602,7 @@
       const input = prompt('输入后端 API 代理端点 (留空默认使用当前同源或官方 Serverless)：', current);
       if (input !== null) {
         API_BASE = input.trim();
-        localStorage.setItem('mcd_api_base', API_BASE);
+        safeStorage.set('local', 'mcd_api_base', API_BASE);
         updateApiEndpointLabel();
         alert(`API 端点已设定为: ${API_BASE || '同源默认'}`);
         loadSummary();
@@ -1794,19 +1852,19 @@
     async function loadSummary() {
       updateApiEndpointLabel();
       try {
-        const token = sessionStorage.getItem('mcd_token') || '';
+        const token = safeStorage.get('session', 'mcd_token') || '';
         if (token) {
           const inputEl = document.getElementById('inputSettingsToken');
           if (inputEl) inputEl.value = token;
         } else {
           // 未配置 Token 时弹出引导说明
-          if (!localStorage.getItem('mcd_hide_guide')) {
+          if (!safeStorage.get('local', 'mcd_hide_guide')) {
             setTimeout(openGuideModal, 500);
           }
         }
         const headers = token ? { 'x-mcd-token': token } : {};
         const url = `${API_BASE}/api/vibe/summary`;
-        const res = await fetch(url, { headers });
+        const res = await fetchWithTimeout(url, { headers }, 8000);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         currentSummary = data;
@@ -1815,7 +1873,7 @@
         console.warn('API 不可用或纯静态部署环境，自动降级为浏览器本地纯净空状态:', err);
         currentSummary = createClientEmptySummary();
         renderDashboard(currentSummary);
-        if (!sessionStorage.getItem('mcd_token') && !localStorage.getItem('mcd_hide_guide')) {
+        if (!safeStorage.get('session', 'mcd_token') && !safeStorage.get('local', 'mcd_hide_guide')) {
           setTimeout(openGuideModal, 500);
         }
       }
@@ -2210,9 +2268,9 @@
         btn.disabled = true;
       }
       try {
-        const token = sessionStorage.getItem('mcd_token') || '';
+        const token = safeStorage.get('session', 'mcd_token') || '';
         const headers = token ? { 'Content-Type': 'application/json', 'x-mcd-token': token } : { 'Content-Type': 'application/json' };
-        const res = await fetch(`${API_BASE}/api/vibe/auto-bind-coupons`, { method: 'POST', headers });
+        const res = await fetchWithTimeout(`${API_BASE}/api/vibe/auto-bind-coupons`, { method: 'POST', headers }, 8000);
         const data = await res.json();
         if (btn) {
           btn.textContent = originalText;
@@ -2414,9 +2472,9 @@
 
     function toggleGuideDismiss(checked) {
       if (checked) {
-        localStorage.setItem('mcd_hide_guide', '1');
+        safeStorage.set('local', 'mcd_hide_guide', '1');
       } else {
-        localStorage.removeItem('mcd_hide_guide');
+        safeStorage.remove('local', 'mcd_hide_guide');
       }
     }
 
@@ -2437,7 +2495,7 @@
       playBleep(520, 0.04);
       const modal = document.getElementById('settingsModal');
       if (!modal) return;
-      const token = sessionStorage.getItem('mcd_token') || '';
+      const token = safeStorage.get('session', 'mcd_token') || '';
       const input = document.getElementById('inputSettingsToken');
       if (input) input.value = token;
       updateApiEndpointLabel();
@@ -2499,11 +2557,11 @@
       }
 
       try {
-        const res = await fetch(`${API_BASE}/api/vibe/token`, {
+        const res = await fetchWithTimeout(`${API_BASE}/api/vibe/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token })
-        });
+        }, 8000);
         const data = await res.json();
         if (btn) {
           btn.textContent = '⚡ 保存并点亮足迹';
@@ -2513,7 +2571,7 @@
         if (alertEl) alertEl.style.display = 'block';
 
         if (data.success && !data.isSandbox) {
-          sessionStorage.setItem('mcd_token', token);
+          safeStorage.set('session', 'mcd_token', token);
           if (alertEl) {
             alertEl.style.backgroundColor = '#12261b';
             alertEl.style.borderColor = 'var(--pixel-green)';
@@ -2556,7 +2614,7 @@
 
     async function clearTokenFromSettings() {
       playBleep(350, 0.08);
-      sessionStorage.removeItem('mcd_token');
+      safeStorage.remove('session', 'mcd_token');
       const input = document.getElementById('inputSettingsToken');
       if (input) input.value = '';
       const alertEl = document.getElementById('settingsAlert');
@@ -2569,11 +2627,11 @@
       }
 
       try {
-        const res = await fetch(`${API_BASE}/api/vibe/token`, {
+        const res = await fetchWithTimeout(`${API_BASE}/api/vibe/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: '' })
-        });
+        }, 5000);
         const data = await res.json();
         if (data.summary) {
           currentSummary = data.summary;
@@ -2593,7 +2651,7 @@
       playCoin();
       const alertEl = document.getElementById('settingsAlert');
       try {
-        const res = await fetch(`${API_BASE}/api/vibe/summary?demo=true`);
+        const res = await fetchWithTimeout(`${API_BASE}/api/vibe/summary?demo=true`, {}, 8000);
         const data = await res.json();
         currentSummary = data;
         renderDashboard(data);

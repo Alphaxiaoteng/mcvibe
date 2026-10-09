@@ -79,8 +79,31 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === '/api/vibe/token' && req.method === 'POST') {
     let body = '';
-    req.on('data', chunk => { body += chunk; });
+    const MAX_BODY_BYTES = 64 * 1024;
+    let exceeded = false;
+
+    req.on('error', (err) => {
+      console.warn('[HTTP Req Error]', err.message);
+      if (!res.headersSent) {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: '请求传输异常' }));
+      }
+    });
+
+    req.on('data', chunk => {
+      body += chunk;
+      if (body.length > MAX_BODY_BYTES) {
+        exceeded = true;
+        req.destroy();
+        if (!res.headersSent) {
+          res.writeHead(413, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: false, error: 'Payload Too Large' }));
+        }
+      }
+    });
+
     req.on('end', async () => {
+      if (exceeded) return;
       try {
         const payload = JSON.parse(body || '{}');
         const token = typeof payload.token === 'string' && payload.token.trim() ? payload.token.trim() : null;
@@ -175,8 +198,11 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`[McVibe] 8-Bit Pixel Dashboard running at http://localhost:${PORT}`);
-});
+const isTestEnv = process.env.NODE_ENV === 'test' || process.argv.some(a => a.includes('test'));
+if (!isTestEnv && !server.listening) {
+  server.listen(PORT, () => {
+    console.log(`[McVibe] 8-Bit Pixel Dashboard running at http://localhost:${PORT}`);
+  });
+}
 
 export { server };
