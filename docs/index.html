@@ -1187,99 +1187,57 @@
     </div>
   </div>
 
-  <!-- 模态框：连接麦当劳官方账号与 Token 设置 (一体化极简面板) -->
+  <!-- 模态框：连接麦当劳官方账号 (极简产品体验) -->
   <div class="modal-backdrop" id="settingsModal" onclick="if(event.target===this) closeSettingsModal()">
-    <div class="modal-content" style="max-width: 540px;">
+    <div class="modal-content" style="max-width: 440px; padding: 22px;">
       <button class="modal-close" onclick="closeSettingsModal()">×</button>
       
-      <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
-        <span style="font-size:26px;">🍟</span>
-        <div>
-          <h2 class="section-title pixel-font" style="font-size:16px; color:var(--pixel-yellow); margin-bottom:2px;">
-            连接麦当劳官方账号
-          </h2>
-          <p style="font-size:12px; color:var(--pixel-subtext);">
-            填入个人 MCP Token，实时点亮你的 53 周就餐点阵图与消费用量
-          </p>
-        </div>
-      </div>
-
-      <!-- 3 步极简获取指南 -->
-      <div style="background:#13111f; border:2px solid #2d2b3d; padding:12px 14px; margin-bottom:14px; font-size:12px; line-height:1.6;">
-        <div class="pixel-font" style="color:var(--pixel-yellow); font-size:11px; margin-bottom:6px;">
-          📋 3 步获取你的官方 Token：
-        </div>
-        <div style="display:flex; flex-direction:column; gap:6px; color:var(--pixel-text); font-size:12px;">
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="background:var(--pixel-yellow); color:#000; font-size:10px; font-weight:bold; padding:0 5px; border-radius:2px;">1</span>
-            <span>浏览器打开 <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer" style="color:var(--pixel-blue); text-decoration:underline; font-weight:bold;">open.mcd.cn/mcp ↗</a> (登录手机号)</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="background:var(--pixel-yellow); color:#000; font-size:10px; font-weight:bold; padding:0 5px; border-radius:2px;">2</span>
-            <span>点击右上角【控制台】→ 点击【激活】一键复制 Bearer Token</span>
-          </div>
-          <div style="display:flex; align-items:center; gap:8px;">
-            <span style="background:var(--pixel-yellow); color:#000; font-size:10px; font-weight:bold; padding:0 5px; border-radius:2px;">3</span>
-            <span>在下方粘贴，点击保存即可瞬间拉取真实点餐数据</span>
-          </div>
-        </div>
+      <div style="margin-bottom: 16px;">
+        <h2 class="section-title pixel-font" style="font-size: 15px; color: var(--pixel-yellow); margin-bottom: 8px;">
+          🍔 连接麦当劳官方账号
+        </h2>
+        <p style="font-size: 12px; color: var(--pixel-subtext); line-height: 1.5;">
+          请在 <a href="https://open.mcd.cn/mcp" target="_blank" rel="noopener noreferrer" style="color: var(--pixel-yellow); text-decoration: underline; font-weight: bold;">open.mcd.cn/mcp ↗</a> 控制台激活并复制 Bearer Token
+        </p>
       </div>
 
       <!-- Token 输入区域 -->
-      <div style="margin-bottom:14px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
-          <label style="font-size:12px; font-weight:bold; color:var(--pixel-text);">
-            麦当劳官方 MCP Bearer Token:
-          </label>
-          <span id="settingsTokenStatus" style="font-size:11px; color:var(--pixel-subtext);">状态: 待连接</span>
-        </div>
-        <div style="display:flex; position:relative;">
+      <div style="margin-bottom: 16px;">
+        <div style="position: relative;">
           <input 
             type="password" 
             id="inputSettingsToken" 
-            placeholder="在此粘贴你的官方 MCP Token (open.mcd.cn/mcp)..." 
+            placeholder="在此粘贴 Bearer Token..." 
             autocomplete="off"
             spellcheck="false"
             class="token-input"
-            style="width:100%; background:#0f0e16; border:2px solid #000; color:#FFF; font-size:13px; font-family:monospace; padding:10px 42px 10px 12px; outline:none;"
+            style="width: 100%; background: #0f0e16; border: 2px solid #333; color: #FFF; font-size: 13px; font-family: monospace; padding: 11px 40px 11px 12px; outline: none; border-radius: 2px;"
             onkeydown="if(event.key==='Enter') saveTokenFromSettings()"
           />
-          <button class="btn-toggle-eye" type="button" onclick="toggleSettingsTokenVisibility()" title="查看/隐藏 Token" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); background:none; border:none; color:var(--pixel-subtext); cursor:pointer; font-size:14px; padding:4px;">
+          <button class="btn-toggle-eye" type="button" onclick="toggleSettingsTokenVisibility()" title="查看/隐藏 Token" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--pixel-subtext); cursor: pointer; font-size: 14px; padding: 4px;">
             👁️
           </button>
         </div>
       </div>
 
-      <!-- 操作按钮区 -->
-      <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;">
-        <button class="pixel-btn" id="btnSettingsConnect" onclick="saveTokenFromSettings()" style="flex:1; justify-content:center; background:var(--pixel-yellow); color:#000; border-color:#000; font-weight:bold;">
-          ⚡ 保存并点亮足迹
-        </button>
-        <button class="pixel-btn btn-outline" id="btnSettingsClear" onclick="clearTokenFromSettings()" style="border-color:var(--pixel-red); color:var(--pixel-red);" title="清空并彻底销毁当前 Token">
-          ✕ 清空断开
-        </button>
-      </div>
-
       <!-- 提示反馈条 -->
-      <div id="settingsAlert" style="display:none; padding:10px 12px; font-size:12px; border:2px solid #000; margin-bottom:12px; line-height:1.5;"></div>
+      <div id="settingsAlert" style="display: none; padding: 8px 12px; font-size: 12px; border: 1px solid #000; margin-bottom: 14px; line-height: 1.4;"></div>
 
-      <!-- 零隐私声明 -->
-      <div style="background:#0f1d15; border:1px dashed var(--pixel-green); padding:8px 12px; margin-bottom:12px; font-size:11px; color:var(--pixel-green); display:flex; align-items:center; gap:8px;">
-        <span>🔒</span>
-        <span><b>零数据留存铁律</b>：Token 仅在本地浏览器内存中运行，绝不入库、绝不落盘、刷新即焚。</span>
+      <!-- 操作按钮 -->
+      <button class="pixel-btn" id="btnSettingsConnect" onclick="saveTokenFromSettings()" style="width: 100%; justify-content: center; background: var(--pixel-yellow); color: #000; border-color: #000; font-weight: bold; font-size: 13px; padding: 10px;">
+        ⚡ 点亮足迹
+      </button>
+
+      <!-- 已连接账号时支持一键断开 (未连接时默认隐藏) -->
+      <div id="settingsDisconnectRow" style="display: none; text-align: center; margin-top: 12px;">
+        <span onclick="clearTokenFromSettings()" style="font-size: 11px; color: var(--pixel-red); cursor: pointer; text-decoration: underline;">
+          断开连接并清空
+        </span>
       </div>
 
-      <!-- 底部辅助 -->
-      <div style="border-top:1px dashed #2d2b3d; padding-top:10px; font-size:11px; color:var(--pixel-subtext); display:flex; justify-content:space-between; align-items:center;">
-        <div>
-          <span>API 代理: </span>
-          <span id="currentApiLabel" style="color:var(--pixel-blue); cursor:pointer; text-decoration:underline;" onclick="configureApiEndpoint()" title="点击自定义或切换 API 代理端点">
-            ⚡ 云端 Serverless
-          </span>
-        </div>
-        <button class="pixel-btn btn-outline btn-sm" onclick="closeSettingsModal()" style="font-size:11px; padding:3px 10px;">
-          关闭
-        </button>
+      <!-- 极简轻量信任小字 -->
+      <div style="text-align: center; margin-top: 14px; font-size: 11px; color: #777;">
+        🔒 Token 仅存于本地浏览器单次会话，不入库不落盘
       </div>
     </div>
   </div>
@@ -2498,14 +2456,10 @@
     }
 
     function updateSettingsStatusText() {
-      const statusEl = document.getElementById('settingsTokenStatus');
-      if (!statusEl) return;
-      if (currentSummary?.mcpStatus?.tokenConfigured && !currentSummary?.mcpStatus?.isSandbox) {
-        statusEl.innerHTML = `<span style="color:var(--pixel-green);">✓ 已直连 (${currentSummary.mcpStatus.tokenMasked || 'LIVE'})</span>`;
-      } else if (currentSummary?.mcpStatus?.isSandbox) {
-        statusEl.innerHTML = `<span style="color:var(--pixel-yellow);">🟡 沙盒模拟中</span>`;
-      } else {
-        statusEl.innerHTML = `<span style="color:var(--pixel-subtext);">⚪ 待连接 (纯净空状态)</span>`;
+      const isConnected = !!(currentSummary?.mcpStatus?.tokenConfigured && !currentSummary?.mcpStatus?.isSandbox);
+      const disconnectRow = document.getElementById('settingsDisconnectRow');
+      if (disconnectRow) {
+        disconnectRow.style.display = isConnected ? 'block' : 'none';
       }
     }
 
@@ -2539,7 +2493,7 @@
         }, 8000);
         const data = await res.json();
         if (btn) {
-          btn.textContent = '⚡ 保存并点亮足迹';
+          btn.textContent = '⚡ 点亮足迹';
           btn.disabled = false;
         }
 
@@ -2551,20 +2505,20 @@
             alertEl.style.backgroundColor = '#12261b';
             alertEl.style.borderColor = 'var(--pixel-green)';
             alertEl.style.color = 'var(--pixel-green)';
-            alertEl.textContent = `✓ 成功连接官方 MCP！Token 尾号: ${data.tokenMasked || '已脱敏'}，已同步 ${data.summary?.recentOrders?.length || 0} 笔真实订单！`;
+            alertEl.textContent = `✓ 连接成功！已同步 ${data.summary?.recentOrders?.length || 0} 笔官方订单`;
           }
           currentSummary = data.summary;
           renderDashboard(data.summary);
           playFanfare();
           setTimeout(() => {
             closeSettingsModal();
-          }, 1200);
+          }, 1000);
         } else {
           if (alertEl) {
             alertEl.style.backgroundColor = '#382816';
             alertEl.style.borderColor = 'var(--pixel-yellow)';
             alertEl.style.color = 'var(--pixel-yellow)';
-            alertEl.textContent = `提示: ${data.message || '连接未成功'}`;
+            alertEl.textContent = `提示: ${data.message || 'Token 验证失败，请核对后再试'}`;
           }
           if (data.summary) {
             currentSummary = data.summary;
@@ -2574,7 +2528,7 @@
         updateSettingsStatusText();
       } catch (err) {
         if (btn) {
-          btn.textContent = '⚡ 保存并点亮足迹';
+          btn.textContent = '⚡ 点亮足迹';
           btn.disabled = false;
         }
         if (alertEl) {
@@ -2582,7 +2536,7 @@
           alertEl.style.backgroundColor = '#38161b';
           alertEl.style.borderColor = 'var(--pixel-red)';
           alertEl.style.color = '#FFF';
-          alertEl.textContent = `请求失败: ${err.message} (当前 API 端点: ${API_BASE || '本地/同源'})`;
+          alertEl.textContent = `连接失败: ${err.message}`;
         }
       }
     }
