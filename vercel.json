@@ -1,8 +1,8 @@
 {
   "version": 2,
+  "outputDirectory": "docs",
   "rewrites": [
     { "source": "/api/vibe/summary", "destination": "/api/summary" },
-    { "source": "/api/vibe/token", "destination": "/api/token" },
-    { "source": "/(.*)", "destination": "/src/web/public/$1" }
+    { "source": "/api/vibe/token", "destination": "/api/token" }
   ]
 }

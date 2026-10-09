@@ -300,6 +300,87 @@
       line-height: 1.5;
     }
 
+    /* 全局时间范围筛选条 */
+    .time-filter-hero {
+      background-color: #171524;
+      border: 3px solid #000;
+      box-shadow: var(--pixel-shadow);
+      padding: 14px 20px;
+      margin-bottom: 24px;
+    }
+    .time-filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .time-filter-title {
+      font-size: 13px;
+      color: var(--pixel-yellow);
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .filter-count-badge {
+      font-size: 11px;
+      color: var(--pixel-green);
+      background-color: #11261b;
+      border: 1px solid var(--pixel-green);
+      padding: 3px 10px;
+      box-shadow: var(--pixel-shadow-sm);
+    }
+    .time-filter-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .time-filter-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .t-filter-tab {
+      background-color: #242236;
+      border: 2px solid #000;
+      color: var(--pixel-subtext);
+      font-size: 12px;
+      font-weight: bold;
+      padding: 6px 14px;
+      cursor: pointer;
+      box-shadow: var(--pixel-shadow-sm);
+      transition: all 0.1s;
+    }
+    .t-filter-tab:hover {
+      color: #FFF;
+      transform: translateY(-1px);
+    }
+    .t-filter-tab.active {
+      background-color: var(--pixel-yellow);
+      color: #000;
+      border-color: #000;
+      transform: translateY(-2px);
+      box-shadow: 3px 3px 0px #000;
+    }
+    .time-filter-custom {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pixel-select {
+      background-color: #0f0e16;
+      border: 2px solid #000;
+      color: #FFF;
+      font-size: 12px;
+      padding: 6px 10px;
+      outline: none;
+      box-shadow: var(--pixel-shadow-sm);
+    }
+
     /* 四宫格核心指标 */
     .metrics-grid {
       display: grid;
@@ -875,9 +956,43 @@
         <div id="tokenActiveStatus" style="color:var(--pixel-subtext);">
           状态：等待输入
         </div>
+        <div style="font-size:11px;">
+          <span style="color:var(--pixel-subtext);">后端服务: </span>
+          <span id="currentApiLabel" style="color:var(--pixel-blue); cursor:pointer; text-decoration:underline;" onclick="configureApiEndpoint()" title="点击自定义或切换 API 代理端点">
+            ⚡ 云端 Serverless 代理
+          </span>
+        </div>
       </div>
 
       <div id="tokenConsoleAlert"></div>
+    </section>
+
+    <!-- 全局时间范围筛选控制台 (联动指标、时段用量、门店足迹、单品榜与订单流水) -->
+    <section class="time-filter-hero" id="timeFilterHero">
+      <div class="time-filter-header">
+        <div class="time-filter-title pixel-font">
+          <span>⏳ 时间范围筛选 (Time Filter)</span>
+          <span style="font-size:11px; color:var(--pixel-subtext); font-weight:normal;" id="timeFilterDesc">· 全局指标即时联动</span>
+        </div>
+        <div class="filter-count-badge pixel-font" id="filterMatchBadge">
+          全部历史 · 0 笔记录
+        </div>
+      </div>
+      <div class="time-filter-controls">
+        <div class="time-filter-tabs">
+          <button class="t-filter-tab active" data-filter="all" onclick="applyTimeFilter('all', this)">🌟 全部历史</button>
+          <button class="t-filter-tab" data-filter="2026" onclick="applyTimeFilter('2026', this)">📅 2026 年度</button>
+          <button class="t-filter-tab" data-filter="2025" onclick="applyTimeFilter('2025', this)">📅 2025 年度</button>
+          <button class="t-filter-tab" data-filter="12m" onclick="applyTimeFilter('12m', this)">近 12 个月</button>
+          <button class="t-filter-tab" data-filter="30d" onclick="applyTimeFilter('30d', this)">近 30 天</button>
+        </div>
+        <div class="time-filter-custom">
+          <label style="font-size:11px; color:var(--pixel-subtext); font-weight:bold;">月份速查:</label>
+          <select id="selectMonthFilter" class="pixel-select" onchange="applyMonthFilter(this.value)">
+            <option value="">全部月份</option>
+          </select>
+        </div>
+      </div>
     </section>
 
     <!-- 四宫格核心用量与资产指标 -->
@@ -1307,9 +1422,256 @@
     }
 
     // -------------------------------------------------------------
+    // API 请求端点与全局时间筛选状态
+    // -------------------------------------------------------------
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    let customApiBase = localStorage.getItem('mcd_api_base');
+    let API_BASE = customApiBase !== null ? customApiBase : (isLocalhost ? '' : 'https://temporary-fleet-tempest-e28gun2.vercel.app');
+
+    function updateApiEndpointLabel() {
+      const label = document.getElementById('currentApiLabel');
+      if (!label) return;
+      if (API_BASE) {
+        label.textContent = `⚡ 云端 Serverless (${API_BASE.replace('https://', '').slice(0, 16)}...)`;
+      } else {
+        label.textContent = `💻 本地开发端口服务 (同源相对路径)`;
+      }
+    }
+
+    function configureApiEndpoint() {
+      const current = API_BASE || '';
+      const input = prompt('输入后端 API 代理端点 (留空默认使用当前同源或官方 Serverless)：', current);
+      if (input !== null) {
+        API_BASE = input.trim();
+        localStorage.setItem('mcd_api_base', API_BASE);
+        updateApiEndpointLabel();
+        alert(`API 端点已设定为: ${API_BASE || '同源默认'}`);
+        loadSummary();
+      }
+    }
+
+    let currentTimeFilter = 'all';
+
+    function applyTimeFilter(filterType, tabElem) {
+      playBleep(520, 0.04);
+      currentTimeFilter = filterType;
+      document.querySelectorAll('.t-filter-tab').forEach(t => t.classList.remove('active'));
+      if (tabElem) tabElem.classList.add('active');
+      const mSel = document.getElementById('selectMonthFilter');
+      if (mSel) mSel.value = '';
+      filterAndRenderDashboard();
+    }
+
+    function applyMonthFilter(monthStr) {
+      if (!monthStr) {
+        applyTimeFilter('all', document.querySelector('.t-filter-tab[data-filter="all"]'));
+        return;
+      }
+      playBleep(520, 0.04);
+      currentTimeFilter = `month:${monthStr}`;
+      document.querySelectorAll('.t-filter-tab').forEach(t => t.classList.remove('active'));
+      filterAndRenderDashboard();
+    }
+
+    function computeTimeDistribution(orders) {
+      const counts = { breakfast: 0, lunch: 0, afternoon: 0, dinner: 0, night: 0 };
+      orders.forEach(o => {
+        let hour = 12;
+        const timeSource = o.timestamp || o.createTime || '';
+        if (timeSource) {
+          const match = timeSource.match(/[T\s](\d{2}):/);
+          if (match) hour = parseInt(match[1], 10);
+        }
+        if (hour >= 5 && hour < 10.5) counts.breakfast++;
+        else if (hour >= 10.5 && hour < 14) counts.lunch++;
+        else if (hour >= 14 && hour < 17) counts.afternoon++;
+        else if (hour >= 17 && hour < 21) counts.dinner++;
+        else counts.night++;
+      });
+      const total = orders.length;
+      return [
+        { period: 'breakfast', label: '早晨元气 (05:00-10:30)', count: counts.breakfast, percentage: total > 0 ? Math.round((counts.breakfast / total) * 100) : 0, pixelColor: '#FFC72C' },
+        { period: 'lunch', label: '午间主力 (10:30-14:00)', count: counts.lunch, percentage: total > 0 ? Math.round((counts.lunch / total) * 100) : 0, pixelColor: '#DA291C' },
+        { period: 'afternoon', label: '下午茶黑咖 (14:00-17:00)', count: counts.afternoon, percentage: total > 0 ? Math.round((counts.afternoon / total) * 100) : 0, pixelColor: '#00D2D3' },
+        { period: 'dinner', label: '晚间犒赏 (17:00-21:00)', count: counts.dinner, percentage: total > 0 ? Math.round((counts.dinner / total) * 100) : 0, pixelColor: '#E67E22' },
+        { period: 'night', label: '深夜加餐 (21:00-05:00)', count: counts.night, percentage: total > 0 ? Math.round((counts.night / total) * 100) : 0, pixelColor: '#9B59B6' }
+      ];
+    }
+
+    function computeStoreFootprints(orders) {
+      const storeMap = new Map();
+      orders.forEach(o => {
+        const name = o.storeName || '麦当劳餐厅';
+        if (!storeMap.has(name)) {
+          storeMap.set(name, { storeName: name, count: 0, totalSpent: 0, lastVisit: o.date || '' });
+        }
+        const s = storeMap.get(name);
+        s.count++;
+        s.totalSpent += Number(o.paidAmount) || 0;
+        if (!s.lastVisit || (o.date && o.date > s.lastVisit)) s.lastVisit = o.date;
+      });
+      return Array.from(storeMap.values()).sort((a, b) => b.count - a.count || b.totalSpent - a.totalSpent);
+    }
+
+    function computeCategoryBreakdown(orders) {
+      const stats = { burger: 0, drink: 0, snack: 0, breakfast: 0, dessert: 0 };
+      let totalSpent = 0;
+      orders.forEach(o => {
+        (o.items || []).forEach(i => {
+          const cat = i.category || 'burger';
+          const itemSpent = (i.price || 0) * (i.count || 1);
+          if (stats[cat] !== undefined) stats[cat] += itemSpent;
+          totalSpent += itemSpent;
+        });
+      });
+      const meta = {
+        burger: { label: '主食汉堡', color: '#FFC72C' },
+        drink: { label: '鲜煮咖啡/饮品', color: '#38B2AC' },
+        snack: { label: '小食配餐', color: '#ED8936' },
+        breakfast: { label: '晨光麦满分', color: '#ECC94B' },
+        dessert: { label: '甜品派物', color: '#ED64A6' }
+      };
+      return Object.keys(stats).map(k => {
+        const spent = Number(stats[k].toFixed(1));
+        const pct = totalSpent > 0 ? Number(((spent / totalSpent) * 100).toFixed(1)) : 0;
+        return { category: k, label: meta[k].label, spent, percentage: pct, pixelColor: meta[k].color };
+      }).filter(c => c.spent > 0).sort((a, b) => b.spent - a.spent);
+    }
+
+    function computeTopItems(orders) {
+      const map = new Map();
+      orders.forEach(o => {
+        (o.items || []).forEach(i => {
+          if (!map.has(i.name)) map.set(i.name, { name: i.name, count: 0, totalSpent: 0 });
+          const item = map.get(i.name);
+          item.count += (i.count || 1);
+          item.totalSpent += (i.price || 0) * (i.count || 1);
+        });
+      });
+      const sorted = Array.from(map.values()).sort((a, b) => b.count - a.count).slice(0, 5);
+      const badges = ['👑 麦门最爱', '🥈 忠实搭子', '🥉 续命常客', '🎖️ 随心优选', '✨ 特色尝鲜'];
+      return sorted.map((s, idx) => ({
+        ...s,
+        pixelBadge: badges[idx] || '⭐ 麦门印记',
+        totalSpent: Number(s.totalSpent.toFixed(1))
+      }));
+    }
+
+    function populateMonthDropdown(orders) {
+      const select = document.getElementById('selectMonthFilter');
+      if (!select) return;
+      const months = new Set();
+      orders.forEach(o => {
+        const d = o.date || (o.timestamp ? o.timestamp.split('T')[0] : '');
+        if (d && d.length >= 7) months.add(d.slice(0, 7));
+      });
+      const sortedMonths = Array.from(months).sort().reverse();
+      select.innerHTML = '<option value="">全部月份</option>';
+      sortedMonths.forEach(m => {
+        const [y, mo] = m.split('-');
+        const opt = document.createElement('option');
+        opt.value = m;
+        opt.textContent = `${y}年 ${parseInt(mo, 10)}月`;
+        select.appendChild(opt);
+      });
+    }
+
+    function filterAndRenderDashboard() {
+      if (!currentSummary) return;
+
+      const allOrders = currentSummary.allOrders || currentSummary.recentOrders || [];
+      if (!currentSummary.allOrders && currentSummary.recentOrders) {
+        currentSummary.allOrders = [...currentSummary.recentOrders];
+      }
+
+      let filtered = [];
+      const now = new Date();
+
+      if (currentTimeFilter === 'all') {
+        filtered = [...allOrders];
+      } else if (currentTimeFilter === '2026') {
+        filtered = allOrders.filter(o => (o.date || o.timestamp || '').startsWith('2026'));
+        const tab2026 = document.querySelector('.range-tab[data-view="2026"]');
+        if (tab2026) switchHeatmapView('2026', tab2026);
+      } else if (currentTimeFilter === '2025') {
+        filtered = allOrders.filter(o => (o.date || o.timestamp || '').startsWith('2025'));
+        const tab2025 = document.querySelector('.range-tab[data-view="2025"]');
+        if (tab2025) switchHeatmapView('2025', tab2025);
+      } else if (currentTimeFilter === '12m') {
+        const past12m = new Date(now.getTime() - 365 * 86400000);
+        filtered = allOrders.filter(o => {
+          const dStr = o.date || (o.timestamp ? o.timestamp.split('T')[0] : '');
+          if (!dStr) return false;
+          const d = new Date(dStr + 'T00:00:00');
+          return d >= past12m && d <= now;
+        });
+        const tab24w = document.querySelector('.range-tab[data-view="recent24"]');
+        if (tab24w) switchHeatmapView('recent24', tab24w);
+      } else if (currentTimeFilter === '30d') {
+        const past30d = new Date(now.getTime() - 30 * 86400000);
+        filtered = allOrders.filter(o => {
+          const dStr = o.date || (o.timestamp ? o.timestamp.split('T')[0] : '');
+          if (!dStr) return false;
+          const d = new Date(dStr + 'T00:00:00');
+          return d >= past30d && d <= now;
+        });
+        const tab24w = document.querySelector('.range-tab[data-view="recent24"]');
+        if (tab24w) switchHeatmapView('recent24', tab24w);
+      } else if (currentTimeFilter.startsWith('month:')) {
+        const m = currentTimeFilter.replace('month:', '');
+        filtered = allOrders.filter(o => (o.date || o.timestamp || '').startsWith(m));
+        if (m.startsWith('2026')) {
+          const tab2026 = document.querySelector('.range-tab[data-view="2026"]');
+          if (tab2026) switchHeatmapView('2026', tab2026);
+        } else if (m.startsWith('2025')) {
+          const tab2025 = document.querySelector('.range-tab[data-view="2025"]');
+          if (tab2025) switchHeatmapView('2025', tab2025);
+        }
+      }
+
+      // 指标重新计算
+      const totalOrders = filtered.length;
+      const totalSpent = filtered.reduce((s, o) => s + (Number(o.paidAmount) || 0), 0);
+      const totalSaved = filtered.reduce((s, o) => s + (Number(o.discountAmount) || 0), 0);
+      const avgPrice = totalOrders > 0 ? (totalSpent / totalOrders).toFixed(1) : '0.0';
+      const savingRate = (totalSpent + totalSaved) > 0 ? ((totalSaved / (totalSpent + totalSaved)) * 100).toFixed(1) : '0.0';
+      const activeDays = new Set(filtered.map(o => o.date || (o.timestamp ? o.timestamp.split('T')[0] : ''))).size;
+
+      if (document.getElementById('mTotalSpent')) document.getElementById('mTotalSpent').textContent = totalSpent.toFixed(1);
+      if (document.getElementById('mTotalOrders')) document.getElementById('mTotalOrders').textContent = totalOrders;
+      if (document.getElementById('mAvgPrice')) document.getElementById('mAvgPrice').textContent = avgPrice;
+      if (document.getElementById('mTotalSaved')) document.getElementById('mTotalSaved').textContent = totalSaved.toFixed(1);
+      if (document.getElementById('mSavingRate')) document.getElementById('mSavingRate').textContent = `${savingRate}%`;
+      if (document.getElementById('mFreeBurgers')) {
+        document.getElementById('mFreeBurgers').textContent = (totalSaved / 21).toFixed(1);
+      }
+      if (document.getElementById('mActiveDays')) document.getElementById('mActiveDays').textContent = activeDays;
+
+      // 更新顶部徽章说明
+      const filterBadge = document.getElementById('filterMatchBadge');
+      if (filterBadge) {
+        let label = '全部历史';
+        if (currentTimeFilter === '2026') label = '2026 年度';
+        else if (currentTimeFilter === '2025') label = '2025 年度';
+        else if (currentTimeFilter === '12m') label = '近 12 个月';
+        else if (currentTimeFilter === '30d') label = '近 30 天';
+        else if (currentTimeFilter.startsWith('month:')) label = currentTimeFilter.replace('month:', '') + ' 月度';
+        filterBadge.textContent = `${label} · ${totalOrders} 笔订单 · 实付 ¥${totalSpent.toFixed(1)}`;
+      }
+
+      // 联动渲染时段分布、门店足迹、品类构成、最爱单品与订单流
+      renderTimeDistribution(computeTimeDistribution(filtered));
+      renderStoreFootprints(computeStoreFootprints(filtered));
+      renderCategories(computeCategoryBreakdown(filtered));
+      renderChampions(computeTopItems(filtered));
+      renderOrderStream(filtered);
+    }
+
+    // -------------------------------------------------------------
     // API 请求与渲染流
     // -------------------------------------------------------------
     async function loadSummary() {
+      updateApiEndpointLabel();
       try {
         const token = sessionStorage.getItem('mcd_token') || '';
         if (token) {
@@ -1317,7 +1679,8 @@
           if (inputEl) inputEl.value = token;
         }
         const headers = token ? { 'x-mcd-token': token } : {};
-        const res = await fetch('/api/vibe/summary', { headers });
+        const url = `${API_BASE}/api/vibe/summary`;
+        const res = await fetch(url, { headers });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         currentSummary = data;
@@ -1330,6 +1693,7 @@
     }
 
     function renderDashboard(data) {
+      updateApiEndpointLabel();
       // 头部 MCP 状态
       const statusPill = document.getElementById('mcpStatusText');
       const mcpDot = document.getElementById('mcpDot');
@@ -1363,18 +1727,7 @@
         }
       }
 
-      // 核心四宫格指标
-      if (document.getElementById('mTotalSpent')) document.getElementById('mTotalSpent').textContent = Number(data.stats.totalSpent).toFixed(1);
-      if (document.getElementById('mTotalOrders')) document.getElementById('mTotalOrders').textContent = data.stats.totalOrders;
-      if (document.getElementById('mAvgPrice')) document.getElementById('mAvgPrice').textContent = Number(data.stats.avgOrderPrice).toFixed(1);
-
-      if (document.getElementById('mTotalSaved')) document.getElementById('mTotalSaved').textContent = Number(data.stats.totalSaved).toFixed(1);
-      if (document.getElementById('mSavingRate')) document.getElementById('mSavingRate').textContent = `${data.stats.savingRatePercent}%`;
-      if (document.getElementById('mFreeBurgers')) {
-        const burgers = (data.stats.totalSaved / 21).toFixed(1);
-        document.getElementById('mFreeBurgers').textContent = burgers;
-      }
-
+      // 实时资产（积分与优惠券）
       if (document.getElementById('mPointsBalance')) document.getElementById('mPointsBalance').textContent = Number(data.user.points).toLocaleString();
       if (document.getElementById('mAccumPoints')) {
         document.getElementById('mAccumPoints').textContent = Number(data.user.accumulativePoints || data.user.points).toLocaleString();
@@ -1382,29 +1735,21 @@
       if (document.getElementById('mExpiredPoints')) {
         document.getElementById('mExpiredPoints').textContent = Number(data.user.expiredPoints || 0).toLocaleString();
       }
-
       if (document.getElementById('mCouponsCount')) {
         document.getElementById('mCouponsCount').textContent = data.mcpStatus?.couponsAvailable ?? 0;
       }
-      if (document.getElementById('mActiveDays')) document.getElementById('mActiveDays').textContent = data.stats.activeDays;
       if (document.getElementById('mCurrentStreak')) document.getElementById('mCurrentStreak').textContent = data.stats.currentStreak;
 
       // 渲染年度热力图
       renderHeatmapView();
 
-      // 渲染深度 Mc Usage 分析 (时段与常去餐厅)
-      renderTimeDistribution(data.usageInsights?.timeDistribution || []);
-      renderStoreFootprints(data.usageInsights?.storeFootprints || []);
-
-      // 渲染品类构成与最爱单品
-      renderCategories(data.breakdown || []);
-      renderChampions(data.topItems || []);
-
       // 渲染成就徽章
       renderBadges(data.achievements || []);
 
-      // 渲染真实核销订单流
-      renderOrderStream(data.recentOrders || []);
+      // 初始化全量订单与月份下拉菜单，执行当前时间筛选渲染
+      currentSummary.allOrders = [...(data.recentOrders || [])];
+      populateMonthDropdown(currentSummary.allOrders);
+      filterAndRenderDashboard();
     }
 
     // -------------------------------------------------------------
@@ -1660,7 +2005,7 @@
       try {
         const token = sessionStorage.getItem('mcd_token') || '';
         const headers = token ? { 'Content-Type': 'application/json', 'x-mcd-token': token } : { 'Content-Type': 'application/json' };
-        const res = await fetch('/api/vibe/auto-bind-coupons', { method: 'POST', headers });
+        const res = await fetch(`${API_BASE}/api/vibe/auto-bind-coupons`, { method: 'POST', headers });
         const data = await res.json();
         if (btn) {
           btn.textContent = originalText;
@@ -1869,7 +2214,7 @@
       btn.disabled = true;
 
       try {
-        const res = await fetch('/api/vibe/token', {
+        const res = await fetch(`${API_BASE}/api/vibe/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token })
@@ -1906,7 +2251,7 @@
         alertEl.style.backgroundColor = '#38161b';
         alertEl.style.borderColor = 'var(--pixel-red)';
         alertEl.style.color = '#FFF';
-        alertEl.textContent = `请求失败: ${err.message} (如为纯静态托管请确保运行后端或使用示例预览)`;
+        alertEl.textContent = `请求失败: ${err.message} (当前 API 端点: ${API_BASE || '本地/同源'})`;
       }
     }
 
@@ -1922,7 +2267,7 @@
       alertEl.textContent = '✓ Token 已彻底清空，数据已重置为纯净空状态！';
 
       try {
-        const res = await fetch('/api/vibe/token', {
+        const res = await fetch(`${API_BASE}/api/vibe/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ token: '' })
@@ -1945,7 +2290,7 @@
       playCoin();
       const alertEl = document.getElementById('tokenConsoleAlert');
       try {
-        const res = await fetch('/api/vibe/summary?demo=true');
+        const res = await fetch(`${API_BASE}/api/vibe/summary?demo=true`);
         const data = await res.json();
         currentSummary = data;
         renderDashboard(data);
