@@ -97,9 +97,15 @@ export interface VibeSummary {
     savingRatePercent: number;
   };
   heatmap: HeatmapDay[];
+  yearHeatmaps?: {
+    '2026': HeatmapDay[];
+    '2025': HeatmapDay[];
+    'recent24': HeatmapDay[];
+  };
   breakdown: CategoryBreakdown[];
   topItems: TopItemChampion[];
   achievements: Achievement[];
+  usageInsights?: McUsageInsights;
   mcpStatus: {
     isConnected: boolean;
     isSandbox: boolean;
@@ -112,4 +118,31 @@ export interface VibeSummary {
     realOrdersCount?: number;
   };
   recentOrders?: OrderRecord[];
+}
+
+export interface TimeDistributionUsage {
+  period: 'breakfast' | 'lunch' | 'afternoon' | 'dinner' | 'night';
+  label: string;
+  count: number;
+  percentage: number;
+  pixelColor: string;
+}
+
+export interface StoreUsageFootprint {
+  storeName: string;
+  count: number;
+  totalSpent: number;
+  lastVisit: string;
+}
+
+export interface McUsageInsights {
+  timeDistribution: TimeDistributionUsage[];
+  storeFootprints: StoreUsageFootprint[];
+  monthlySpending: { month: string; spent: number; orders: number }[];
+  pointsEfficiency: {
+    available: number;
+    accumulated: number;
+    expired: number;
+    expiryRatePercent: number;
+  };
 }

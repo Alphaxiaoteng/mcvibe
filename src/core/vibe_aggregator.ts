@@ -4,7 +4,10 @@ import {
   CategoryBreakdown,
   TopItemChampion,
   VibeSummary,
-  FoodCategory
+  FoodCategory,
+  TimeDistributionUsage,
+  StoreUsageFootprint,
+  McUsageInsights
 } from './types.js';
 import { McpClient } from './mcp_client.js';
 import { AchievementEngine } from './achievement_engine.js';
@@ -245,6 +248,215 @@ export class VibeAggregator {
   }
 
   /**
+   * 统计麦当劳就餐时段分布 (早餐 / 午餐 / 下午茶 / 晚餐 / 夜宵)
+   */
+  public static computeTimeDistribution(orders: OrderRecord[]): TimeDistributionUsage[] {
+    const counts = {
+      breakfast: 0,
+      lunch: 0,
+      afternoon: 0,
+      dinner: 0,
+      night: 0
+    };
+
+    for (const order of orders) {
+      let hour = 12;
+      if (order.timestamp && order.timestamp.includes(' ')) {
+        const timePart = order.timestamp.split(' ')[1];
+        if (timePart) hour = parseInt(timePart.split(':')[0], 10) || 12;
+      } else if (order.timestamp && order.timestamp.includes('T')) {
+        const timePart = order.timestamp.split('T')[1];
+        if (timePart) hour = parseInt(timePart.split(':')[0], 10) || 12;
+      }
+
+      if (hour >= 5 && hour < 10.5) counts.breakfast++;
+      else if (hour >= 10.5 && hour < 14) counts.lunch++;
+      else if (hour >= 14 && hour < 17) counts.afternoon++;
+      else if (hour >= 17 && hour < 21) counts.dinner++;
+      else counts.night++;
+    }
+
+    const total = orders.length || 1;
+    return [
+      { period: 'breakfast', label: '早晨元气 (05:00-10:30)', count: counts.breakfast, percentage: Number(((counts.breakfast / total) * 100).toFixed(1)), pixelColor: '#FFC72C' },
+      { period: 'lunch', label: '午间主力 (10:30-14:00)', count: counts.lunch, percentage: Number(((counts.lunch / total) * 100).toFixed(1)), pixelColor: '#DA291C' },
+      { period: 'afternoon', label: '下午茶黑咖 (14:00-17:00)', count: counts.afternoon, percentage: Number(((counts.afternoon / total) * 100).toFixed(1)), pixelColor: '#00D2D3' },
+      { period: 'dinner', label: '晚间犒赏 (17:00-21:00)', count: counts.dinner, percentage: Number(((counts.dinner / total) * 100).toFixed(1)), pixelColor: '#E67E22' },
+      { period: 'night', label: '深夜加餐 (21:00-05:00)', count: counts.night, percentage: Number(((counts.night / total) * 100).toFixed(1)), pixelColor: '#9B59B6' }
+    ];
+  }
+
+  /**
+   * 汇总麦当劳餐厅探店足迹榜单
+   */
+  public static computeStoreFootprints(orders: OrderRecord[]): StoreUsageFootprint[] {
+    const storeMap = new Map<string, { count: number; totalSpent: number; lastVisit: string }>();
+
+    for (const o of orders) {
+      const name = o.storeName || '麦当劳餐厅';
+      const existing = storeMap.get(name) || { count: 0, totalSpent: 0, lastVisit: o.date };
+      existing.count += 1;
+      existing.totalSpent = Number((existing.totalSpent + o.paidAmount).toFixed(1));
+      if (o.date > existing.lastVisit) existing.lastVisit = o.date;
+      storeMap.set(name, existing);
+    }
+
+    return Array.from(storeMap.entries())
+      .map(([storeName, val]) => ({
+        storeName,
+        count: val.count,
+        totalSpent: val.totalSpent,
+        lastVisit: val.lastVisit
+      }))
+      .sort((a, b) => b.count - a.count || b.totalSpent - a.totalSpent);
+  }
+
+  /**
+   * 生成指定自然年（如 2026 或 2025）的 52/53 周全年度热力图矩阵
+   */
+  public static generateYearHeatmap(orders: OrderRecord[], year: number): HeatmapDay[] {
+    const startDate = new Date(year, 0, 1);
+    const startDayOfWeek = startDate.getDay();
+    const alignedStart = new Date(startDate.getTime() - startDayOfWeek * 86400000);
+
+    const endDate = new Date(year, 11, 31);
+    const endDayOfWeek = endDate.getDay();
+    const alignedEnd = new Date(endDate.getTime() + (6 - endDayOfWeek) * 86400000);
+
+    const ordersByDate = new Map<string, OrderRecord[]>();
+    for (const order of orders) {
+      if (!ordersByDate.has(order.date)) {
+        ordersByDate.set(order.date, []);
+      }
+      ordersByDate.get(order.date)!.push(order);
+    }
+
+    const days: HeatmapDay[] = [];
+    let current = new Date(alignedStart);
+    while (current <= alignedEnd) {
+      const dateStr = current.toISOString().split('T')[0];
+      const dayOfWeek = current.getDay();
+      const dayOrders = ordersByDate.get(dateStr) || [];
+      const count = dayOrders.length;
+      const totalSpent = Number(dayOrders.reduce((sum, o) => sum + o.paidAmount, 0).toFixed(1));
+      const savedAmount = Number(dayOrders.reduce((sum, o) => sum + o.discountAmount, 0).toFixed(1));
+
+      let calories = 0;
+      const itemHighlights: string[] = [];
+      for (const o of dayOrders) {
+        for (const item of o.items) {
+          calories += item.calories * item.count;
+          if (!itemHighlights.includes(item.name)) {
+            itemHighlights.push(item.name);
+          }
+        }
+        if (o.storeName && !itemHighlights.some(h => h.startsWith('📍'))) {
+          itemHighlights.unshift(`📍 ${o.storeName}`);
+        }
+      }
+
+      let intensity: 0 | 1 | 2 | 3 | 4 = 0;
+      if (count > 0) {
+        if (totalSpent <= 20) intensity = 1;
+        else if (totalSpent <= 38) intensity = 2;
+        else if (totalSpent <= 65) intensity = 3;
+        else intensity = 4;
+      }
+
+      days.push({
+        date: dateStr,
+        dayOfWeek,
+        count,
+        intensity,
+        totalSpent,
+        savedAmount,
+        calories,
+        itemHighlights: itemHighlights.slice(0, 5)
+      });
+
+      current = new Date(current.getTime() + 86400000);
+    }
+
+    return days;
+  }
+
+  /**
+   * 生成完全空白的初始状态 (每个人首次打开都是空的，不收集任何信息)
+   */
+  public static createEmptySummary(): VibeSummary {
+    const days2026 = this.generateYearHeatmap([], 2026);
+    const days2025 = this.generateYearHeatmap([], 2025);
+    const daysRecent = this.generateHeatmap([], 24);
+
+    return {
+      user: {
+        nickname: '麦门访客',
+        avatarPixel: 'pixel-avatar-mcd',
+        memberLevel: '待连接',
+        points: 0,
+        accumulativePoints: 0,
+        expiredPoints: 0,
+        title: '麦门探索者 (待连接)'
+      },
+      today: {
+        spent: 0,
+        calories: 0,
+        orderCount: 0,
+        saved: 0,
+        hp: 100,
+        mp: 0,
+        latestMeal: '尚未点餐'
+      },
+      stats: {
+        totalOrders: 0,
+        totalSpent: 0,
+        totalSaved: 0,
+        activeDays: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        totalCalories: 0,
+        avgOrderPrice: 0,
+        savingRatePercent: 0
+      },
+      heatmap: days2026,
+      yearHeatmaps: {
+        '2026': days2026,
+        '2025': days2025,
+        'recent24': daysRecent
+      },
+      breakdown: [],
+      topItems: [],
+      achievements: AchievementEngine.evaluateAchievements([]),
+      usageInsights: {
+        timeDistribution: [
+          { period: 'breakfast', label: '早晨元气 (05:00-10:30)', count: 0, percentage: 0, pixelColor: '#FFC72C' },
+          { period: 'lunch', label: '午间主力 (10:30-14:00)', count: 0, percentage: 0, pixelColor: '#DA291C' },
+          { period: 'afternoon', label: '下午茶黑咖 (14:00-17:00)', count: 0, percentage: 0, pixelColor: '#00D2D3' },
+          { period: 'dinner', label: '晚间犒赏 (17:00-21:00)', count: 0, percentage: 0, pixelColor: '#E67E22' },
+          { period: 'night', label: '深夜加餐 (21:00-05:00)', count: 0, percentage: 0, pixelColor: '#9B59B6' }
+        ],
+        storeFootprints: [],
+        monthlySpending: [],
+        pointsEfficiency: {
+          available: 0,
+          accumulated: 0,
+          expired: 0,
+          expiryRatePercent: 0
+        }
+      },
+      recentOrders: [],
+      mcpStatus: {
+        isConnected: false,
+        isSandbox: false,
+        tokenConfigured: false,
+        currentTime: new Date().toISOString(),
+        timePeriod: 'regular',
+        couponsAvailable: 0
+      }
+    };
+  }
+
+  /**
    * 汇总全景 Vibe 数据
    */
   public static async computeSummary(orders: OrderRecord[], mcpClient: McpClient): Promise<VibeSummary> {
@@ -254,12 +466,14 @@ export class VibeAggregator {
     let mcpCoupons: any = {};
     let realOrders: OrderRecord[] = [];
 
+    const isSandbox = mcpClient.isUsingSandbox();
+
     try {
       mcpTime = await mcpClient.callTool('now-time-info');
       mcpPoints = await mcpClient.callTool('query-my-account');
       mcpCoupons = await mcpClient.callTool('query-my-coupons');
 
-      if (!mcpClient.isUsingSandbox()) {
+      if (!isSandbox) {
         const mcpOrders = await mcpClient.callTool('order-list');
         if (mcpOrders?.list && Array.isArray(mcpOrders.list)) {
           realOrders = this.convertOfficialOrders(mcpOrders.list);
@@ -269,20 +483,8 @@ export class VibeAggregator {
       // 容错已在 mcpClient 内部处理
     }
 
-    // 将真实官方订单与足迹数据流进行智能合并去重
-    let effectiveOrders = orders;
-    if (realOrders.length > 0) {
-      const mergedMap = new Map<string, OrderRecord>();
-      for (const ro of realOrders) {
-        mergedMap.set(ro.id, ro);
-      }
-      for (const o of orders) {
-        if (!mergedMap.has(o.id)) {
-          mergedMap.set(o.id, o);
-        }
-      }
-      effectiveOrders = Array.from(mergedMap.values());
-    }
+    // 严禁数据幻觉：若已连接官方真实 MCP，100% 纯净展示官方真实订单，绝不混入模拟沙盒数据！
+    const effectiveOrders = isSandbox ? orders : realOrders;
 
     const todayStr = new Date().toISOString().split('T')[0];
     const todayOrders = effectiveOrders.filter(o => o.date === todayStr);
@@ -303,10 +505,14 @@ export class VibeAggregator {
       latestMeal = order.items.map(i => i.name).join(' + ');
     }
 
+    if (!latestMeal && effectiveOrders.length > 0) {
+      latestMeal = effectiveOrders[0].items.map(i => i.name).join(' + ');
+    }
+
     // 基础 HP (生命/能量值): 满分 100，根据摄入与适量能量动态计算
-    const hp = todayOrders.length > 0 ? Math.min(100, Math.max(40, 95 - Math.max(0, todayCalories - 900) / 25)) : 65;
+    const hp = todayOrders.length > 0 ? Math.min(100, Math.max(40, 95 - Math.max(0, todayCalories - 900) / 25)) : (effectiveOrders.length > 0 ? 85 : 60);
     // 咖啡因/MP (魔法/专注力): 每杯黑咖啡提供 45 点 MP
-    const mp = Math.min(100, coffeeToday * 45 + (todayOrders.length > 0 ? 20 : 0));
+    const mp = Math.min(100, coffeeToday * 45 + (todayOrders.length > 0 ? 20 : (latestMeal.includes('咖') ? 60 : 30)));
 
     const totalOrders = effectiveOrders.length;
     const totalSpent = Number(effectiveOrders.reduce((sum, o) => sum + o.paidAmount, 0).toFixed(1));
@@ -347,25 +553,43 @@ export class VibeAggregator {
     const isRecentlyActive = uniqueDates.includes(todayStr) || uniqueDates.includes(yesterdayStr);
     currentStreak = isRecentlyActive ? tempStreak : 0;
 
-    const heatmap = this.generateHeatmap(effectiveOrders, 24);
+    const heatmap2026 = this.generateYearHeatmap(effectiveOrders, 2026);
+    const heatmap2025 = this.generateYearHeatmap(effectiveOrders, 2025);
+    const heatmapRecent = this.generateHeatmap(effectiveOrders, 24);
+
     const breakdown = this.computeCategoryBreakdown(effectiveOrders);
     const topItems = this.computeTopItems(effectiveOrders);
     const achievements = AchievementEngine.evaluateAchievements(effectiveOrders);
+    const timeDistribution = this.computeTimeDistribution(effectiveOrders);
+    const storeFootprints = this.computeStoreFootprints(effectiveOrders);
 
-    const isSandbox = mcpClient.isUsingSandbox();
-    const userPoints = parseFloat(mcpPoints?.availablePoint ?? mcpPoints?.totalPoints ?? 3420);
-    const accumulativePoints = parseFloat(mcpPoints?.accumulativePoint ?? 12890);
-    const expiredPoints = parseFloat(mcpPoints?.expiredPoint ?? 0);
+    // 计算月度用量支出
+    const monthlyMap = new Map<string, { spent: number; orders: number }>();
+    for (const o of effectiveOrders) {
+      const ym = o.date.slice(0, 7);
+      const mVal = monthlyMap.get(ym) || { spent: 0, orders: 0 };
+      mVal.spent = Number((mVal.spent + o.paidAmount).toFixed(1));
+      mVal.orders += 1;
+      monthlyMap.set(ym, mVal);
+    }
+    const monthlySpending = Array.from(monthlyMap.entries())
+      .map(([month, val]) => ({ month, spent: val.spent, orders: val.orders }))
+      .sort((a, b) => b.month.localeCompare(a.month));
+
+    const userPoints = parseFloat(mcpPoints?.availablePoint ?? mcpPoints?.totalPoints ?? (isSandbox ? 3420 : 0));
+    const accumulativePoints = parseFloat(mcpPoints?.accumulativePoint ?? (isSandbox ? 12890 : userPoints));
+    const expiredPoints = parseFloat(mcpPoints?.expiredPoint ?? (isSandbox ? 450 : 0));
+    const expiryRatePercent = accumulativePoints > 0 ? Number(((expiredPoints / accumulativePoints) * 100).toFixed(1)) : 0;
 
     return {
       user: {
-        nickname: isSandbox ? 'CyberMaimen' : '麦门开发者',
+        nickname: isSandbox ? 'CyberMaimen' : '麦当劳官方会员',
         avatarPixel: 'pixel-avatar-mcd',
         memberLevel: isSandbox ? (mcpPoints?.tier || 'GOLD_MAIMEN') : '麦享会官方会员',
         points: userPoints,
         accumulativePoints,
         expiredPoints,
-        title: isSandbox ? 'Lv.7 麦门黄金架构师' : (userPoints > 100 ? 'Lv.5 麦门极客食客' : 'Lv.3 麦门新锐开发者')
+        title: isSandbox ? 'Lv.7 麦门黄金架构师' : (effectiveOrders.length >= 10 ? 'Lv.5 麦门忠实食客' : 'Lv.2 麦门探索者')
       },
       today: {
         spent: todaySpent,
@@ -374,7 +598,7 @@ export class VibeAggregator {
         saved: todaySaved,
         hp: Math.round(hp),
         mp: Math.round(mp),
-        latestMeal: latestMeal || '板烧鸡腿堡(去酱) + 鲜煮美式咖啡'
+        latestMeal: latestMeal || '暂无点餐记录'
       },
       stats: {
         totalOrders,
@@ -387,17 +611,33 @@ export class VibeAggregator {
         avgOrderPrice: totalOrders > 0 ? Number((totalSpent / totalOrders).toFixed(1)) : 0,
         savingRatePercent: savingRate
       },
-      heatmap,
+      heatmap: heatmap2026,
+      yearHeatmaps: {
+        '2026': heatmap2026,
+        '2025': heatmap2025,
+        'recent24': heatmapRecent
+      },
       breakdown,
       topItems,
       achievements,
+      usageInsights: {
+        timeDistribution,
+        storeFootprints,
+        monthlySpending,
+        pointsEfficiency: {
+          available: userPoints,
+          accumulated: accumulativePoints,
+          expired: expiredPoints,
+          expiryRatePercent
+        }
+      },
       mcpStatus: {
         isConnected: true,
         isSandbox,
         tokenConfigured: !!mcpClient.getToken(),
         tokenMasked: mcpClient.getMaskedToken() || undefined,
         timePeriod: mcpTime?.timePeriod || (mcpTime?.dayOfWeek ? 'regular' : 'regular'),
-        couponsAvailable: Number(mcpCoupons?.totalCount ?? mcpCoupons?.totalCoupons ?? 5),
+        couponsAvailable: Number(mcpCoupons?.totalCount ?? mcpCoupons?.totalCoupons ?? (isSandbox ? 5 : 0)),
         currentTime: mcpTime?.formatted || mcpTime?.datetime || mcpTime?.currentTime || new Date().toISOString(),
         recentStore: realOrders[0]?.storeName || undefined,
         realOrdersCount: realOrders.length

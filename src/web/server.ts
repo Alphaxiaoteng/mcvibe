@@ -11,10 +11,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3001;
-const mcpClient = new McpClient();
-
-// 内存中维护用户的麦当劳足迹订单历史
-let currentOrders: OrderRecord[] = generateRealisticOrderHistory();
 
 const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
@@ -23,7 +19,7 @@ const server = http.createServer(async (req, res) => {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-mcd-token');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -31,54 +27,53 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // 提取请求中的 Token (无状态透传，服务器绝对不持久化、不收集任何人的隐私凭证)
+  const extractToken = (): string | null => {
+    const headerToken = req.headers['x-mcd-token'];
+    if (typeof headerToken === 'string' && headerToken.trim()) return headerToken.trim();
+    const authHeader = req.headers['authorization'];
+    if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+      const bToken = authHeader.slice(7).trim();
+      if (bToken) return bToken;
+    }
+    const queryToken = url.searchParams.get('token');
+    if (queryToken && queryToken.trim()) return queryToken.trim();
+    return null;
+  };
+
   // API 路由
   if (pathname === '/api/vibe/summary') {
     try {
-      const summary = await VibeAggregator.computeSummary(currentOrders, mcpClient);
+      const isDemo = url.searchParams.get('demo') === 'true';
+      const token = extractToken();
+
+      if (isDemo) {
+        // 用户主动点击查看演示 Demo
+        const demoOrders = generateRealisticOrderHistory();
+        const demoClient = new McpClient({ forceSandbox: true });
+        const summary = await VibeAggregator.computeSummary(demoOrders, demoClient);
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify(summary));
+        return;
+      }
+
+      if (token) {
+        // 用户提供了个人 Token：即时无状态调用官方 MCP 接口，不落盘、不污染全局
+        const client = new McpClient({ token });
+        const summary = await VibeAggregator.computeSummary([], client);
+        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify(summary));
+        return;
+      }
+
+      // 默认状态：每个人打开都是完全空的！绝对不收集别人信息，无虚假数据
+      const emptySummary = VibeAggregator.createEmptySummary();
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-      res.end(JSON.stringify(summary));
+      res.end(JSON.stringify(emptySummary));
     } catch (err: any) {
       res.writeHead(500, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ error: err.message }));
     }
-    return;
-  }
-
-  if (pathname === '/api/vibe/record' && req.method === 'POST') {
-    let body = '';
-    req.on('data', chunk => { body += chunk; });
-    req.on('end', async () => {
-      try {
-        const payload = JSON.parse(body || '{}');
-        const now = new Date();
-        const dateStr = now.toISOString().split('T')[0];
-        
-        const newRecord: OrderRecord = {
-          id: `MCD-${Date.now().toString(36).toUpperCase()}`,
-          timestamp: now.toISOString(),
-          date: dateStr,
-          items: payload.items || [
-            { id: 'M01', name: '双层吉士堡', category: 'burger', count: 1, price: 21.0, calories: 450 },
-            { id: 'M05', name: '鲜煮美式咖啡', category: 'drink', count: 1, price: 10.0, calories: 15 }
-          ],
-          totalPrice: payload.totalPrice || 31.0,
-          discountAmount: payload.discountAmount || 8.5,
-          paidAmount: payload.paidAmount || 22.5,
-          couponUsed: payload.couponUsed || '随心配1+1优惠券',
-          pointsEarned: Math.floor((payload.paidAmount || 22.5) * 10),
-          diningType: payload.diningType || 'dine_in'
-        };
-
-        currentOrders.unshift(newRecord);
-        const updatedSummary = await VibeAggregator.computeSummary(currentOrders, mcpClient);
-
-        res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-        res.end(JSON.stringify({ success: true, record: newRecord, summary: updatedSummary }));
-      } catch (err: any) {
-        res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: err.message }));
-      }
-    });
     return;
   }
 
@@ -88,21 +83,32 @@ const server = http.createServer(async (req, res) => {
     req.on('end', async () => {
       try {
         const payload = JSON.parse(body || '{}');
-        const token = typeof payload.token === 'string' ? payload.token.trim() : null;
-        mcpClient.setToken(token);
+        const token = typeof payload.token === 'string' && payload.token.trim() ? payload.token.trim() : null;
         
-        let testResult = { success: true, message: '已切换为本地沙盒演示模式' };
-        if (token) {
-          testResult = await mcpClient.testConnection();
+        if (!token) {
+          // 清空或空 Token：直接返回纯净空状态
+          const emptySummary = VibeAggregator.createEmptySummary();
+          res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+          res.end(JSON.stringify({
+            success: true,
+            message: '已清空 Token，恢复为纯净空状态',
+            isSandbox: false,
+            summary: emptySummary
+          }));
+          return;
         }
 
-        const summary = await VibeAggregator.computeSummary(currentOrders, mcpClient);
+        // 即时验证用户 Token
+        const client = new McpClient({ token });
+        const testResult = await client.testConnection();
+        const summary = await VibeAggregator.computeSummary([], client);
+
         res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
         res.end(JSON.stringify({
           success: testResult.success,
           message: testResult.message,
-          isSandbox: mcpClient.isUsingSandbox(),
-          tokenMasked: mcpClient.getMaskedToken(),
+          isSandbox: false,
+          tokenMasked: client.getMaskedToken(),
           summary
         }));
       } catch (err: any) {
@@ -115,8 +121,10 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === '/api/vibe/auto-bind-coupons' && req.method === 'POST') {
     try {
-      const bindResult = await mcpClient.callTool('auto-bind-coupons');
-      const summary = await VibeAggregator.computeSummary(currentOrders, mcpClient);
+      const token = extractToken();
+      const client = new McpClient({ token: token || undefined, forceSandbox: !token });
+      const bindResult = await client.callTool('auto-bind-coupons');
+      const summary = token ? await VibeAggregator.computeSummary([], client) : VibeAggregator.createEmptySummary();
       res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
       res.end(JSON.stringify({
         success: true,
@@ -131,10 +139,9 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (pathname === '/api/vibe/reset' && req.method === 'POST') {
-    currentOrders = generateRealisticOrderHistory();
-    const summary = await VibeAggregator.computeSummary(currentOrders, mcpClient);
+    const emptySummary = VibeAggregator.createEmptySummary();
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
-    res.end(JSON.stringify({ success: true, summary }));
+    res.end(JSON.stringify({ success: true, summary: emptySummary }));
     return;
   }
 

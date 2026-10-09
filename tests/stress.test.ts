@@ -22,7 +22,8 @@ test('压力测试 (Stress Test) - 高并发汇总计算与无内存泄漏', asy
   assert.equal(results.length, CONCURRENT_REQUESTS, '全部并发任务应成功返回');
   for (const res of results) {
     assert.ok(res.stats.totalSpent > 0);
-    assert.equal(res.heatmap.length, 168);
+    assert.equal(res.heatmap.length, 371); // 2026 自然年 53 周全景点阵
+    assert.equal(res.yearHeatmaps?.recent24.length, 168); // 近 24 周视图 168 天
     assert.equal(res.mcpStatus.isConnected, true);
   }
 
