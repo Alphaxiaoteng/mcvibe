@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>McVibe · 麦门足迹 | 8-Bit 像素级麦当劳生活与用量仪表盘</title>
+  <!-- 预加载像素复古字体 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0f0e15;
+      --card-bg: #181722;
+      --card-border: #2d2b3d;
+      --pixel-yellow: #FFC72C;
+      --pixel-red: #DA291C;
+      --pixel-green: #2ECC71;
+      --pixel-blue: #00D2D3;
+      --pixel-purple: #9B59B6;
+      --pixel-text: #F1F2F6;
+      --pixel-subtext: #A4B0BE;
+      --pixel-shadow: 4px 4px 0px #000000;
+      --pixel-shadow-sm: 2px 2px 0px #000000;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--pixel-text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-bottom: 60px;
+      position: relative;
+    }
+
+    /* 像素字体专区 */
+    .pixel-font {
+      font-family: 'Press Start 2P', 'Silkscreen', monospace, sans-serif;
+      letter-spacing: -0.5px;
+    }
+
+    /* 复古 CRT 扫描线滤镜 */
+    .crt-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: linear-gradient(rgba(18, 16, 26, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 3px, 3px 100%;
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.7;
+      transition: opacity 0.3s;
+    }
+    .crt-off .crt-overlay {
+      display: none;
+    }
+
+    /* 容器布局 */
+    .container {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 24px 20px;
+    }
+
+    /* 像素边框卡片通用类 */
+    .pixel-card {
+      background-color: var(--card-bg);
+      border: 3px solid #000;
+      box-shadow: var(--pixel-shadow);
+      padding: 20px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .pixel-btn {
+      background-color: var(--pixel-yellow);
+      color: #000;
+      border: 3px solid #000;
+      box-shadow: var(--pixel-shadow);
+      font-weight: bold;
+      padding: 10px 18px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      font-size: 13px;
+      transition: transform 0.08s, box-shadow 0.08s;
+      user-select: none;
+    }
+    .pixel-btn:hover {
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0px #000;
+      filter: brightness(1.05);
+    }
+    .pixel-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+    .pixel-btn.btn-red {
+      background-color: var(--pixel-red);
+      color: #FFF;
+    }
+    .pixel-btn.btn-outline {
+      background-color: #242233;
+      color: var(--pixel-text);
+      border-color: #000;
+    }
+
+    /* 头部导航 */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 28px;
+      border-bottom: 3px solid #2d2b3d;
+      padding-bottom: 20px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-icon {
+      font-size: 36px;
+      filter: drop-shadow(3px 3px 0 #000);
+      animation: float 2.5s ease-in-out infinite;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    .brand-title {
+      font-size: 22px;
+      color: var(--pixel-yellow);
+      text-shadow: 2px 2px 0 #000;
+    }
+    .brand-tagline {
+      font-size: 12px;
+      color: var(--pixel-subtext);
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .mcp-pill {
+      background-color: #121f18;
+      border: 2px solid var(--pixel-green);
+      color: var(--pixel-green);
+      font-size: 11px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      box-shadow: var(--pixel-shadow-sm);
+    }
+    .mcp-dot {
+      width: 8px;
+      height: 8px;
+      background-color: var(--pixel-green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--pixel-green);
+      animation: blink 1.2s infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* 四宫格用量面板 */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 26px;
+    }
+    .metric-card {
+      background-color: var(--card-bg);
+      border: 3px solid #000;
+      box-shadow: var(--pixel-shadow);
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background-color: var(--accent-color, var(--pixel-yellow));
+    }
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .metric-label {
+      font-size: 12px;
+      color: var(--pixel-subtext);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .metric-icon {
+      font-size: 20px;
+    }
+    .metric-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: #FFF;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .metric-unit {
+      font-size: 14px;
+      color: var(--pixel-subtext);
+      font-weight: normal;
+    }
+    .metric-sub {
+      font-size: 12px;
+      color: var(--pixel-subtext);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* 像素状态条 (HP/MP) */
+    .bar-container {
+      margin-top: 8px;
+    }
+    .bar-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      margin-bottom: 4px;
+    }
+    .pixel-progress {
+      width: 100%;
+      height: 12px;
+      background-color: #222030;
+      border: 2px solid #000;
+      position: relative;
+      overflow: hidden;
+    }
+    .pixel-progress-fill {
+      height: 100%;
+      transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .fill-hp { background-color: var(--pixel-red); }
+    .fill-mp { background-color: var(--pixel-blue); }
+
+    /* 热力图主角容器 */
+    .heatmap-card {
+      background-color: var(--card-bg);
+      border: 3px solid #000;
+      box-shadow: var(--pixel-shadow);
+      padding: 24px;
+      margin-bottom: 26px;
+    }
+    .heatmap-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--pixel-yellow);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .heatmap-legend {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--pixel-subtext);
+    }
+    .legend-box {
+      width: 13px;
+      height: 13px;
+      border: 1px solid #000;
+    }
+
+    /* 热力图网格 */
+    .heatmap-wrapper {
+      overflow-x: auto;
+      padding-bottom: 10px;
+    }
+    .heatmap-grid {
+      display: grid;
+      grid-template-rows: repeat(7, 14px);
+      grid-auto-flow: column;
+      grid-auto-columns: 14px;
+      gap: 4px;
+      width: max-content;
+    }
+    .heat-cell {
+      width: 14px;
+      height: 14px;
+      border: 1px solid #000;
+      border-radius: 1px;
+      cursor: pointer;
+      transition: transform 0.1s, outline 0.1s;
+      position: relative;
+    }
+    .heat-cell:hover {
+      transform: scale(1.35);
+      z-index: 10;
+      outline: 2px solid #FFF;
+    }
+
+    /* 热力等级色阶 (麦门金红体系) */
+    .heat-lvl-0 { background-color: #1f1d2c; }
+    .heat-lvl-1 { background-color: #635016; }
+    .heat-lvl-2 { background-color: #bfa11b; }
+    .heat-lvl-3 { background-color: #FFC72C; }
+    .heat-lvl-4 { background-color: #DA291C; }
+
+    /* 热力图悬浮浮窗 Tooltip */
+    #pixel-tooltip {
+      position: fixed;
+      display: none;
+      background-color: #0d0c13;
+      border: 2px solid var(--pixel-yellow);
+      box-shadow: 4px 4px 0px #000;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: #FFF;
+      pointer-events: none;
+      z-index: 1000;
+      max-width: 280px;
+      line-height: 1.5;
+    }
+    #pixel-tooltip .tt-date {
+      color: var(--pixel-yellow);
+      font-weight: bold;
+      margin-bottom: 4px;
+      font-size: 11px;
+    }
+    #pixel-tooltip .tt-items {
+      color: var(--pixel-text);
+      margin-bottom: 4px;
+    }
+    #pixel-tooltip .tt-cost {
+      color: var(--pixel-green);
+      font-size: 11px;
+    }
+
+    /* 双栏分栏 */
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 26px;
+    }
+    @media (max-width: 860px) {
+      .two-cols {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 吃麦品类分解进度条 */
+    .cat-bar-item {
+      margin-bottom: 14px;
+    }
+    .cat-bar-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 5px;
+    }
+    .cat-progress {
+      width: 100%;
+      height: 14px;
+      background-color: #222030;
+      border: 2px solid #000;
+      overflow: hidden;
+    }
+    .cat-fill {
+      height: 100%;
+      transition: width 0.8s ease;
+    }
+
+    /* MVP 英雄榜列表 */
+    .champ-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background-color: #211f2e;
+      border: 2px solid #000;
+      margin-bottom: 10px;
+      transition: transform 0.1s;
+    }
+    .champ-item:hover {
+      transform: translateX(4px);
+      border-color: var(--pixel-yellow);
+    }
+    .champ-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .champ-rank {
+      font-size: 14px;
+      font-weight: bold;
+      width: 26px;
+    }
+    .champ-name {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .champ-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      background-color: #353249;
+      border: 1px solid #000;
+      color: var(--pixel-yellow);
+    }
+    .champ-right {
+      text-align: right;
+    }
+    .champ-count {
+      font-size: 13px;
+      font-weight: bold;
+      color: var(--pixel-yellow);
+    }
+    .champ-spent {
+      font-size: 11px;
+      color: var(--pixel-subtext);
+    }
+
+    /* 像素成就墙 */
+    .badges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+    .badge-card {
+      background-color: #1f1d2c;
+      border: 2px solid #000;
+      box-shadow: var(--pixel-shadow-sm);
+      padding: 14px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      position: relative;
+      transition: transform 0.15s, border-color 0.15s;
+    }
+    .badge-card.unlocked {
+      background-color: #242135;
+      border-color: var(--pixel-yellow);
+    }
+    .badge-card.locked {
+      opacity: 0.6;
+      filter: grayscale(0.8);
+    }
+    .badge-card:hover {
+      transform: translateY(-2px);
+    }
+    .badge-icon {
+      font-size: 28px;
+      background-color: #15141f;
+      border: 2px solid #000;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .badge-info {
+      flex: 1;
+    }
+    .badge-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #FFF;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-card.unlocked .badge-title {
+      color: var(--pixel-yellow);
+    }
+    .badge-desc {
+      font-size: 11px;
+      color: var(--pixel-subtext);
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+    .badge-prog-text {
+      font-size: 10px;
+      color: var(--pixel-green);
+    }
+
+    /* 模态框通用 */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1001;
+      padding: 20px;
+    }
+    .modal-content {
+      background-color: var(--card-bg);
+      border: 4px solid #000;
+      box-shadow: 8px 8px 0px #000;
+      width: 100%;
+      max-width: 520px;
+      padding: 24px;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      background: none;
+      border: 2px solid #000;
+      background-color: var(--pixel-red);
+      color: #FFF;
+      font-weight: bold;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 拍立得战绩卡 Canvas 预览 */
+    #shareCanvas {
+      max-width: 100%;
+      height: auto;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0px #000;
+      display: block;
+      margin: 0 auto 16px;
+      background-color: #FFF;
+    }
+
+    /* 快捷打卡选项 */
+    .preset-order-btn {
+      background-color: #232133;
+      border: 2px solid #000;
+      padding: 12px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .preset-order-btn:hover {
+      background-color: #312e47;
+      border-color: var(--pixel-yellow);
+    }
+    .p-title { font-size: 13px; font-weight: bold; color: #FFF; }
+    .p-desc { font-size: 11px; color: var(--pixel-subtext); margin-top: 3px; }
+    .p-price { font-size: 14px; font-weight: bold; color: var(--pixel-yellow); }
+
+    /* 页脚 */
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--pixel-subtext);
+      margin-top: 40px;
+      line-height: 1.8;
+      border-top: 2px dashed #2d2b3d;
+      padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- CRT 电视扫描线滤镜 -->
+  <div class="crt-overlay"></div>
+
+  <!-- 悬浮 Tooltip -->
+  <div id="pixel-tooltip">
+    <div class="tt-date" id="ttDate">2026-10-09</div>
+    <div class="tt-items" id="ttItems">双层吉士堡 + 鲜煮美式</div>
+    <div class="tt-cost" id="ttCost">实付 ¥22.5 · 省 ¥8.5 · 465 kcal</div>
+  </div>
+
+  <div class="container">
+    <!-- 头部导航 -->
+    <header>
+      <div class="brand">
+        <div class="brand-icon">🍟</div>
+        <div>
+          <h1 class="brand-title pixel-font">McVibe · 麦门足迹</h1>
+          <p class="brand-tagline">8-Bit 像素级麦当劳生活足迹与资产用量仪表盘 (VibeUsage Inspired)</p>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="mcp-pill pixel-font">
+          <span class="mcp-dot"></span>
+          <span id="mcpStatusText">MCP ONLINE</span>
+        </div>
+        <button class="pixel-btn btn-outline" id="btnAudioToggle" title="切换 8-Bit 像素音效">
+          🔊 SFX: ON
+        </button>
+        <button class="pixel-btn btn-outline" id="btnCrtToggle" title="切换 CRT 扫描线">
+          📺 CRT: ON
+        </button>
+        <button class="pixel-btn" id="btnQuickRecord">
+          + 吃麦打卡
+        </button>
+        <button class="pixel-btn btn-red" id="btnShareModal">
+          💾 导出战绩卡
+        </button>
+      </div>
+    </header>
+
+    <!-- 四宫格指标 -->
+    <section class="metrics-grid">
+      <!-- 今日消费 -->
+      <div class="metric-card" style="--accent-color: var(--pixel-yellow);">
+        <div class="metric-header">
+          <span class="metric-label pixel-font">Today Spent</span>
+          <span class="metric-icon">🍔</span>
+        </div>
+        <div class="metric-value">
+          ¥<span id="mTodaySpent">32.5</span>
+        </div>
+        <div class="metric-sub">
+          <span>今日已吃 <b id="mTodayOrders" style="color:#FFF;">2</b> 顿</span>
+          <span style="color:var(--pixel-green);">· 省 ¥<span id="mTodaySaved">14.0</span></span>
+        </div>
+      </div>
+
+      <!-- 能量与专注槽 (HP / MP) -->
+      <div class="metric-card" style="--accent-color: var(--pixel-red);">
+        <div class="metric-header">
+          <span class="metric-label pixel-font">Vitality / HP & MP</span>
+          <span class="metric-icon">⚡</span>
+        </div>
+        <div class="bar-container">
+          <div class="bar-row">
+            <span style="color:var(--pixel-red); font-weight:bold;">HP 饱腹精力</span>
+            <span id="hpValue">85%</span>
+          </div>
+          <div class="pixel-progress">
+            <div class="pixel-progress-fill fill-hp" id="hpBar" style="width: 85%;"></div>
+          </div>
+          <div class="bar-row" style="margin-top: 8px;">
+            <span style="color:var(--pixel-blue); font-weight:bold;">MP 咖啡因值</span>
+            <span id="mpValue">90%</span>
+          </div>
+          <div class="pixel-progress">
+            <div class="pixel-progress-fill fill-mp" id="mpBar" style="width: 90%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 累计白嫖省下金额 -->
+      <div class="metric-card" style="--accent-color: var(--pixel-green);">
+        <div class="metric-header">
+          <span class="metric-label pixel-font">Total Saved</span>
+          <span class="metric-icon">💰</span>
+        </div>
+        <div class="metric-value">
+          ¥<span id="mTotalSaved">184.0</span>
+        </div>
+        <div class="metric-sub">
+          <span>抵扣率 <b id="mSavingRate" style="color:var(--pixel-green);">28.5%</b></span>
+          <span>· 相当于省下 <b id="mFreeBurgers" style="color:#FFF;">9</b> 个汉堡</span>
+        </div>
+      </div>
+
+      <!-- 资产与打卡连击 -->
+      <div class="metric-card" style="--accent-color: var(--pixel-blue);">
+        <div class="metric-header">
+          <span class="metric-label pixel-font">Streak & Points</span>
+          <span class="metric-icon">🔥</span>
+        </div>
+        <div class="metric-value">
+          <span id="mCurrentStreak">5</span> <span class="metric-unit">DAYS STREAK</span>
+        </div>
+        <div class="metric-sub">
+          <span>积分余额 <b id="mPointsBalance" style="color:var(--pixel-yellow);">3,420</b></span>
+          <span>· 历史最长 <b id="mLongestStreak" style="color:#FFF;">12</b> 天</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 24 周麦当劳热力图 (核心主角) -->
+    <section class="heatmap-card">
+      <div class="heatmap-title-row">
+        <div class="section-title pixel-font">
+          <span>📅 24-Week McDonald's Activity Heatmap</span>
+          <span style="font-size:12px; color:var(--pixel-subtext); font-weight:normal;">(近 168 天吃麦全景)</span>
+        </div>
+        <div class="heatmap-legend pixel-font">
+          <span>Less</span>
+          <div class="legend-box heat-lvl-0"></div>
+          <div class="legend-box heat-lvl-1"></div>
+          <div class="legend-box heat-lvl-2"></div>
+          <div class="legend-box heat-lvl-3"></div>
+          <div class="legend-box heat-lvl-4"></div>
+          <span>More</span>
+        </div>
+      </div>
+
+      <div class="heatmap-wrapper">
+        <div class="heatmap-grid" id="heatmapGrid">
+          <!-- 动态注入 168 个方块 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 分栏：品类占比 vs 常驻英雄榜 -->
+    <section class="two-cols">
+      <!-- 品类构成 -->
+      <div class="pixel-card">
+        <div class="section-title pixel-font" style="margin-bottom: 16px;">
+          <span>📊 吃麦构成占比 (Category Share)</span>
+        </div>
+        <div id="categoryContainer">
+          <!-- 动态注入进度条 -->
+        </div>
+      </div>
+
+      <!-- 常驻英雄榜 -->
+      <div class="pixel-card">
+        <div class="section-title pixel-font" style="margin-bottom: 16px;">
+          <span>👑 麦门常驻英雄榜 (Top Champions)</span>
+        </div>
+        <div id="championsContainer">
+          <!-- 动态注入排行榜 -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 8-Bit 像素成就勋章馆 -->
+    <section class="pixel-card">
+      <div class="section-title pixel-font" style="margin-bottom: 18px;">
+        <span>🏆 麦门成就勋章馆 (8-Bit Badges)</span>
+      </div>
+      <div class="badges-grid" id="badgesContainer">
+        <!-- 动态注入勋章卡片 -->
+      </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer>
+      <p class="pixel-font">McVibe · 麦门足迹 v1.0.0 | 麦当劳 1024 程序员节创新挑战赛 参赛作品</p>
+      <p>Powered by McDonald's Official MCP Server (https://mcp.mcd.cn) & Tencent Cloud WorkBuddy</p>
+    </footer>
+  </div>
+
+  <!-- 模态框 1：快速吃麦打卡 -->
+  <div class="modal-backdrop" id="recordModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeRecordModal()">×</button>
+      <h2 class="section-title pixel-font" style="margin-bottom: 14px;">🍟 记录一顿麦当劳</h2>
+      <p style="font-size:12px; color:var(--pixel-subtext); margin-bottom: 16px;">
+        选择你今天享用的麦当劳组合，系统将实时更新热力图、积分与 HP/MP：
+      </p>
+
+      <div class="preset-order-btn" onclick="submitPreset('poor')">
+        <div>
+          <div class="p-title">🛡️ 穷鬼套餐 1+1 经典组合</div>
+          <div class="p-desc">双层吉士堡 + 鲜煮美式咖啡 (立省¥8.5)</div>
+        </div>
+        <div class="p-price">¥22.5</div>
+      </div>
+
+      <div class="preset-order-btn" onclick="submitPreset('geek')">
+        <div>
+          <div class="p-title">🥗 极客抗困低GI特制午餐</div>
+          <div class="p-desc">板烧鸡腿堡(去酱) + 甜玉米杯 + 鲜煮黑咖</div>
+        </div>
+        <div class="p-price">¥32.5</div>
+      </div>
+
+      <div class="preset-order-btn" onclick="submitPreset('thursday')">
+        <div>
+          <div class="p-title">⚡ 疯狂星期四放纵全餐</div>
+          <div class="p-desc">双吉 + 麦辣鸡翅(2块) + 麦乐鸡 + 冰可乐</div>
+        </div>
+        <div class="p-price">¥39.0</div>
+      </div>
+
+      <div class="preset-order-btn" onclick="submitPreset('breakfast')">
+        <div>
+          <div class="p-title">🥞 晨光元气麦满分两件套</div>
+          <div class="p-desc">猪柳蛋麦满分 + 鲜煮咖啡 (早安特惠减¥7)</div>
+        </div>
+        <div class="p-price">¥19.0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 模态框 2：拍立得战绩卡导出 -->
+  <div class="modal-backdrop" id="shareModal">
+    <div class="modal-content" style="text-align: center;">
+      <button class="modal-close" onclick="closeShareModal()">×</button>
+      <h2 class="section-title pixel-font" style="margin-bottom: 12px; justify-content:center;">
+        🎮 麦门像素战绩卡
+      </h2>
+      <p style="font-size:12px; color:var(--pixel-subtext); margin-bottom: 16px;">
+        已根据你的真实麦当劳足迹生成 8-bit 复古像素海报：
+      </p>
+
+      <canvas id="shareCanvas" width="400" height="560"></canvas>
+
+      <div style="display:flex; justify-content:center; gap:12px; margin-top:16px;">
+        <button class="pixel-btn" onclick="downloadShareCard()">
+          💾 下载 PNG 海报
+        </button>
+        <button class="pixel-btn btn-outline" onclick="copyCardData()">
+          📋 复制文本战报
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // -------------------------------------------------------------
+    // 8-Bit Web Audio 合成器 (零外部依赖，纯原生振荡器)
+    // -------------------------------------------------------------
+    let audioCtx = null;
+    let sfxEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function playBleep(freq = 440, duration = 0.06, type = 'square') {
+      if (!sfxEnabled) return;
+      try {
+        initAudio();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch (e) {}
+    }
+
+    function playCoin() {
+      if (!sfxEnabled) return;
+      try {
+        initAudio();
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(987.77, now); // B5
+        osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(now + 0.35);
+      } catch (e) {}
+    }
+
+    function playFanfare() {
+      if (!sfxEnabled) return;
+      try {
+        initAudio();
+        const notes = [523.25, 659.25, 783.99, 1046.50]; // C E G C
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          const t = audioCtx.currentTime + idx * 0.09;
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(freq, t);
+          gain.gain.setValueAtTime(0.1, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(t);
+          osc.stop(t + 0.22);
+        });
+      } catch (e) {}
+    }
+
+    // -------------------------------------------------------------
+    // 全局数据状态
+    // -------------------------------------------------------------
+    let currentSummary = null;
+
+    async function loadSummary() {
+      try {
+        const res = await fetch('/api/vibe/summary');
+        const data = await res.json();
+        currentSummary = data;
+        renderDashboard(data);
+      } catch (err) {
+        console.error('Failed to load summary:', err);
+      }
+    }
+
+    // 渲染主仪表盘
+    function renderDashboard(data) {
+      // 头部 MCP 状态
+      const statusPill = document.getElementById('mcpStatusText');
+      if (data.mcpStatus) {
+        statusPill.textContent = `MCP ONLINE · ${data.mcpStatus.timePeriod === 'breakfast' ? '早餐时段' : '正餐时段'} · 券包: ${data.mcpStatus.couponsAvailable}`;
+      }
+
+      // 四宫格指标
+      document.getElementById('mTodaySpent').textContent = data.today.spent.toFixed(1);
+      document.getElementById('mTodayOrders').textContent = data.today.orderCount;
+      document.getElementById('mTodaySaved').textContent = data.today.saved.toFixed(1);
+      
+      document.getElementById('hpValue').textContent = `${data.today.hp}%`;
+      document.getElementById('hpBar').style.width = `${data.today.hp}%`;
+      document.getElementById('mpValue').textContent = `${data.today.mp}%`;
+      document.getElementById('mpBar').style.width = `${data.today.mp}%`;
+
+      document.getElementById('mTotalSaved').textContent = data.stats.totalSaved.toFixed(1);
+      document.getElementById('mSavingRate').textContent = `${data.stats.savingRatePercent}%`;
+      document.getElementById('mFreeBurgers').textContent = Math.floor(data.stats.totalSaved / 21);
+
+      document.getElementById('mCurrentStreak').textContent = data.stats.currentStreak;
+      document.getElementById('mPointsBalance').textContent = data.user.points.toLocaleString();
+      document.getElementById('mLongestStreak').textContent = data.stats.longestStreak;
+
+      // 渲染 24 周热力图
+      renderHeatmap(data.heatmap);
+
+      // 渲染品类构成
+      renderCategories(data.breakdown);
+
+      // 渲染常驻英雄
+      renderChampions(data.topItems);
+
+      // 渲染成就徽章
+      renderBadges(data.achievements);
+    }
+
+    // 渲染热力图网格
+    function renderHeatmap(heatmapDays) {
+      const grid = document.getElementById('heatmapGrid');
+      grid.innerHTML = '';
+
+      heatmapDays.forEach(day => {
+        const cell = document.createElement('div');
+        cell.className = `heat-cell heat-lvl-${day.intensity}`;
+        
+        cell.addEventListener('mouseenter', (e) => {
+          playBleep(800, 0.02, 'sine');
+          showTooltip(e, day);
+        });
+        cell.addEventListener('mouseleave', hideTooltip);
+
+        grid.appendChild(cell);
+      });
+    }
+
+    // Tooltip 控制
+    const tooltip = document.getElementById('pixel-tooltip');
+    function showTooltip(e, day) {
+      const dateText = `${day.date} (周${['日','一','二','三','四','五','六'][day.dayOfWeek]})`;
+      document.getElementById('ttDate').textContent = dateText;
+      
+      if (day.count === 0) {
+        document.getElementById('ttItems').textContent = '本日未吃麦 (能量待补充)';
+        document.getElementById('ttCost').textContent = '消费 ¥0.0';
+      } else {
+        document.getElementById('ttItems').textContent = day.itemHighlights.join(' + ') || '麦当劳随心点餐';
+        document.getElementById('ttCost').textContent = `实付 ¥${day.totalSpent} · 省 ¥${day.savedAmount} · ${day.calories} kcal`;
+      }
+
+      tooltip.style.display = 'block';
+      tooltip.style.left = `${e.clientX + 14}px`;
+      tooltip.style.top = `${e.clientY + 14}px`;
+    }
+
+    function hideTooltip() {
+      tooltip.style.display = 'none';
+    }
+
+    // 渲染品类构成
+    function renderCategories(breakdown) {
+      const container = document.getElementById('categoryContainer');
+      container.innerHTML = '';
+
+      breakdown.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'cat-bar-item';
+        div.innerHTML = `
+          <div class="cat-bar-header">
+            <span style="font-weight:600; color:#FFF;">${item.label}</span>
+            <span style="color:var(--pixel-subtext);">${item.percentage}% (¥${item.spent})</span>
+          </div>
+          <div class="cat-progress">
+            <div class="cat-fill" style="width: ${item.percentage}%; background-color: ${item.pixelColor};"></div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // 渲染常驻英雄
+    function renderChampions(topItems) {
+      const container = document.getElementById('championsContainer');
+      container.innerHTML = '';
+
+      topItems.forEach((item, idx) => {
+        const div = document.createElement('div');
+        div.className = 'champ-item';
+        const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
+        div.innerHTML = `
+          <div class="champ-left">
+            <span class="champ-rank">${medals[idx]}</span>
+            <div>
+              <div class="champ-name">${item.name}</div>
+              <span class="champ-badge pixel-font">${item.pixelBadge}</span>
+            </div>
+          </div>
+          <div class="champ-right">
+            <div class="champ-count">${item.count} 次</div>
+            <div class="champ-spent">累计 ¥${item.totalSpent}</div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // 渲染成就徽章
+    function renderBadges(achievements) {
+      const container = document.getElementById('badgesContainer');
+      container.innerHTML = '';
+
+      achievements.forEach(ach => {
+        const div = document.createElement('div');
+        div.className = `badge-card ${ach.unlocked ? 'unlocked' : 'locked'}`;
+        div.innerHTML = `
+          <div class="badge-icon">${ach.pixelIcon}</div>
+          <div class="badge-info">
+            <div class="badge-title">
+              <span>${ach.title}</span>
+              ${ach.unlocked ? '<span style="font-size:10px;">✨</span>' : '<span style="font-size:10px;">🔒</span>'}
+            </div>
+            <div class="badge-desc">${ach.description}</div>
+            <div class="badge-prog-text pixel-font">
+              ${ach.unlocked ? '★ COMPLETED' : `进度: ${ach.progress}/${ach.maxProgress}`}
+            </div>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 打卡预设提交
+    // -------------------------------------------------------------
+    async function submitPreset(presetType) {
+      playCoin();
+      let payload = {};
+
+      if (presetType === 'poor') {
+        payload = {
+          items: [
+            { id: 'M01', name: '双层吉士堡', category: 'burger', count: 1, price: 21.0, calories: 450 },
+            { id: 'M05', name: '鲜煮美式咖啡', category: 'drink', count: 1, price: 10.0, calories: 15 }
+          ],
+          totalPrice: 31.0,
+          discountAmount: 8.5,
+          paidAmount: 22.5,
+          couponUsed: '随心配1+1优惠券'
+        };
+      } else if (presetType === 'geek') {
+        payload = {
+          items: [
+            { id: 'M02', name: '板烧鸡腿堡(去酱)', category: 'burger', count: 1, price: 24.5, calories: 400 },
+            { id: 'M11', name: '甜玉米杯(大)', category: 'snack', count: 1, price: 12.0, calories: 110 },
+            { id: 'M05', name: '鲜煮美式咖啡', category: 'drink', count: 1, price: 10.0, calories: 15 }
+          ],
+          totalPrice: 46.5,
+          discountAmount: 14.0,
+          paidAmount: 32.5,
+          couponUsed: '午餐元气随心减14元券'
+        };
+      } else if (presetType === 'thursday') {
+        payload = {
+          items: [
+            { id: 'M01', name: '双层吉士堡', category: 'burger', count: 1, price: 21.0, calories: 450 },
+            { id: 'M08', name: '麦辣鸡翅(2块)', category: 'snack', count: 1, price: 14.5, calories: 230 },
+            { id: 'M09', name: '麦乐鸡(5块)', category: 'snack', count: 1, price: 13.0, calories: 210 },
+            { id: 'M07', name: '可口可乐(中)', category: 'drink', count: 1, price: 9.5, calories: 150 }
+          ],
+          totalPrice: 58.0,
+          discountAmount: 19.0,
+          paidAmount: 39.0,
+          couponUsed: '疯狂星期四全家桶立减19元'
+        };
+      } else if (presetType === 'breakfast') {
+        payload = {
+          items: [
+            { id: 'M12', name: '猪柳蛋麦满分', category: 'breakfast', count: 1, price: 16.0, calories: 380 },
+            { id: 'M05', name: '鲜煮美式咖啡', category: 'drink', count: 1, price: 10.0, calories: 15 }
+          ],
+          totalPrice: 26.0,
+          discountAmount: 7.0,
+          paidAmount: 19.0,
+          couponUsed: '早安咖啡两件套立减7元'
+        };
+      }
+
+      closeRecordModal();
+
+      try {
+        const res = await fetch('/api/vibe/record', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+          currentSummary = data.summary;
+          renderDashboard(data.summary);
+          playFanfare();
+        }
+      } catch (err) {
+        console.error('Record failed:', err);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // 拍立得像素战绩卡 Canvas 绘制
+    // -------------------------------------------------------------
+    function renderShareCard() {
+      const canvas = document.getElementById('shareCanvas');
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      // 拍立得复古米白背景
+      ctx.fillStyle = '#16151f';
+      ctx.fillRect(0, 0, w, h);
+
+      // 内框复古画框
+      ctx.fillStyle = '#222030';
+      ctx.fillRect(16, 16, w - 32, h - 32);
+      ctx.strokeStyle = '#FFC72C';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(16, 16, w - 32, h - 32);
+
+      // 顶部大标题
+      ctx.fillStyle = '#FFC72C';
+      ctx.font = 'bold 18px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('🍟 McVibe · 麦门足迹', w / 2, 54);
+
+      ctx.fillStyle = '#A4B0BE';
+      ctx.font = '11px monospace';
+      ctx.fillText('1024 DEVELOPER CHALLENGE PASS', w / 2, 74);
+
+      // 分割线
+      ctx.strokeStyle = '#38344e';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(32, 88);
+      ctx.lineTo(w - 32, 88);
+      ctx.stroke();
+
+      // 用户 ID 与头衔
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#FFF';
+      ctx.font = 'bold 14px monospace';
+      ctx.fillText(`AGENT: ${currentSummary ? currentSummary.user.nickname : 'CyberMaimen'}`, 36, 116);
+      
+      ctx.fillStyle = '#2ECC71';
+      ctx.font = '11px monospace';
+      ctx.fillText(`RANK: ${currentSummary ? currentSummary.user.title : 'Lv.7 麦门黄金架构师'}`, 36, 136);
+
+      // 8-Bit 像素汉堡小插画 (纯 Canvas 点阵绘制)
+      drawPixelBurger(ctx, w / 2 - 40, 155, 5);
+
+      // 统计数据方框
+      ctx.fillStyle = '#171622';
+      ctx.fillRect(36, 260, w - 72, 160);
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(36, 260, w - 72, 160);
+
+      const stats = currentSummary ? currentSummary.stats : { totalOrders: 42, totalSpent: 980, totalSaved: 184, currentStreak: 5 };
+      ctx.font = '12px monospace';
+      ctx.fillStyle = '#A4B0BE';
+      ctx.fillText('• 累计吃麦次数:', 48, 290);
+      ctx.fillStyle = '#FFC72C';
+      ctx.fillText(`${stats.totalOrders} 顿`, 260, 290);
+
+      ctx.fillStyle = '#A4B0BE';
+      ctx.fillText('• 麦门总消费额:', 48, 320);
+      ctx.fillStyle = '#FFF';
+      ctx.fillText(`¥${stats.totalSpent}`, 260, 320);
+
+      ctx.fillStyle = '#A4B0BE';
+      ctx.fillText('• 券包累计抵扣:', 48, 350);
+      ctx.fillStyle = '#2ECC71';
+      ctx.fillText(`¥${stats.totalSaved}`, 260, 350);
+
+      ctx.fillStyle = '#A4B0BE';
+      ctx.fillText('• 当前连续打卡:', 48, 380);
+      ctx.fillStyle = '#DA291C';
+      ctx.fillText(`${stats.currentStreak} DAYS 🔥`, 260, 380);
+
+      // 像素点阵条形码
+      drawPixelBarcode(ctx, 36, 440, w - 72, 38);
+
+      // 底部认证戳
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#FFC72C';
+      ctx.font = '10px monospace';
+      ctx.fillText('OFFICIAL MCP VERIFIED · MCP.MCD.CN', w / 2, 505);
+    }
+
+    // 绘制像素汉堡
+    function drawPixelBurger(ctx, startX, startY, pixelSize = 4) {
+      // 16x14 点阵汉堡调色板
+      // 1: 顶层面包 (金黄) 2: 生菜 (绿) 3: 芝士 (橙黄) 4: 肉饼 (深褐) 5: 底层面包
+      const burgerMatrix = [
+        [0,0,0,1,1,1,1,1,1,1,1,1,1,0,0,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+        [0,2,0,2,2,0,2,2,0,2,2,0,2,2,0,2],
+        [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+        [0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,0],
+        [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+        [4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],
+        [0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+        [0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,0]
+      ];
+
+      const colors = {
+        1: '#E67E22', // 面包焦黄
+        2: '#2ECC71', // 翡翠生菜
+        3: '#F1C40F', // 香浓芝士
+        4: '#6E2C00'  // 优质牛肉饼
+      };
+
+      for (let r = 0; r < burgerMatrix.length; r++) {
+        for (let c = 0; c < burgerMatrix[r].length; c++) {
+          const val = burgerMatrix[r][c];
+          if (val && colors[val]) {
+            ctx.fillStyle = colors[val];
+            ctx.fillRect(startX + c * pixelSize, startY + r * pixelSize, pixelSize, pixelSize);
+          }
+        }
+      }
+    }
+
+    // 绘制点阵条形码
+    function drawPixelBarcode(ctx, x, y, width, height) {
+      ctx.fillStyle = '#000';
+      ctx.fillRect(x, y, width, height);
+
+      ctx.fillStyle = '#FFF';
+      let cx = x + 8;
+      while (cx < x + width - 8) {
+        const barWidth = Math.floor(Math.random() * 3) + 1;
+        ctx.fillRect(cx, y + 4, barWidth, height - 8);
+        cx += barWidth + Math.floor(Math.random() * 4) + 2;
+      }
+    }
+
+    function downloadShareCard() {
+      playCoin();
+      const canvas = document.getElementById('shareCanvas');
+      const link = document.createElement('a');
+      link.download = `McVibe_1024_Pass_${Date.now()}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    function copyCardData() {
+      playBleep(880, 0.08);
+      if (!currentSummary) return;
+      const s = currentSummary.stats;
+      const text = `【McVibe · 麦门足迹战报】\n已连续吃麦 ${s.currentStreak} 天！\n累计消费 ¥${s.totalSpent}，省下 ¥${s.totalSaved} (抵扣率 ${s.savingRatePercent}%)\n积分余额: ${currentSummary.user.points} | 段位: ${currentSummary.user.title}\n查看麦当劳 1024 程序员节官方 MCP 仪表盘: https://mcp.mcd.cn`;
+      navigator.clipboard.writeText(text).then(() => {
+        alert('战报文本已复制到剪贴板！可直接分享到微信/群聊！');
+      });
+    }
+
+    // -------------------------------------------------------------
+    // 弹窗与事件绑定
+    // -------------------------------------------------------------
+    const recordModal = document.getElementById('recordModal');
+    const shareModal = document.getElementById('shareModal');
+
+    document.getElementById('btnQuickRecord').onclick = () => {
+      playBleep(520, 0.05);
+      recordModal.style.display = 'flex';
+    };
+    function closeRecordModal() {
+      playBleep(330, 0.04);
+      recordModal.style.display = 'none';
+    }
+
+    document.getElementById('btnShareModal').onclick = () => {
+      playFanfare();
+      renderShareCard();
+      shareModal.style.display = 'flex';
+    };
+    function closeShareModal() {
+      playBleep(330, 0.04);
+      shareModal.style.display = 'none';
+    }
+
+    // 扫描线滤镜切换
+    const btnCrt = document.getElementById('btnCrtToggle');
+    btnCrt.onclick = () => {
+      playBleep(600, 0.04);
+      document.body.classList.toggle('crt-off');
+      const isOn = !document.body.classList.contains('crt-off');
+      btnCrt.textContent = `📺 CRT: ${isOn ? 'ON' : 'OFF'}`;
+    };
+
+    // 音效开关
+    const btnAudio = document.getElementById('btnAudioToggle');
+    btnAudio.onclick = () => {
+      sfxEnabled = !sfxEnabled;
+      btnAudio.textContent = `🔊 SFX: ${sfxEnabled ? 'ON' : 'OFF'}`;
+      if (sfxEnabled) playCoin();
+    };
+
+    // 初始化加载
+    loadSummary();
+  </script>
+</body>
+</html>

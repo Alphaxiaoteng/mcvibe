@@ -1,0 +1,34 @@
+{
+  "name": "mcvibe",
+  "version": "1.0.0",
+  "description": "McVibe (麦门足迹): 8-Bit Pixel-Art McDonald's Life Log & Usage Analytics Copilot | 基于麦当劳官方 MCP 的像素风麦当劳生活足迹与用量仪表盘",
+  "author": "M-China Innovation Challenger",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "mcvibe": "./bin/mcvibe.js"
+  },
+  "scripts": {
+    "start": "npx tsx src/web/server.ts",
+    "web": "npx tsx src/web/server.ts",
+    "cli": "npx tsx src/cli/index.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "build": "npx tsc"
+  },
+  "keywords": [
+    "mcdonalds",
+    "mcp",
+    "vibeusage",
+    "pixel-art",
+    "life-log",
+    "analytics",
+    "heatmap",
+    "workbuddy",
+    "agent"
+  ],
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.0"
+  }
+}
