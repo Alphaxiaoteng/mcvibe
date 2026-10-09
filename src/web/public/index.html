@@ -775,6 +775,71 @@
       justify-content: center;
     }
 
+    /* 热力图指标标签条 */
+    .heatmap-summary-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .h-stat-pill {
+      background-color: #161423;
+      border: 2px solid #000;
+      box-shadow: 2px 2px 0px #000;
+      padding: 5px 10px;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--pixel-subtext);
+    }
+    .h-stat-view {
+      border-color: var(--pixel-yellow);
+    }
+    .h-stat-hint {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--pixel-subtext);
+    }
+
+    /* 幽灵态骨架占位 (消灭大屏死黑空洞) */
+    .ghost-item {
+      opacity: 0.45;
+      border-style: dashed !important;
+      position: relative;
+      user-select: none;
+    }
+    .ghost-item:hover {
+      opacity: 0.7;
+    }
+    .ghost-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+      background: #252336;
+      border: 1px dashed var(--pixel-subtext);
+      color: var(--pixel-subtext);
+    }
+    .ghost-progress-bar {
+      width: 100%;
+      height: 12px;
+      background: #1b1928;
+      border: 1px dashed #3a3754;
+      position: relative;
+      overflow: hidden;
+    }
+    .ghost-hint-box {
+      background: #141220;
+      border: 1px dashed #35324b;
+      padding: 8px 12px;
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--pixel-subtext);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
     footer {
       text-align: center;
       margin-top: 40px;
@@ -806,7 +871,7 @@
         <img src="./logo-mcd-pixel.svg" alt="McDonald's Golden Arches" class="brand-icon-pixel" onclick="playCoin()" title="麦当劳官方金拱门 8-Bit 像素徽标 (点击播放金币音效)" />
         <div>
           <h1 class="brand-title pixel-font">McVibe · 麦门足迹</h1>
-          <p class="brand-tagline">8-Bit 像素级麦当劳生活与消费用量全景仪表盘 (McDonald's Usage Analytics)</p>
+          <p class="brand-tagline">8-Bit 像素级麦当劳就餐足迹与消费用量仪表盘</p>
         </div>
       </div>
 
@@ -819,7 +884,7 @@
           ⚙️ 设置
         </button>
         <button class="pixel-btn btn-outline" id="btnHelpGuide" onclick="openGuideModal()" title="查看麦当劳 Token 获取与使用指南">
-          ❓ 怎么用
+          ❓ 使用指南
         </button>
         <button class="pixel-btn btn-outline" id="btnAudioToggle" title="切换 8-Bit 像素音效">
           🔊 SFX: ON
@@ -834,7 +899,7 @@
     <section class="time-filter-hero" id="timeFilterHero">
       <div class="time-filter-header">
         <div class="time-filter-title pixel-font">
-          <span>⏳ 时间范围筛选 (Time Filter)</span>
+          <span>⏳ 足迹周期筛选</span>
           <span style="font-size:11px; color:var(--pixel-subtext); font-weight:normal;" id="timeFilterDesc">· 全局指标即时联动</span>
         </div>
         <div class="filter-count-badge pixel-font" id="filterMatchBadge">
@@ -863,7 +928,7 @@
       <!-- 消费与订单指标 -->
       <div class="metric-card" style="--accent-color: var(--pixel-yellow);">
         <div class="metric-header">
-          <span class="metric-label pixel-font">Orders & Spent</span>
+          <span class="metric-label pixel-font">消费总额与单数</span>
           <span class="metric-icon">🍔</span>
         </div>
         <div class="metric-value">
@@ -878,7 +943,7 @@
       <!-- 累计省下金额与抵扣率 -->
       <div class="metric-card" style="--accent-color: var(--pixel-green);">
         <div class="metric-header">
-          <span class="metric-label pixel-font">Total Saved</span>
+          <span class="metric-label pixel-font">优惠减免</span>
           <span class="metric-icon">💰</span>
         </div>
         <div class="metric-value">
@@ -893,7 +958,7 @@
       <!-- 积分资产与过期健康度 -->
       <div class="metric-card" style="--accent-color: var(--pixel-blue);">
         <div class="metric-header">
-          <span class="metric-label pixel-font">Points & Health</span>
+          <span class="metric-label pixel-font">麦当劳积分资产</span>
           <span class="metric-icon">✨</span>
         </div>
         <div class="metric-value">
@@ -908,7 +973,7 @@
       <!-- 卡券与活跃天数 -->
       <div class="metric-card" style="--accent-color: var(--pixel-orange);">
         <div class="metric-header">
-          <span class="metric-label pixel-font">Coupons & Days</span>
+          <span class="metric-label pixel-font">可用券与连击</span>
           <span class="metric-icon">🔥</span>
         </div>
         <div class="metric-value">
@@ -925,8 +990,8 @@
     <section class="heatmap-card">
       <div class="heatmap-title-row">
         <div class="section-title pixel-font">
-          <span>📅 麦当劳足迹点阵谱 (McDonald's Heatmap)</span>
-          <span style="font-size:12px; color:var(--pixel-subtext); font-weight:normal;" id="heatmapTitleDesc">(2026 年度吃麦点阵谱 · 53周全景)</span>
+          <span>📅 麦当劳年度点阵谱</span>
+          <span style="font-size:12px; color:var(--pixel-subtext); font-weight:normal;" id="heatmapTitleDesc">· 53 周全景就餐点阵图</span>
         </div>
 
         <div class="heatmap-controls">
@@ -948,18 +1013,31 @@
         </div>
       </div>
 
-      <!-- 年度趣味统计胶囊 -->
-      <div id="heatmapYearPill" style="display:flex; align-items:center; gap:12px; background:#161423; border:2px solid #000; padding:8px 14px; margin-bottom:14px; font-size:11px; flex-wrap:wrap;">
-        <span class="pixel-font" style="color:var(--pixel-yellow);">⚡ 当前视界: <b id="ypTitle">2026 全年</b></span>
-        <span style="color:var(--pixel-subtext);">|</span>
-        <span>年度点亮: <b id="ypActiveDays" style="color:var(--pixel-green);">0</b> 天</span>
-        <span style="color:var(--pixel-subtext);">|</span>
-        <span>吃麦总计: <b id="ypTotalOrders" style="color:#FFF;">0</b> 顿</span>
-        <span style="color:var(--pixel-subtext);">|</span>
-        <span>累计实付: <b id="ypTotalSpent" style="color:var(--pixel-yellow);">¥0.0</b></span>
-        <span style="color:var(--pixel-subtext);">|</span>
-        <span>立减省下: <b id="ypTotalSaved" style="color:var(--pixel-green);">¥0.0</b></span>
-        <span style="margin-left:auto; font-size:10px; color:var(--pixel-subtext);" id="ypHint">💡 点击任意点亮方格即可回顾单日吃麦明细</span>
+      <!-- 年度点阵谱统计指示栏 -->
+      <div id="heatmapYearPill" class="heatmap-summary-bar">
+        <div class="h-stat-pill h-stat-view pixel-font">
+          <span style="color:var(--pixel-yellow);">视界:</span>
+          <b id="ypTitle">2026 全年</b>
+        </div>
+        <div class="h-stat-pill">
+          <span>点亮:</span>
+          <b id="ypActiveDays" style="color:var(--pixel-green);">0</b> 天
+        </div>
+        <div class="h-stat-pill">
+          <span>吃麦:</span>
+          <b id="ypTotalOrders" style="color:#FFF;">0</b> 顿
+        </div>
+        <div class="h-stat-pill">
+          <span>实付:</span>
+          <b id="ypTotalSpent" style="color:var(--pixel-yellow);">¥0.0</b>
+        </div>
+        <div class="h-stat-pill">
+          <span>立减:</span>
+          <b id="ypTotalSaved" style="color:var(--pixel-green);">¥0.0</b>
+        </div>
+        <div class="h-stat-hint" id="ypHint">
+          💡 点击点亮方格即可回顾单日订单明细
+        </div>
       </div>
 
       <div class="heatmap-board">
@@ -981,7 +1059,7 @@
       <!-- 就餐时段分布 -->
       <div class="pixel-card">
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
-          <span>🕒 就餐时段用量分布 (Meal Time Distribution)</span>
+          <span>⏰ 就餐时段分布</span>
         </div>
         <div id="timeDistributionContainer">
           <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:20px 0;">
@@ -993,7 +1071,7 @@
       <!-- 探店版图与常去餐厅 -->
       <div class="pixel-card">
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
-          <span>📍 探店版图与常去餐厅 (Store Footprints)</span>
+          <span>📍 常去餐厅与探店足迹</span>
         </div>
         <div id="storeFootprintsContainer">
           <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:20px 0;">
@@ -1008,7 +1086,7 @@
       <!-- 品类构成 -->
       <div class="pixel-card">
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
-          <span>📊 吃麦品类构成 (Category Share)</span>
+          <span>📊 品类偏好与占比</span>
         </div>
         <div id="categoryContainer">
           <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:20px 0;">
@@ -1020,7 +1098,7 @@
       <!-- 常驻英雄榜 -->
       <div class="pixel-card">
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
-          <span>👑 麦门最爱单品榜 (Top Items)</span>
+          <span>👑 最爱单品榜</span>
         </div>
         <div id="championsContainer">
           <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:20px 0;">
@@ -1033,7 +1111,7 @@
     <!-- 8-Bit 像素成就勋章馆 -->
     <section class="pixel-card">
       <div class="section-title pixel-font" style="margin-bottom: 18px;">
-        <span>🏆 麦门成就勋章馆 (8-Bit Badges)</span>
+        <span>🏆 8-Bit 成就勋章馆</span>
       </div>
       <div class="badges-grid" id="badgesContainer"></div>
     </section>
@@ -1042,11 +1120,11 @@
     <section class="pixel-card" id="orderStreamSection">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
         <div class="section-title pixel-font">
-          <span>📜 真实订单流水账单 (Verified Orders)</span>
+          <span>📜 官方核销订单流水</span>
           <span style="font-size:11px; color:var(--pixel-subtext); font-weight:normal;" id="orderStreamSub">(官方 MCP 真实核销流水)</span>
         </div>
         <button class="pixel-btn btn-sm" style="border-color:var(--pixel-green); background:#12261b; color:var(--pixel-green);" id="btnAutoBindStream" onclick="triggerAutoBindCoupons()">
-          🎁 一键自动领券 (auto-bind)
+          🎁 自动领券 (麦麦省)
         </button>
       </div>
       <div id="orderStreamContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
@@ -1102,7 +1180,7 @@
         <span style="font-size:26px;">🍟</span>
         <div>
           <h2 class="section-title pixel-font" style="font-size:15px; color:var(--pixel-yellow);">
-            McVibe 麦门足迹 · 怎么用？
+            McVibe 麦门足迹 · 使用指南
           </h2>
           <p style="font-size:12px; color:var(--pixel-subtext); margin-top:2px;">
             麦当劳 1024 程序员节官方 MCP 仪表盘快速指引
@@ -1159,10 +1237,10 @@
 
       <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button class="pixel-btn" style="flex:1; justify-content:center;" onclick="goToPasteToken()">
-          🔑 立即去粘贴 Token (进入设置)
+          🔑 立即配置 Token (前往设置)
         </button>
         <button class="pixel-btn btn-outline" style="flex:1; justify-content:center;" onclick="loadDemoAndCloseGuide()">
-          🎲 还没有 Token？先体验沙盒演示
+          🎲 无 Token 快速体验 (沙盒演示)
         </button>
       </div>
     </div>
@@ -1474,6 +1552,14 @@
     }
 
     let currentTimeFilter = 'all';
+    let currentFilterStats = {
+      label: '全部历史',
+      totalOrders: 0,
+      totalSpent: '0.0',
+      totalSaved: '0.0',
+      currentStreak: 0,
+      savingRate: '0.0'
+    };
 
     function applyTimeFilter(filterType, tabElem) {
       playBleep(520, 0.04);
@@ -1672,15 +1758,27 @@
 
       // 更新顶部徽章说明
       const filterBadge = document.getElementById('filterMatchBadge');
+      let filterLabel = '全部历史';
+      if (currentTimeFilter === '2026') filterLabel = '2026 年度';
+      else if (currentTimeFilter === '2025') filterLabel = '2025 年度';
+      else if (currentTimeFilter === '12m') filterLabel = '近 12 个月';
+      else if (currentTimeFilter === '30d') filterLabel = '近 30 天';
+      else if (currentTimeFilter.startsWith('month:')) filterLabel = currentTimeFilter.replace('month:', '') + ' 月度';
+
       if (filterBadge) {
-        let label = '全部历史';
-        if (currentTimeFilter === '2026') label = '2026 年度';
-        else if (currentTimeFilter === '2025') label = '2025 年度';
-        else if (currentTimeFilter === '12m') label = '近 12 个月';
-        else if (currentTimeFilter === '30d') label = '近 30 天';
-        else if (currentTimeFilter.startsWith('month:')) label = currentTimeFilter.replace('month:', '') + ' 月度';
-        filterBadge.textContent = `${label} · ${totalOrders} 笔订单 · 实付 ¥${totalSpent.toFixed(1)}`;
+        filterBadge.textContent = `${filterLabel} · ${totalOrders} 笔订单 · 实付 ¥${totalSpent.toFixed(1)}`;
       }
+
+      // 同步当前周期的战报指标 (用于战绩卡与分享联动)
+      const streak = (currentSummary && currentSummary.stats) ? (currentSummary.stats.currentStreak || 0) : 0;
+      currentFilterStats = {
+        label: filterLabel,
+        totalOrders,
+        totalSpent: totalSpent.toFixed(1),
+        totalSaved: totalSaved.toFixed(1),
+        currentStreak: streak,
+        savingRate
+      };
 
       // 联动渲染时段分布、门店足迹、品类构成、最爱单品与订单流
       renderTimeDistribution(computeTimeDistribution(filtered));
@@ -1785,7 +1883,7 @@
     }
 
     // -------------------------------------------------------------
-    // 时段用量分布渲染
+    // 时段用量分布渲染 (含幽灵骨架空状态，消灭大屏死黑)
     // -------------------------------------------------------------
     function renderTimeDistribution(dist) {
       const container = document.getElementById('timeDistributionContainer');
@@ -1793,11 +1891,29 @@
       container.innerHTML = '';
 
       if (!dist || dist.length === 0 || dist.every(d => d.count === 0)) {
-        container.innerHTML = `
-          <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:24px 0;">
-            暂无就餐时段数据 (输入 Token 后即可自动呈现早餐/午餐/下午茶/晚餐分布)
-          </div>
-        `;
+        const defaultSlots = [
+          { label: '早晨元气 (05:00-10:30)' },
+          { label: '午间主力 (10:30-14:00)' },
+          { label: '下午茶黑咖 (14:00-17:00)' },
+          { label: '晚间犒赏 (17:00-21:00)' },
+          { label: '深夜加餐 (21:00-05:00)' }
+        ];
+        defaultSlots.forEach(s => {
+          const div = document.createElement('div');
+          div.className = 'time-slot-item ghost-item';
+          div.innerHTML = `
+            <div class="time-slot-header">
+              <span style="font-weight:600; color:var(--pixel-subtext);">${s.label}</span>
+              <span class="ghost-badge">待点亮 · 0 顿</span>
+            </div>
+            <div class="ghost-progress-bar"></div>
+          `;
+          container.appendChild(div);
+        });
+        const hint = document.createElement('div');
+        hint.className = 'ghost-hint-box';
+        hint.innerHTML = '<span>💡</span><span>连接麦当劳账号即可自动统计你的吃麦生物钟与时段偏好</span>';
+        container.appendChild(hint);
         return;
       }
 
@@ -1818,7 +1934,7 @@
     }
 
     // -------------------------------------------------------------
-    // 探店版图与常去餐厅渲染
+    // 探店版图与常去餐厅渲染 (含幽灵骨架空状态)
     // -------------------------------------------------------------
     function renderStoreFootprints(stores) {
       const container = document.getElementById('storeFootprintsContainer');
@@ -1826,11 +1942,32 @@
       container.innerHTML = '';
 
       if (!stores || stores.length === 0) {
-        container.innerHTML = `
-          <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:24px 0;">
-            暂无常去餐厅记录 (输入 Token 后即可解析历史足迹门店)
-          </div>
-        `;
+        const ghostStores = [
+          { rank: '#1', name: '待点亮常去餐厅', sub: '连接账号后自动锁定第一据点' },
+          { rank: '#2', name: '待点亮第二据点', sub: '常去门店与消费频次' },
+          { rank: '#3', name: '待点亮备选据点', sub: '探店足迹全记录' }
+        ];
+        ghostStores.forEach(gs => {
+          const div = document.createElement('div');
+          div.className = 'store-item ghost-item';
+          div.innerHTML = `
+            <div class="store-left">
+              <div class="store-title">
+                <span style="color:var(--pixel-subtext); font-family:monospace;">${gs.rank}</span>
+                <span style="color:var(--pixel-subtext);">📍 ${gs.name}</span>
+              </div>
+              <div class="store-date">${gs.sub}</div>
+            </div>
+            <div class="store-right">
+              <span class="ghost-badge">-- 次 · 待解锁</span>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+        const hint = document.createElement('div');
+        hint.className = 'ghost-hint-box';
+        hint.innerHTML = '<span>💡</span><span>输入 Token 后自动解析您的麦当劳探店版图与最常光顾的餐厅</span>';
+        container.appendChild(hint);
         return;
       }
 
@@ -1855,7 +1992,7 @@
     }
 
     // -------------------------------------------------------------
-    // 品类与英雄榜渲染
+    // 品类偏好与英雄榜渲染 (含幽灵骨架空状态)
     // -------------------------------------------------------------
     function renderCategories(breakdown) {
       const container = document.getElementById('categoryContainer');
@@ -1863,11 +2000,28 @@
       container.innerHTML = '';
 
       if (!breakdown || breakdown.length === 0) {
-        container.innerHTML = `
-          <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:24px 0;">
-            暂无品类消费数据
-          </div>
-        `;
+        const ghostCats = [
+          { label: '🍔 主食汉堡类' },
+          { label: '☕ 鲜煮咖啡与饮品' },
+          { label: '🍳 晨光早餐麦满分' },
+          { label: '🍟 小食配餐与甜品' }
+        ];
+        ghostCats.forEach(c => {
+          const div = document.createElement('div');
+          div.className = 'cat-bar-item ghost-item';
+          div.innerHTML = `
+            <div class="cat-bar-header">
+              <span style="font-weight:600; color:var(--pixel-subtext);">${c.label}</span>
+              <span class="ghost-badge">待点亮 · 0%</span>
+            </div>
+            <div class="ghost-progress-bar"></div>
+          `;
+          container.appendChild(div);
+        });
+        const hint = document.createElement('div');
+        hint.className = 'ghost-hint-box';
+        hint.innerHTML = '<span>💡</span><span>同步吃麦订单后自动分析各类餐品的开销倾斜与热量摄入</span>';
+        container.appendChild(hint);
         return;
       }
 
@@ -1893,11 +2047,32 @@
       container.innerHTML = '';
 
       if (!topItems || topItems.length === 0) {
-        container.innerHTML = `
-          <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:24px 0;">
-            暂无常点单品数据
-          </div>
-        `;
+        const ghostChamps = [
+          { rank: '🥇', name: '待解锁年度本命单品', badge: '金牌最爱' },
+          { rank: '🥈', name: '待解锁高频复购单品', badge: '银牌常点' },
+          { rank: '🥉', name: '待解锁心水单品', badge: '铜牌心选' }
+        ];
+        ghostChamps.forEach(gc => {
+          const div = document.createElement('div');
+          div.className = 'champ-item ghost-item';
+          div.innerHTML = `
+            <div class="champ-left">
+              <span class="champ-rank" style="opacity:0.6;">${gc.rank}</span>
+              <div>
+                <div class="champ-name" style="color:var(--pixel-subtext);">${gc.name}</div>
+                <span class="ghost-badge">${gc.badge}</span>
+              </div>
+            </div>
+            <div class="champ-right">
+              <span class="ghost-badge">-- 次 · 待揭晓</span>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+        const hint = document.createElement('div');
+        hint.className = 'ghost-hint-box';
+        hint.innerHTML = '<span>💡</span><span>连接麦当劳账号即可揭晓您的年度吃麦本命单品与复购排行榜</span>';
+        container.appendChild(hint);
         return;
       }
 
@@ -2071,9 +2246,9 @@
 
       const descEl = document.getElementById('heatmapTitleDesc');
       if (descEl) {
-        if (view === '2026') descEl.textContent = '(2026 年度吃麦点阵谱 · 53周全景)';
-        else if (view === '2025') descEl.textContent = '(2025 年度吃麦点阵谱 · 53周全景)';
-        else descEl.textContent = '(近 24 周吃麦点阵谱)';
+        if (view === '2026') descEl.textContent = '· 2026 年度 53 周全景点阵图';
+        else if (view === '2025') descEl.textContent = '· 2025 年度 53 周全景点阵图';
+        else descEl.textContent = '· 近 24 周就餐点阵图';
       }
 
       renderHeatmapView();
@@ -2473,7 +2648,10 @@
 
       ctx.fillStyle = '#A4B0BE';
       ctx.font = '11px monospace';
-      ctx.fillText('1024 DEVELOPER CHALLENGE PASS', w / 2, 74);
+      const passTitle = (currentFilterStats && currentFilterStats.label && currentFilterStats.label !== '全部历史')
+        ? `PASS: ${currentFilterStats.label.toUpperCase()}`
+        : '1024 DEVELOPER CHALLENGE PASS';
+      ctx.fillText(passTitle, w / 2, 74);
 
       ctx.strokeStyle = '#38344e';
       ctx.lineWidth = 2;
@@ -2500,15 +2678,15 @@
       ctx.lineWidth = 2;
       ctx.strokeRect(36, 260, w - 72, 160);
 
-      const stats = currentSummary ? currentSummary.stats : { totalOrders: 0, totalSpent: 0, totalSaved: 0, currentStreak: 0 };
+      const stats = currentFilterStats || (currentSummary ? currentSummary.stats : { totalOrders: 0, totalSpent: '0.0', totalSaved: '0.0', currentStreak: 0 });
       ctx.font = '12px monospace';
       ctx.fillStyle = '#A4B0BE';
-      ctx.fillText('• 累计吃麦次数:', 48, 290);
+      ctx.fillText('• 周期吃麦次数:', 48, 290);
       ctx.fillStyle = '#FFC72C';
       ctx.fillText(`${stats.totalOrders} 顿`, 260, 290);
 
       ctx.fillStyle = '#A4B0BE';
-      ctx.fillText('• 麦门总实付额:', 48, 320);
+      ctx.fillText('• 周期总实付额:', 48, 320);
       ctx.fillStyle = '#FFF';
       ctx.fillText(`¥${stats.totalSpent}`, 260, 320);
 
@@ -2581,8 +2759,13 @@
     function copyCardData() {
       playBleep(880, 0.08);
       if (!currentSummary) return;
-      const s = currentSummary.stats;
-      const text = `【McVibe · 麦门足迹战报】\n已连续吃麦 ${s.currentStreak} 天！\n累计消费 ¥${s.totalSpent}，省下 ¥${s.totalSaved} (抵扣率 ${s.savingRatePercent}%)\n积分余额: ${currentSummary.user.points} | 称号: ${currentSummary.user.title}\n查看麦当劳 1024 程序员节官方 MCP 仪表盘: https://mcp.mcd.cn`;
+      const label = currentFilterStats.label || '全部历史';
+      const streak = currentFilterStats.currentStreak;
+      const spent = currentFilterStats.totalSpent;
+      const saved = currentFilterStats.totalSaved;
+      const orders = currentFilterStats.totalOrders;
+      const rate = currentFilterStats.savingRate;
+      const text = `【McVibe · 麦门足迹战报 (${label})】\n周期就餐: ${orders} 顿 | 连续吃麦 ${streak} 天\n周期实付: ¥${spent} | 优惠减免: ¥${saved} (抵扣率 ${rate}%)\n积分余额: ${currentSummary.user.points} | 称号: ${currentSummary.user.title}\n查看麦当劳 1024 程序员节官方 MCP 仪表盘: https://mcp.mcd.cn`;
       navigator.clipboard.writeText(text).then(() => {
         alert('战报文本已复制到剪贴板！可直接分享到微信/群聊！');
       });
