@@ -153,11 +153,139 @@ export class VibeAggregator {
   }
 
   /**
+   * 将麦当劳官方 MCP order-list 返回的原始订单结构解析为系统 OrderRecord
+   */
+  public static convertOfficialOrders(officialList: any[]): OrderRecord[] {
+    if (!Array.isArray(officialList)) return [];
+
+    return officialList.map((order, index) => {
+      const orderId = order.orderId || `MCD-OFFICIAL-${index}`;
+      const createTime = order.createTime || new Date().toISOString();
+      const dateStr = createTime.includes(' ') ? createTime.split(' ')[0] : createTime.split('T')[0];
+      const paid = parseFloat(order.realTotalAmount) || 0;
+
+      const items: any[] = [];
+      const productList = order.orderProductList || [];
+
+      for (const prod of productList) {
+        if (Array.isArray(prod.comboItemList) && prod.comboItemList.length > 0) {
+          for (const sub of prod.comboItemList) {
+            const name = sub.name || sub.productName || '经典餐品';
+            const cat = this.inferCategory(name);
+            items.push({
+              id: sub.productCode || `P-${Math.random().toString(36).slice(2, 7)}`,
+              name,
+              category: cat,
+              count: sub.quantity || 1,
+              price: Math.max(1, Math.round(paid / (prod.comboItemList.length || 1))),
+              calories: this.estimateCalories(cat, name)
+            });
+          }
+        } else {
+          const name = prod.productName || '经典餐品';
+          const cat = this.inferCategory(name);
+          items.push({
+            id: prod.productCode || `P-${Math.random().toString(36).slice(2, 7)}`,
+            name,
+            category: cat,
+            count: prod.quantity || 1,
+            price: Math.max(1, Math.round(paid / Math.max(1, productList.length))),
+            calories: this.estimateCalories(cat, name)
+          });
+        }
+      }
+
+      if (items.length === 0) {
+        items.push({
+          id: 'P-DEFAULT',
+          name: '麦当劳随心配组合',
+          category: 'burger',
+          count: 1,
+          price: paid,
+          calories: 480
+        });
+      }
+
+      const originalTotal = Math.max(paid, items.reduce((s: number, i: any) => s + i.price * i.count, 0));
+      const discount = Math.max(0, Number((originalTotal - paid).toFixed(1)));
+
+      return {
+        id: orderId,
+        timestamp: createTime.includes(' ') ? createTime.replace(' ', 'T') : createTime,
+        date: dateStr,
+        items,
+        totalPrice: originalTotal,
+        discountAmount: discount,
+        paidAmount: paid,
+        couponUsed: discount > 0 ? '官方专享优惠' : undefined,
+        pointsEarned: Math.floor(paid * 10),
+        diningType: order.beType === '2' ? 'delivery' : 'dine_in',
+        storeName: order.storeName || '麦当劳餐厅',
+        isOfficialReal: true
+      };
+    });
+  }
+
+  private static inferCategory(name: string): FoodCategory {
+    if (/堡|牛|肉|猪|板烧|麦辣鸡腿|麦麦脆汁鸡/.test(name)) return 'burger';
+    if (/咖|美式|拿铁|茶|可乐|雪碧|水|饮|果汁|奶/.test(name)) return 'drink';
+    if (/派|圆筒|圣代|旋风|雪糕|甜品/.test(name)) return 'dessert';
+    if (/早|麦满分|炒蛋|松饼|粥/.test(name)) return 'breakfast';
+    if (/薯|薯条|脆薯饼|鸡块|鸡翅|骨|小食/.test(name)) return 'snack';
+    return 'burger';
+  }
+
+  private static estimateCalories(cat: FoodCategory, name: string): number {
+    if (cat === 'burger') return 460;
+    if (cat === 'drink') return name.includes('美式') || name.includes('黑咖') || name.includes('零度') ? 15 : 120;
+    if (cat === 'snack') return 240;
+    if (cat === 'breakfast') return 320;
+    if (cat === 'dessert') return 230;
+    return 350;
+  }
+
+  /**
    * 汇总全景 Vibe 数据
    */
   public static async computeSummary(orders: OrderRecord[], mcpClient: McpClient): Promise<VibeSummary> {
+    // 联动查询官方/沙盒 MCP 接口
+    let mcpTime: any = {};
+    let mcpPoints: any = {};
+    let mcpCoupons: any = {};
+    let realOrders: OrderRecord[] = [];
+
+    try {
+      mcpTime = await mcpClient.callTool('now-time-info');
+      mcpPoints = await mcpClient.callTool('query-my-account');
+      mcpCoupons = await mcpClient.callTool('query-my-coupons');
+
+      if (!mcpClient.isUsingSandbox()) {
+        const mcpOrders = await mcpClient.callTool('order-list');
+        if (mcpOrders?.list && Array.isArray(mcpOrders.list)) {
+          realOrders = this.convertOfficialOrders(mcpOrders.list);
+        }
+      }
+    } catch {
+      // 容错已在 mcpClient 内部处理
+    }
+
+    // 将真实官方订单与足迹数据流进行智能合并去重
+    let effectiveOrders = orders;
+    if (realOrders.length > 0) {
+      const mergedMap = new Map<string, OrderRecord>();
+      for (const ro of realOrders) {
+        mergedMap.set(ro.id, ro);
+      }
+      for (const o of orders) {
+        if (!mergedMap.has(o.id)) {
+          mergedMap.set(o.id, o);
+        }
+      }
+      effectiveOrders = Array.from(mergedMap.values());
+    }
+
     const todayStr = new Date().toISOString().split('T')[0];
-    const todayOrders = orders.filter(o => o.date === todayStr);
+    const todayOrders = effectiveOrders.filter(o => o.date === todayStr);
 
     const todaySpent = Number(todayOrders.reduce((sum, o) => sum + o.paidAmount, 0).toFixed(1));
     const todaySaved = Number(todayOrders.reduce((sum, o) => sum + o.discountAmount, 0).toFixed(1));
@@ -180,21 +308,21 @@ export class VibeAggregator {
     // 咖啡因/MP (魔法/专注力): 每杯黑咖啡提供 45 点 MP
     const mp = Math.min(100, coffeeToday * 45 + (todayOrders.length > 0 ? 20 : 0));
 
-    const totalOrders = orders.length;
-    const totalSpent = Number(orders.reduce((sum, o) => sum + o.paidAmount, 0).toFixed(1));
-    const totalSaved = Number(orders.reduce((sum, o) => sum + o.discountAmount, 0).toFixed(1));
-    const totalOriginal = Number(orders.reduce((sum, o) => sum + o.totalPrice, 0).toFixed(1));
+    const totalOrders = effectiveOrders.length;
+    const totalSpent = Number(effectiveOrders.reduce((sum, o) => sum + o.paidAmount, 0).toFixed(1));
+    const totalSaved = Number(effectiveOrders.reduce((sum, o) => sum + o.discountAmount, 0).toFixed(1));
+    const totalOriginal = Number(effectiveOrders.reduce((sum, o) => sum + o.totalPrice, 0).toFixed(1));
     const savingRate = totalOriginal > 0 ? Number(((totalSaved / totalOriginal) * 100).toFixed(1)) : 0;
-    
+
     let totalCalories = 0;
-    for (const o of orders) {
+    for (const o of effectiveOrders) {
       for (const item of o.items) {
         totalCalories += item.calories * item.count;
       }
     }
 
     // 计算连续打卡天数
-    const uniqueDates = Array.from(new Set(orders.map(o => o.date))).sort();
+    const uniqueDates = Array.from(new Set(effectiveOrders.map(o => o.date))).sort();
     let currentStreak = 0;
     let longestStreak = 0;
     let tempStreak = 0;
@@ -219,30 +347,25 @@ export class VibeAggregator {
     const isRecentlyActive = uniqueDates.includes(todayStr) || uniqueDates.includes(yesterdayStr);
     currentStreak = isRecentlyActive ? tempStreak : 0;
 
-    // MCP 联动查询
-    let mcpTime: any = {};
-    let mcpPoints: any = {};
-    let mcpCoupons: any = {};
-    try {
-      mcpTime = await mcpClient.callTool('now-time-info');
-      mcpPoints = await mcpClient.callTool('get-user-points');
-      mcpCoupons = await mcpClient.callTool('query-user-coupons');
-    } catch {
-      // 容错已在 mcpClient 内部处理
-    }
+    const heatmap = this.generateHeatmap(effectiveOrders, 24);
+    const breakdown = this.computeCategoryBreakdown(effectiveOrders);
+    const topItems = this.computeTopItems(effectiveOrders);
+    const achievements = AchievementEngine.evaluateAchievements(effectiveOrders);
 
-    const heatmap = this.generateHeatmap(orders, 24);
-    const breakdown = this.computeCategoryBreakdown(orders);
-    const topItems = this.computeTopItems(orders);
-    const achievements = AchievementEngine.evaluateAchievements(orders);
+    const isSandbox = mcpClient.isUsingSandbox();
+    const userPoints = parseFloat(mcpPoints?.availablePoint ?? mcpPoints?.totalPoints ?? 3420);
+    const accumulativePoints = parseFloat(mcpPoints?.accumulativePoint ?? 12890);
+    const expiredPoints = parseFloat(mcpPoints?.expiredPoint ?? 0);
 
     return {
       user: {
-        nickname: 'CyberMaimen',
+        nickname: isSandbox ? 'CyberMaimen' : '麦门开发者',
         avatarPixel: 'pixel-avatar-mcd',
-        memberLevel: mcpPoints?.tier || 'GOLD_MAIMEN',
-        points: mcpPoints?.totalPoints || 3420,
-        title: 'Lv.7 麦门黄金架构师'
+        memberLevel: isSandbox ? (mcpPoints?.tier || 'GOLD_MAIMEN') : '麦享会官方会员',
+        points: userPoints,
+        accumulativePoints,
+        expiredPoints,
+        title: isSandbox ? 'Lv.7 麦门黄金架构师' : (userPoints > 100 ? 'Lv.5 麦门极客食客' : 'Lv.3 麦门新锐开发者')
       },
       today: {
         spent: todaySpent,
@@ -270,13 +393,17 @@ export class VibeAggregator {
       achievements,
       mcpStatus: {
         isConnected: true,
-        isSandbox: mcpClient.isUsingSandbox(),
+        isSandbox,
         tokenConfigured: !!mcpClient.getToken(),
         tokenMasked: mcpClient.getMaskedToken() || undefined,
-        timePeriod: mcpTime?.timePeriod || 'regular',
-        couponsAvailable: mcpCoupons?.totalCoupons || 5,
-        currentTime: mcpTime?.currentTime || new Date().toISOString()
-      }
+        timePeriod: mcpTime?.timePeriod || (mcpTime?.dayOfWeek ? 'regular' : 'regular'),
+        couponsAvailable: Number(mcpCoupons?.totalCount ?? mcpCoupons?.totalCoupons ?? 5),
+        currentTime: mcpTime?.formatted || mcpTime?.datetime || mcpTime?.currentTime || new Date().toISOString(),
+        recentStore: realOrders[0]?.storeName || undefined,
+        realOrdersCount: realOrders.length
+      },
+      recentOrders: effectiveOrders.slice(0, 10)
     };
   }
 }
+

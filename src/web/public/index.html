@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>McVibe · 麦门足迹 | 8-Bit 像素级麦当劳生活与用量仪表盘</title>
+  <!-- PWA & 官方像素 Favicon -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/logo-mcd-pixel.svg">
+  <link rel="apple-touch-icon" href="/logo-mcd-pixel.svg">
+  <meta name="theme-color" content="#DA291C">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="McVibe">
   <!-- 预加载像素复古字体 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -140,6 +148,18 @@
       font-size: 38px;
       filter: drop-shadow(3px 3px 0 #000);
       animation: float 2.5s ease-in-out infinite;
+    }
+    .brand-icon-pixel {
+      width: 44px;
+      height: 44px;
+      image-rendering: pixelated;
+      filter: drop-shadow(3px 3px 0 #000);
+      animation: float 2.5s ease-in-out infinite;
+      cursor: pointer;
+      transition: transform 0.12s;
+    }
+    .brand-icon-pixel:hover {
+      transform: scale(1.1) translateY(-2px);
     }
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -882,7 +902,7 @@
     <!-- 头部导航 -->
     <header>
       <div class="brand">
-        <div class="brand-icon">🍟</div>
+        <img src="/logo-mcd-pixel.svg" alt="McDonald's Golden Arches" class="brand-icon-pixel" onclick="playCoin()" title="麦当劳官方金拱门 8-Bit 像素徽标 (点击播放金币音效)" />
         <div>
           <h1 class="brand-title pixel-font">McVibe · 麦门足迹</h1>
           <p class="brand-tagline">8-Bit 像素级麦当劳生活足迹与资产用量仪表盘 (VibeUsage Inspired)</p>
@@ -896,6 +916,9 @@
         </div>
         <button class="pixel-btn btn-outline" id="btnTokenModal" style="border-color:var(--pixel-yellow); color:var(--pixel-yellow);" onclick="openTokenModal()">
           🔑 绑定官方 Token
+        </button>
+        <button class="pixel-btn btn-outline" id="btnInstallPwa" style="border-color:var(--pixel-yellow); color:var(--pixel-yellow);" onclick="installPwaApp()" title="安装到桌面或手机主屏幕">
+          📲 戳个应用
         </button>
         <button class="pixel-btn btn-outline" id="btnAudioToggle" title="切换 8-Bit 像素音效">
           🔊 SFX: ON
@@ -1005,7 +1028,8 @@
         </div>
         <div class="metric-sub">
           <span>积分余额 <b id="mPointsBalance" style="color:var(--pixel-yellow);">3,420</b></span>
-          <span>· 历史最长 <b id="mLongestStreak" style="color:#FFF;">12</b> 天</span>
+          <span>· 卡券 <b id="mCouponsCount" style="color:var(--pixel-green);">5</b> 张</span>
+          <span>· 最长 <b id="mLongestStreak" style="color:#FFF;">12</b> 天</span>
         </div>
       </div>
     </section>
@@ -1120,6 +1144,20 @@
         <span>🏆 麦门成就勋章馆 (8-Bit Badges)</span>
       </div>
       <div class="badges-grid" id="badgesContainer"></div>
+    </section>
+
+    <!-- 麦门足迹订单流 -->
+    <section class="pixel-card" id="orderStreamSection">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+        <div class="section-title pixel-font">
+          <span>📜 麦门足迹订单流 (McDonald's Orders)</span>
+          <span style="font-size:11px; color:var(--pixel-subtext); font-weight:normal;" id="orderStreamSub">(官方订单与打卡记录)</span>
+        </div>
+        <button class="pixel-btn btn-sm" style="border-color:var(--pixel-green); background:#12261b; color:var(--pixel-green);" id="btnAutoBindStream" onclick="triggerAutoBindCoupons()">
+          🎁 一键自动领券 (auto-bind)
+        </button>
+      </div>
+      <div id="orderStreamContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
     </section>
 
     <!-- 页脚 -->
@@ -1264,7 +1302,10 @@
 
       <div style="display:flex; flex-direction:column; gap:10px;">
         <button class="pixel-btn" id="btnSaveToken" style="justify-content:center;" onclick="saveTokenAndConnect()">
-          ⚡ 验证并切换真实数据
+          ⚡ 验证并切换真实数据 (实时从官方拉取)
+        </button>
+        <button class="pixel-btn btn-red" id="btnClearToken" style="justify-content:center; font-size:11px;" onclick="clearTokenAndReset()">
+          🗑️ 一键清空并解除绑定 (清空测试)
         </button>
         <button class="pixel-btn btn-outline" style="justify-content:center; font-size:11px;" onclick="resetToSandbox()">
           🎲 恢复本地沙盒演示数据 (Sandbox)
@@ -1441,11 +1482,25 @@
       document.getElementById('mFreeBurgers').textContent = Math.floor(data.stats.totalSaved / 21);
 
       document.getElementById('mCurrentStreak').textContent = data.stats.currentStreak;
-      document.getElementById('mPointsBalance').textContent = data.user.points.toLocaleString();
+      document.getElementById('mPointsBalance').textContent = Number(data.user.points).toLocaleString();
+      if (document.getElementById('mCouponsCount')) {
+        document.getElementById('mCouponsCount').textContent = data.mcpStatus?.couponsAvailable ?? 0;
+      }
       document.getElementById('mLongestStreak').textContent = data.stats.longestStreak;
 
       document.getElementById('rankBadgeText').textContent = data.user.title;
       document.getElementById('activeDaysText').textContent = `${data.stats.activeDays} 天`;
+
+      // 看板娘气泡动态台词
+      const bubbleEl = document.getElementById('mascotBubbleText');
+      if (bubbleEl) {
+        if (data.mcpStatus && !data.mcpStatus.isSandbox) {
+          const storePart = data.mcpStatus.recentStore ? `，近期常光顾 ${data.mcpStatus.recentStore}` : '';
+          bubbleEl.textContent = `"已成功连接麦当劳官方 MCP！实时积分 ${data.user.points} 分，已领优惠券 ${data.mcpStatus.couponsAvailable} 张${storePart}！吃饱喝足继续冲！"`;
+        } else {
+          bubbleEl.textContent = `"正在全力 Vibe Coding！双屏终端已就绪，下午敲代码必须来杯鲜煮黑咖维持专注！"`;
+        }
+      }
 
       // Token 换算彩蛋数据
       const approxTokens = ((data.stats.totalCalories * 4000) / 1000000).toFixed(1);
@@ -1460,6 +1515,101 @@
       renderCategories(data.breakdown);
       renderChampions(data.topItems);
       renderBadges(data.achievements);
+
+      // 渲染订单流
+      if (data.recentOrders) {
+        renderOrderStream(data.recentOrders);
+      }
+    }
+
+    function renderOrderStream(orders) {
+      const container = document.getElementById('orderStreamContainer');
+      const sub = document.getElementById('orderStreamSub');
+      if (!container) return;
+      container.innerHTML = '';
+      if (!orders || orders.length === 0) {
+        container.innerHTML = '<div style="color:var(--pixel-subtext); font-size:12px; padding:10px;">暂无订单记录</div>';
+        return;
+      }
+      if (sub) {
+        const officialCount = orders.filter(o => o.isOfficialReal).length;
+        sub.textContent = officialCount > 0 ? `(含 ${officialCount} 笔麦当劳官方核销订单)` : '(本地打卡与沙盒足迹)';
+      }
+      orders.forEach(order => {
+        const itemRow = document.createElement('div');
+        const isOfficial = !!order.isOfficialReal;
+        itemRow.style.backgroundColor = isOfficial ? '#15251d' : '#1d1b2a';
+        itemRow.style.border = isOfficial ? '2px solid var(--pixel-green)' : '2px solid #000';
+        itemRow.style.padding = '12px 14px';
+        itemRow.style.boxShadow = 'var(--pixel-shadow-sm)';
+        itemRow.style.display = 'flex';
+        itemRow.style.flexDirection = 'column';
+        itemRow.style.gap = '6px';
+
+        const itemsText = order.items.map(i => `${i.name}${i.count > 1 ? ' x' + i.count : ''}`).join(' + ');
+
+        itemRow.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="pixel-font" style="font-size:11px; color:${isOfficial ? 'var(--pixel-green)' : 'var(--pixel-yellow)'};">
+                ${isOfficial ? '🟢 官方核销订单' : '🏷️ 足迹记录'}
+              </span>
+              <span style="font-size:12px; font-weight:bold; color:#FFF;">
+                ${order.storeName ? '📍 ' + order.storeName : '📍 麦当劳餐厅'}
+              </span>
+            </div>
+            <div style="font-size:11px; color:var(--pixel-subtext); font-family:monospace;">
+              ${order.date}
+            </div>
+          </div>
+          <div style="font-size:12px; color:var(--pixel-text); margin:2px 0;">
+            ${itemsText}
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:var(--pixel-subtext); border-top:1px dashed #2d2b3d; padding-top:6px; margin-top:2px;">
+            <div>
+              实付 <b style="color:var(--pixel-yellow);">¥${Number(order.paidAmount).toFixed(1)}</b>
+              ${order.discountAmount > 0 ? ` · <span style="color:var(--pixel-green);">省 ¥${Number(order.discountAmount).toFixed(1)}</span>` : ''}
+              ${order.couponUsed ? ` (${order.couponUsed})` : ''}
+            </div>
+            <div>
+              获得积分 +${order.pointsEarned || 0}
+            </div>
+          </div>
+        `;
+        container.appendChild(itemRow);
+      });
+    }
+
+    async function triggerAutoBindCoupons() {
+      playBleep(660, 0.05);
+      const btn = document.getElementById('btnAutoBindStream');
+      const originalText = btn ? btn.textContent : '';
+      if (btn) {
+        btn.textContent = '⏳ 正在领券...';
+        btn.disabled = true;
+      }
+      try {
+        const res = await fetch('/api/vibe/auto-bind-coupons', { method: 'POST' });
+        const data = await res.json();
+        if (btn) {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+        if (data.success) {
+          playFanfare();
+          currentSummary = data.summary;
+          renderDashboard(data.summary);
+          alert(`🎉 麦麦省自动领券成功！当前可用卡券: ${data.summary.mcpStatus.couponsAvailable} 张`);
+        } else {
+          alert('领券提示: ' + (data.error || '未成功'));
+        }
+      } catch (err) {
+        if (btn) {
+          btn.textContent = originalText;
+          btn.disabled = false;
+        }
+        alert('网络请求失败: ' + err.message);
+      }
     }
 
     // -------------------------------------------------------------
@@ -2196,6 +2346,33 @@
       }
     }
 
+    async function clearTokenAndReset() {
+      playBleep(350, 0.08);
+      document.getElementById('inputMcpToken').value = '';
+      const alertEl = document.getElementById('tokenStatusAlert');
+      alertEl.style.display = 'block';
+      alertEl.style.backgroundColor = '#12261b';
+      alertEl.style.borderColor = 'var(--pixel-green)';
+      alertEl.style.color = 'var(--pixel-green)';
+      alertEl.textContent = '✓ Token 已完全从内存清空，已安全切换回沙盒模式！';
+
+      try {
+        const res = await fetch('/api/vibe/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: '' })
+        });
+        const data = await res.json();
+        if (data.summary) {
+          currentSummary = data.summary;
+          renderDashboard(data.summary);
+        }
+        setTimeout(closeTokenModal, 1200);
+      } catch (err) {
+        alertEl.textContent = '清空失败: ' + err.message;
+      }
+    }
+
     async function resetToSandbox() {
       playCoin();
       document.getElementById('inputMcpToken').value = '';
@@ -2219,6 +2396,37 @@
         }
         setTimeout(closeTokenModal, 800);
       } catch (err) {}
+    }
+
+    // -------------------------------------------------------------
+    // PWA 应用安装交互 (戳个应用)
+    // -------------------------------------------------------------
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const btn = document.getElementById('btnInstallPwa');
+      if (btn) btn.style.display = 'inline-flex';
+    });
+
+    async function installPwaApp() {
+      playCoin();
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          playFanfare();
+        }
+        deferredPrompt = null;
+      } else {
+        alert('【戳个应用 · 桌面/手机安装指南】\n\n• macOS / Windows Chrome：\n  点击地址栏最右侧的【安装应用 ⊕】按钮即可一键安装至系统。\n\n• Safari (macOS)：\n  点击顶部菜单栏【文件】→【添加到程序坞 (Add to Dock)】。\n\n• iOS / iPhone：\n  点击 Safari 底部【分享】图标 → 选择【添加到主屏幕】。');
+      }
+    }
+
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
     }
 
     loadSummary();

@@ -113,6 +113,23 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  if (pathname === '/api/vibe/auto-bind-coupons' && req.method === 'POST') {
+    try {
+      const bindResult = await mcpClient.callTool('auto-bind-coupons');
+      const summary = await VibeAggregator.computeSummary(currentOrders, mcpClient);
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
+      res.end(JSON.stringify({
+        success: true,
+        bindResult,
+        summary
+      }));
+    } catch (err: any) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err.message }));
+    }
+    return;
+  }
+
   if (pathname === '/api/vibe/reset' && req.method === 'POST') {
     currentOrders = generateRealisticOrderHistory();
     const summary = await VibeAggregator.computeSummary(currentOrders, mcpClient);

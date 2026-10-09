@@ -1,0 +1,18 @@
+{
+  "name": "McVibe · 麦门足迹",
+  "short_name": "McVibe",
+  "description": "8-Bit 像素级麦当劳生活足迹与资产用量仪表盘 (基于官方 MCP 真实接口)",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0e15",
+  "theme_color": "#DA291C",
+  "icons": [
+    {
+      "src": "/logo-mcd-pixel.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

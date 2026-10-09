@@ -21,6 +21,8 @@ export interface OrderRecord {
   couponUsed?: string;
   pointsEarned: number;
   diningType: 'dine_in' | 'takeaway' | 'delivery';
+  storeName?: string;
+  isOfficialReal?: boolean;
 }
 
 export interface HeatmapDay {
@@ -70,6 +72,8 @@ export interface VibeSummary {
     avatarPixel: string;
     memberLevel: string;
     points: number;
+    accumulativePoints?: number;
+    expiredPoints?: number;
     title: string;
   };
   today: {
@@ -104,5 +108,8 @@ export interface VibeSummary {
     timePeriod: string;
     couponsAvailable: number;
     currentTime: string;
+    recentStore?: string;
+    realOrdersCount?: number;
   };
+  recentOrders?: OrderRecord[];
 }

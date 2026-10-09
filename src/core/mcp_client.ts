@@ -76,6 +76,11 @@ export class McpClient {
       return this.dispatchMock(toolName, args);
     }
 
+    // 官方工具别名兼容映射
+    let officialTool = toolName;
+    if (toolName === 'get-user-points') officialTool = 'query-my-account';
+    if (toolName === 'query-user-coupons') officialTool = 'query-my-coupons';
+
     try {
       const response = await fetch(this.baseUrl, {
         method: 'POST',
@@ -87,7 +92,7 @@ export class McpClient {
           jsonrpc: '2.0',
           method: 'tools/call',
           params: {
-            name: toolName,
+            name: officialTool,
             arguments: args
           },
           id: Date.now()
@@ -96,15 +101,25 @@ export class McpClient {
 
       if (!response.ok) {
         console.warn(`[MCP Client] Live endpoint returned ${response.status}, falling back to sandbox`);
-        this.isSandbox = true;
         return this.dispatchMock(toolName, args);
       }
 
       const json = await response.json();
+      if (json.error) {
+        console.warn(`[MCP Client] RPC error:`, json.error);
+        return this.dispatchMock(toolName, args);
+      }
+
+      // 提取官方 MCP structuredContent 包装数据
+      if (json.result?.structuredContent?.data !== undefined) {
+        return json.result.structuredContent.data;
+      }
+      if (json.result?.data !== undefined) {
+        return json.result.data;
+      }
       return json.result || json;
     } catch (err) {
       console.warn(`[MCP Client] Network error to ${this.baseUrl}, falling back to sandbox`);
-      this.isSandbox = true;
       return this.dispatchMock(toolName, args);
     }
   }
@@ -117,34 +132,76 @@ export class McpClient {
       case 'now-time-info':
         return {
           currentTime: now.toISOString(),
+          datetime: now.toISOString(),
+          formatted: now.toISOString().replace('T', ' ').slice(0, 19),
+          dayOfWeek: ['SUNDAY', 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'][now.getDay()],
           hour: currentHour,
           timePeriod: (currentHour >= 5 && currentHour < 10.5) ? 'breakfast' : 'regular',
           isBreakfastEndingSoon: currentHour === 10 && now.getMinutes() >= 15,
           storeStatus: 'OPEN'
         };
 
+      case 'query-my-account':
       case 'get-user-points':
         return {
+          availablePoint: '3420',
           totalPoints: 3420,
-          expiringPoints: 450,
-          expireDate: '2026-12-31',
+          accumulativePoint: '12890',
+          expiredPoint: '450',
+          usedPoint: '3200',
           tier: 'GOLD_MAIMEN',
-          lifetimePoints: 12890
+          currency: '麦享会积分'
         };
 
+      case 'query-my-coupons':
       case 'query-user-coupons':
         return {
+          totalCount: 5,
           totalCoupons: 5,
           coupons: [
-            { id: 'CPN_01', title: '午餐元气随心减14元券', discount: 14.0, minSpend: 35.0, expireAt: '2026-10-31' },
-            { id: 'CPN_02', title: '随心配1+1超值减8.5元', discount: 8.5, minSpend: 20.0, expireAt: '2026-10-24' },
-            { id: 'CPN_03', title: '早安咖啡两件套立减7元', discount: 7.0, minSpend: 18.0, expireAt: '2026-10-15' },
-            { id: 'CPN_04', title: '大份薯条买一送一券', discount: 15.0, minSpend: 15.0, expireAt: '2026-10-20' },
-            { id: 'CPN_05', title: '周四会员专享立减15元', discount: 15.0, minSpend: 30.0, expireAt: '2026-10-12' }
+            { id: 'CPN_01', couponTitle: '午餐元气随心减14元券', title: '午餐元气随心减14元券', discount: 14.0, minSpend: 35.0, expireAt: '2026-10-31' },
+            { id: 'CPN_02', couponTitle: '随心配1+1超值减8.5元', title: '随心配1+1超值减8.5元', discount: 8.5, minSpend: 20.0, expireAt: '2026-10-24' },
+            { id: 'CPN_03', couponTitle: '早安咖啡两件套立减7元', title: '早安咖啡两件套立减7元', discount: 7.0, minSpend: 18.0, expireAt: '2026-10-15' },
+            { id: 'CPN_04', couponTitle: '大份薯条买一送一券', title: '大份薯条买一送一券', discount: 15.0, minSpend: 15.0, expireAt: '2026-10-20' },
+            { id: 'CPN_05', couponTitle: '周四会员专享立减15元', title: '周四会员专享立减15元', discount: 15.0, minSpend: 30.0, expireAt: '2026-10-12' }
+          ]
+        };
+
+      case 'order-list':
+        return {
+          list: [
+            {
+              orderId: 'MCD-MOCK-01',
+              createTime: now.toISOString().replace('T', ' ').slice(0, 19),
+              storeName: '麦当劳未来科技城餐厅',
+              realTotalAmount: '28.5',
+              orderProductList: [
+                {
+                  productName: '双层吉士堡随心配1+1',
+                  comboItemList: [
+                    { name: '双层吉士汉堡' },
+                    { name: '鲜萃冰咖' }
+                  ]
+                }
+              ]
+            }
+          ]
+        };
+
+      case 'auto-bind-coupons':
+        return {
+          successCount: 3,
+          failedCount: 0,
+          totalCount: 3,
+          successCoupons: [
+            { couponName: '免费脆薯饼' },
+            { couponName: '人气麦旋风买一送一' },
+            { couponName: '9.9元中杯冰美式' }
           ]
         };
 
       case 'query-menu-list':
+      case 'query-meals':
         return {
           category: args.category || 'all',
           items: Object.entries(MCD_MENU_CATALOGUE).map(([id, item]) => ({

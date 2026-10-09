@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" shape-rendering="crispEdges">
+  <!-- McDonald's Red Rounded Pixel Box -->
+  <rect x="1" y="1" width="30" height="30" rx="4" fill="#DA291C" stroke="#000" stroke-width="2"/>
+  <!-- Shadow under Arches -->
+  <rect x="5" y="25" width="22" height="2" fill="#A81C12"/>
+  <!-- Left Leg -->
+  <rect x="5" y="11" width="3" height="14" fill="#FFC72C"/>
+  <rect x="7" y="8" width="3" height="3" fill="#FFC72C"/>
+  <rect x="10" y="6" width="3" height="2" fill="#FFC72C"/>
+  <rect x="13" y="8" width="2" height="17" fill="#FFC72C"/>
+  <!-- Right Leg -->
+  <rect x="17" y="8" width="2" height="17" fill="#FFC72C"/>
+  <rect x="19" y="6" width="3" height="2" fill="#FFC72C"/>
+  <rect x="22" y="8" width="3" height="3" fill="#FFC72C"/>
+  <rect x="24" y="11" width="3" height="14" fill="#FFC72C"/>
+  <!-- Golden Arches Joint -->
+  <rect x="14" y="13" width="4" height="12" fill="#FFC72C"/>
+  <!-- Pixel Highlights -->
+  <rect x="10" y="6" width="2" height="1" fill="#FFE885"/>
+  <rect x="19" y="6" width="2" height="1" fill="#FFE885"/>
+</svg>

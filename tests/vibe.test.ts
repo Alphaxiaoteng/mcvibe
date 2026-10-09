@@ -57,3 +57,54 @@ test('VibeAggregator - computeSummary compiles full Vibe analytics with MCP clie
   assert.equal(summary.mcpStatus.isConnected, true);
   assert.equal(summary.mcpStatus.couponsAvailable, 5);
 });
+
+test('VibeAggregator - convertOfficialOrders correctly maps official MCD order-list structure', () => {
+  const officialList = [
+    {
+      orderId: '1030393950000807338513165280',
+      orderType: '1',
+      createTime: '2026-08-30 12:27:22',
+      storeName: '麦当劳宁波摩方大厦餐厅',
+      realTotalAmount: '1',
+      orderProductList: [
+        {
+          productName: '随心配1+1',
+          comboItemList: [
+            { name: '泰式炭烤风味猪猪堡', quantity: 1 },
+            { name: '鲜萃冰咖', quantity: 1 }
+          ]
+        }
+      ]
+    }
+  ];
+
+  const mapped = VibeAggregator.convertOfficialOrders(officialList);
+  assert.equal(mapped.length, 1);
+  assert.equal(mapped[0].id, '1030393950000807338513165280');
+  assert.equal(mapped[0].storeName, '麦当劳宁波摩方大厦餐厅');
+  assert.equal(mapped[0].paidAmount, 1);
+  assert.equal(mapped[0].items.length, 2);
+  assert.equal(mapped[0].items[0].name, '泰式炭烤风味猪猪堡');
+  assert.equal(mapped[0].items[0].category, 'burger');
+  assert.equal(mapped[0].items[1].name, '鲜萃冰咖');
+  assert.equal(mapped[0].items[1].category, 'drink');
+  assert.equal(mapped[0].isOfficialReal, true);
+});
+
+test('McpClient - alias mapping resolves official and legacy tool names in mock mode', async () => {
+  const client = new McpClient({ forceSandbox: true });
+  
+  const acc1 = await client.callTool('query-my-account');
+  assert.equal(acc1.availablePoint, '3420');
+
+  const acc2 = await client.callTool('get-user-points');
+  assert.equal(acc2.availablePoint, '3420');
+
+  const cpn = await client.callTool('query-my-coupons');
+  assert.equal(cpn.totalCount, 5);
+
+  const orders = await client.callTool('order-list');
+  assert.ok(Array.isArray(orders.list));
+  assert.equal(orders.list.length, 1);
+});
+
