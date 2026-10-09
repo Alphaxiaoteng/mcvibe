@@ -3018,5 +3018,75 @@
     // 初始化加载
     loadSummary();
   </script>
+
+  <!-- ========================================== -->
+  <!-- 麦门桌宠 (MCD Desktop Pet) -->
+  <!-- ========================================== -->
+  <div id="mcd-pet" style="position: fixed; bottom: 10px; left: 10px; font-size: 32px; z-index: 9999; cursor: pointer; transition: transform 0.2s; user-select: none; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.5));">
+    🍟
+  </div>
+  <div id="mcd-pet-dialog" style="position: fixed; bottom: 60px; left: 10px; background: white; border: 4px solid black; padding: 8px 12px; font-family: 'Press Start 2P', monospace; font-size: 10px; z-index: 9999; display: none; white-space: nowrap; box-shadow: 4px 4px 0 rgba(0,0,0,0.5); pointer-events: none;">
+    麦门！
+  </div>
+
+  <script>
+    // 桌宠逻辑
+    const pet = document.getElementById('mcd-pet');
+    const petDialog = document.getElementById('mcd-pet-dialog');
+    let petX = 10;
+    let petDirection = 1;
+    let petSpeed = 1.0;
+    let petState = 'walking';
+    
+    // 随机漫步
+    setInterval(() => {
+      if (petState === 'idle') return;
+      petX += petSpeed * petDirection;
+      pet.style.left = petX + 'px';
+      
+      if (petX > window.innerWidth - 40) {
+        petDirection = -1;
+        pet.style.transform = 'scaleX(-1)';
+      } else if (petX < 0) {
+        petDirection = 1;
+        pet.style.transform = 'scaleX(1)';
+      }
+      
+      if (petDialog.style.display !== 'none') {
+        petDialog.style.left = Math.min(Math.max(10, petX - 20), window.innerWidth - 120) + 'px';
+      }
+    }, 30);
+
+    // 随机状态改变
+    setInterval(() => {
+      if (Math.random() > 0.7) {
+        petState = petState === 'walking' ? 'idle' : 'walking';
+        if (petState === 'idle') {
+          pet.style.transform = `scaleX(${petDirection}) translateY(-10px)`;
+          setTimeout(() => pet.style.transform = `scaleX(${petDirection}) translateY(0)`, 150);
+        }
+      }
+      if (Math.random() > 0.8) {
+        petDirection *= -1;
+        pet.style.transform = `scaleX(${petDirection})`;
+      }
+    }, 3000);
+
+    // 点击互动
+    const petDialogs = [
+      "麦门！", "吃板烧了吗？", "Vibe Coding!", "积分别过期啦！", "1024 快乐！", "🍟🍟🍟", "加个鸡腿！", "BUG 退散！"
+    ];
+    pet.onclick = () => {
+      if (typeof playCoin === 'function') playCoin();
+      pet.style.transform = `scaleX(${petDirection}) translateY(-15px) scale(1.2)`;
+      setTimeout(() => pet.style.transform = `scaleX(${petDirection}) translateY(0) scale(1)`, 200);
+      
+      petDialog.textContent = petDialogs[Math.floor(Math.random() * petDialogs.length)];
+      petDialog.style.display = 'block';
+      petDialog.style.left = Math.min(Math.max(10, petX - 20), window.innerWidth - 120) + 'px';
+      
+      setTimeout(() => petDialog.style.display = 'none', 2500);
+    };
+  </script>
 </body>
 </html>
