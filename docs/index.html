@@ -924,10 +924,10 @@
           <span id="headerConnectText">连接麦当劳账号</span>
         </button>
         <button class="pixel-btn btn-outline" id="btnAudioToggle" title="切换 8-Bit 像素音效">
-          🔊 音效: 开
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>音效: 开
         </button>
         <button class="pixel-btn btn-red" id="btnShareModal" title="导出 8-Bit 麦门像素战绩海报">
-          📊 导出战绩卡
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>导出战绩卡
         </button>
       </div>
     </header>
@@ -953,7 +953,7 @@
       </div>
       <div class="time-filter-controls">
         <div class="time-filter-tabs">
-          <button class="t-filter-tab active" data-filter="all" onclick="applyTimeFilter('all', this)">🌟 全部历史</button>
+          <button class="t-filter-tab active" data-filter="all" onclick="applyTimeFilter('all', this)">全部历史</button>
           <button class="t-filter-tab" data-filter="2026" onclick="applyTimeFilter('2026', this)">2026</button>
           <button class="t-filter-tab" data-filter="2025" onclick="applyTimeFilter('2025', this)">2025</button>
           <button class="t-filter-tab" data-filter="12m" onclick="applyTimeFilter('12m', this)">近 12 个月</button>
@@ -1081,7 +1081,7 @@
           <b id="ypTotalSaved" style="color:var(--pixel-green);">¥0.0</b>
         </div>
         <div class="h-stat-hint" id="ypHint">
-          💡 点击点亮方格即可回顾单日订单明细
+          [提示] 点击点亮方格即可回顾单日订单明细
         </div>
       </div>
 
@@ -1131,7 +1131,7 @@
       <!-- 品类构成 -->
       <div class="pixel-card">
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
-          <span>📊 品类偏好与占比</span>
+          <span>CATEGORIES / 品类偏好与占比</span>
         </div>
         <div id="categoryContainer">
           <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:20px 0;">
@@ -1266,7 +1266,7 @@
             onkeydown="if(event.key==='Enter') saveTokenFromSettings()"
           />
           <button class="btn-toggle-eye" type="button" onclick="toggleSettingsTokenVisibility()" title="查看/隐藏 Token" style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--pixel-subtext); cursor: pointer; font-size: 14px; padding: 4px;">
-            👁️
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
           </button>
         </div>
       </div>
@@ -1276,7 +1276,7 @@
 
       <!-- 操作按钮 -->
       <button class="pixel-btn" id="btnSettingsConnect" onclick="saveTokenFromSettings()" style="width: 100%; justify-content: center; background: var(--pixel-yellow); color: #000; border-color: #000; font-weight: bold; font-size: 13px; padding: 10px;">
-        ⚡ 点亮足迹
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹
       </button>
 
       <!-- 已连接账号时支持一键断开 (未连接时默认隐藏) -->
@@ -1661,9 +1661,9 @@
       const label = document.getElementById('currentApiLabel');
       if (!label) return;
       if (API_BASE) {
-        label.textContent = `⚡ 云端 Serverless (${API_BASE.replace('https://', '').slice(0, 16)}...)`;
+        label.textContent = `[CLOUD] Serverless (${API_BASE.replace('https://', '').slice(0, 16)}...)`;
       } else {
-        label.textContent = `💻 本地开发端口服务 (同源相对路径)`;
+        label.textContent = `[LOCAL] 开发端口服务 (同源相对路径)`;
       }
     }
 
@@ -1989,7 +1989,7 @@
         if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-green)';
         if (activeStatus) activeStatus.innerHTML = `<span style="color:var(--pixel-green);">✓ 已直连官方 MCP (${data.mcpStatus.tokenMasked || 'LIVE'})</span>`;
       } else if (isSandbox) {
-        if (headerConnectIcon) headerConnectIcon.textContent = '🟡';
+        if (headerConnectIcon) headerConnectIcon.textContent = '[DEMO]';
         if (headerConnectText) headerConnectText.textContent = '沙盒演示 · 输入真实 Token';
         if (btnHeaderConnect) {
           btnHeaderConnect.style.background = '#2a2717';
@@ -1999,7 +1999,7 @@
         }
         if (unconnectedBanner) unconnectedBanner.style.display = 'flex';
         if (statusPill) {
-          statusPill.textContent = `🟡 沙盒模拟预览 (DEMO)`;
+          statusPill.textContent = `[DEMO] 沙盒模拟预览 (DEMO)`;
           if (statusPill.parentElement) {
             statusPill.parentElement.style.borderColor = 'var(--pixel-yellow)';
             statusPill.parentElement.style.color = 'var(--pixel-yellow)';
@@ -2018,7 +2018,7 @@
         }
         if (unconnectedBanner) unconnectedBanner.style.display = 'flex';
         if (statusPill) {
-          statusPill.textContent = `⚪ 麦当劳账号待连接`;
+          statusPill.textContent = `[IDLE] 麦当劳账号待连接`;
           if (statusPill.parentElement) {
             statusPill.parentElement.style.borderColor = 'var(--pixel-subtext)';
             statusPill.parentElement.style.color = 'var(--pixel-subtext)';
@@ -2089,7 +2089,7 @@
         });
         const hint = document.createElement('div');
         hint.className = 'ghost-hint-box';
-        hint.innerHTML = '<span>💡</span><span>连接麦当劳账号即可自动统计你的吃麦生物钟与时段偏好</span>';
+        hint.innerHTML = '<span style="font-family:monospace; color:var(--pixel-yellow);">[INFO]</span><span>连接麦当劳账号即可自动统计你的吃麦生物钟与时段偏好</span>';
         container.appendChild(hint);
         return;
       }
@@ -2143,7 +2143,7 @@
         });
         const hint = document.createElement('div');
         hint.className = 'ghost-hint-box';
-        hint.innerHTML = '<span>💡</span><span>输入 Token 后自动解析您的麦当劳探店版图与最常光顾的餐厅</span>';
+        hint.innerHTML = '<span style="font-family:monospace; color:var(--pixel-yellow);">[INFO]</span><span>输入 Token 后自动解析您的麦当劳探店版图与最常光顾的餐厅</span>';
         container.appendChild(hint);
         return;
       }
@@ -2179,8 +2179,8 @@
       if (!breakdown || breakdown.length === 0) {
         const ghostCats = [
           { label: 'MAINS / 主食类' },
-          { label: '☕ 鲜煮咖啡与饮品' },
-          { label: '🍳 晨光早餐麦满分' },
+          { label: '鲜煮咖啡与饮品' },
+          { label: '晨光早餐麦满分' },
           { label: 'SNACKS / 小食类' }
         ];
         ghostCats.forEach(c => {
@@ -2197,7 +2197,7 @@
         });
         const hint = document.createElement('div');
         hint.className = 'ghost-hint-box';
-        hint.innerHTML = '<span>💡</span><span>同步吃麦订单后自动分析各类餐品的开销倾斜与热量摄入</span>';
+        hint.innerHTML = '<span style="font-family:monospace; color:var(--pixel-yellow);">[INFO]</span><span>同步吃麦订单后自动分析各类餐品的开销倾斜与热量摄入</span>';
         container.appendChild(hint);
         return;
       }
@@ -2225,9 +2225,9 @@
 
       if (!topItems || topItems.length === 0) {
         const ghostChamps = [
-          { rank: '🥇', name: '待解锁年度本命单品', badge: '金牌最爱' },
-          { rank: '🥈', name: '待解锁高频复购单品', badge: '银牌常点' },
-          { rank: '🥉', name: '待解锁心水单品', badge: '铜牌心选' }
+          { rank: '#1', name: '待解锁年度本命单品', badge: '金牌最爱' },
+          { rank: '#2', name: '待解锁高频复购单品', badge: '银牌常点' },
+          { rank: '#3', name: '待解锁心水单品', badge: '铜牌心选' }
         ];
         ghostChamps.forEach(gc => {
           const div = document.createElement('div');
@@ -2248,7 +2248,7 @@
         });
         const hint = document.createElement('div');
         hint.className = 'ghost-hint-box';
-        hint.innerHTML = '<span>💡</span><span>连接麦当劳账号即可揭晓您的年度吃麦本命单品与复购排行榜</span>';
+        hint.innerHTML = '<span style="font-family:monospace; color:var(--pixel-yellow);">[INFO]</span><span>连接麦当劳账号即可揭晓您的年度吃麦本命单品与复购排行榜</span>';
         container.appendChild(hint);
         return;
       }
@@ -2256,7 +2256,7 @@
       topItems.forEach((item, idx) => {
         const div = document.createElement('div');
         div.className = 'champ-item';
-        const medals = ['🥇', '🥈', '🥉', '4.', '5.'];
+        const medals = ['#1', '#2', '#3', '#4', '#5'];
         div.innerHTML = `
           <div class="champ-left">
             <span class="champ-rank">${medals[idx] || (idx + 1) + '.'}</span>
@@ -2399,7 +2399,7 @@
           playFanfare();
           currentSummary = data.summary;
           renderDashboard(data.summary);
-          alert(`🎉 麦麦省自动领券成功！当前可用卡券: ${data.summary.mcpStatus.couponsAvailable} 张`);
+          alert(`麦麦省自动领券成功！当前可用卡券: ${data.summary.mcpStatus.couponsAvailable} 张`);
         } else {
           alert('领券提示: ' + (data.error || '未成功'));
         }
@@ -2623,7 +2623,7 @@
       if (alertEl) alertEl.style.display = 'none';
       const btn = document.getElementById('btnSettingsConnect');
       if (btn) {
-        btn.textContent = '⚡ 点亮足迹';
+        btn.textContent = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹';
         btn.disabled = false;
         btn.style.boxShadow = '';
         btn.style.background = 'var(--pixel-yellow)';
@@ -2688,7 +2688,7 @@
       }
 
       if (btn) {
-        btn.textContent = '⚡ 正在连接官方 MCP...';
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>正在连接官方 MCP...';
         btn.disabled = true;
         btn.style.boxShadow = '0 0 14px var(--pixel-yellow)';
       }
@@ -2715,7 +2715,7 @@
             alertEl.style.backgroundColor = '#12261b';
             alertEl.style.borderColor = 'var(--pixel-green)';
             alertEl.style.color = 'var(--pixel-green)';
-            alertEl.textContent = `🎉 官方数据已就绪！已同步 ${data.summary?.recentOrders?.length || 0} 笔官方订单，点亮中...`;
+            alertEl.textContent = `官方数据已就绪！已同步 ${data.summary?.recentOrders?.length || 0} 笔官方订单，点亮中...`;
           }
 
           // 1. 播放欢快胜利和弦琶音
@@ -2737,7 +2737,7 @@
             btn.style.background = 'var(--pixel-yellow)';
             btn.style.borderColor = '#000';
             btn.style.color = '#000';
-            btn.textContent = '⚡ 点亮足迹';
+            btn.textContent = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹';
             btn.disabled = false;
           }
           if (alertEl) {
@@ -2759,7 +2759,7 @@
           btn.style.background = 'var(--pixel-yellow)';
           btn.style.borderColor = '#000';
           btn.style.color = '#000';
-          btn.textContent = '⚡ 点亮足迹';
+          btn.textContent = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹';
           btn.disabled = false;
         }
         if (alertEl) {
@@ -3006,7 +3006,7 @@
     const btnAudio = document.getElementById('btnAudioToggle');
     btnAudio.onclick = () => {
       sfxEnabled = !sfxEnabled;
-      btnAudio.textContent = `🔊 SFX: ${sfxEnabled ? 'ON' : 'OFF'}`;
+      btnAudio.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; margin-right:4px;"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>SFX: ${sfxEnabled ? 'ON' : 'OFF'}`;
       if (sfxEnabled) playCoin();
     };
 
