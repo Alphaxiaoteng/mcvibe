@@ -14,6 +14,7 @@
     "cli": "npx tsx src/cli/index.ts",
     "xbar": "npx tsx src/cli/xbar.ts",
     "test": "node --import tsx --test tests/*.test.ts",
+    "bench": "npx tsx scripts/stress_benchmark.ts",
     "build": "npx tsc"
   },
   "keywords": [

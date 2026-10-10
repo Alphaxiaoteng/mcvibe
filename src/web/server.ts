@@ -198,7 +198,7 @@ const server = http.createServer(async (req, res) => {
   });
 });
 
-const isTestEnv = process.env.NODE_ENV === 'test' || process.argv.some(a => a.includes('test'));
+const isTestEnv = process.env.NODE_ENV === 'test' || process.argv.some(a => a.includes('test') || a.includes('bench'));
 if (!isTestEnv && !server.listening) {
   server.listen(PORT, () => {
     console.log(`[McVibe] 8-Bit Pixel Dashboard running at http://localhost:${PORT}`);
