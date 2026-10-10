@@ -933,12 +933,15 @@
     </header>
 
     <!-- 尚未连接提示横幅 (空状态醒目呼应) -->
-    <div id="unconnectedBanner" onclick="openSettingsModal()" style="display:none; cursor:pointer; background:#181625; border:2px dashed var(--pixel-yellow); padding:10px 16px; margin-bottom:16px; align-items:center; justify-content:space-between; gap:12px;" title="点击立即输入 Token 点亮足迹">
+    <div id="unconnectedBanner" style="display:none; background:#181625; border:2px dashed var(--pixel-yellow); padding:10px 16px; margin-bottom:16px; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
       <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--pixel-yellow);">
         <span>[LOGIN]</span>
-        <span><b>麦当劳账号待连接</b>：点击此处输入官方 MCP Token，即可瞬间点亮你的 53 周就餐点阵谱与消费用量</span>
+        <span><b>麦当劳账号待连接</b>：输入官方 MCP Token 即可实时点亮 53 周就餐点阵谱；或一键载入沙盒模拟数据</span>
       </div>
-      <span class="pixel-btn btn-sm" style="background:var(--pixel-yellow); color:#000; font-size:11px; padding:3px 10px; border-color:#000; flex-shrink:0;">立即输入 ↗</span>
+      <div style="display:flex; gap:8px;">
+        <button class="pixel-btn btn-sm" onclick="loadDemoFromSettings()" style="background:#242236; color:var(--pixel-yellow); font-size:11px; padding:4px 10px; border-color:#3d3a54;" title="无需 Token 即可体验全功能">沙盒演示 ↗</button>
+        <button class="pixel-btn btn-sm" onclick="openSettingsModal()" style="background:var(--pixel-yellow); color:#000; font-size:11px; padding:4px 10px; border-color:#000; font-weight:bold;">输入 Token ↗</button>
+      </div>
     </div>
 
     <!-- 全局时间范围筛选控制台 (联动指标、时段用量、门店足迹、单品榜与订单流水) -->
@@ -1274,10 +1277,15 @@
       <!-- 提示反馈条 -->
       <div id="settingsAlert" style="display: none; padding: 8px 12px; font-size: 12px; border: 1px solid #000; margin-bottom: 14px; line-height: 1.4;"></div>
 
-      <!-- 操作按钮 -->
-      <button class="pixel-btn" id="btnSettingsConnect" onclick="saveTokenFromSettings()" style="width: 100%; justify-content: center; background: var(--pixel-yellow); color: #000; border-color: #000; font-weight: bold; font-size: 13px; padding: 10px;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹
-      </button>
+      <!-- 操作按钮组 -->
+      <div style="display:flex; gap:10px; margin-bottom:12px;">
+        <button class="pixel-btn" id="btnSettingsConnect" onclick="saveTokenFromSettings()" style="flex:1; justify-content: center; background: var(--pixel-yellow); color: #000; border-color: #000; font-weight: bold; font-size: 13px; padding: 10px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹
+        </button>
+        <button class="pixel-btn btn-outline" id="btnSettingsDemo" onclick="loadDemoFromSettings()" style="flex-shrink:0; justify-content: center; font-size: 12px; padding: 10px 14px; background:#1b1928; border-color:#3d3a54;" title="无需输入 Token，一键载入沙盒模拟数据体验全景仪表盘">
+          沙盒演示 (DEMO)
+        </button>
+      </div>
 
       <!-- 已连接账号时支持一键断开 (未连接时默认隐藏) -->
       <div id="settingsDisconnectRow" style="display: none; text-align: center; margin-top: 12px;">
@@ -2807,32 +2815,183 @@
       updateSettingsStatusText();
     }
 
+    function createClientDemoSummary() {
+      const days2026 = generateLocalHeatmap(2026, false);
+      const days2025 = generateLocalHeatmap(2025, false);
+      const daysRecent = generateLocalHeatmap(24, true);
+
+      const itemsPool = [
+        { name: '板烧鸡腿堡', price: 23.5, calories: 430, category: 'burger' },
+        { name: '麦辣鸡腿堡', price: 21.0, calories: 480, category: 'burger' },
+        { name: '中薯条', price: 13.0, calories: 320, category: 'snack' },
+        { name: '鲜萃冰咖', price: 10.0, calories: 15, category: 'drink' },
+        { name: '麦辣鸡翅(2块)', price: 14.5, calories: 230, category: 'snack' },
+        { name: '原味板烧麦满分', price: 16.0, calories: 320, category: 'breakfast' },
+        { name: '奥利奥麦旋风', price: 14.5, calories: 260, category: 'dessert' },
+      ];
+
+      const storesPool = ['麦当劳杭州西湖旗舰店', '麦当劳城西银泰餐厅', '麦当劳萧山机场餐厅', '麦当劳滨江天街餐厅'];
+      const demoOrderList = [];
+      let totalSpent = 0;
+      let totalSaved = 0;
+      let orderIdx = 1;
+
+      days2026.forEach((day, idx) => {
+        const hasMeal = (idx % 3 === 0) || (day.dayOfWeek === 5) || (idx % 7 === 2);
+        if (hasMeal) {
+          const item1 = itemsPool[idx % itemsPool.length];
+          const item2 = itemsPool[(idx + 2) % itemsPool.length];
+          const paid = Number((item1.price + item2.price * 0.7).toFixed(1));
+          const saved = Number((item2.price * 0.3).toFixed(1));
+          
+          day.count = 1;
+          day.totalSpent = paid;
+          day.savedAmount = saved;
+          day.calories = item1.calories + item2.calories;
+          day.intensity = paid > 30 ? 3 : 2;
+          day.itemHighlights = [item1.name, item2.name];
+
+          totalSpent += paid;
+          totalSaved += saved;
+
+          if (demoOrderList.length < 25) {
+            demoOrderList.push({
+              id: `DEMO-ORDER-${orderIdx++}`,
+              date: day.date,
+              timestamp: `${day.date}T12:30:00`,
+              items: [{ name: item1.name, count: 1, price: item1.price }, { name: item2.name, count: 1, price: item2.price }],
+              totalPrice: paid + saved,
+              discountAmount: saved,
+              paidAmount: paid,
+              couponUsed: '麦麦省专属优惠',
+              pointsEarned: Math.floor(paid * 10),
+              diningType: 'dine_in',
+              storeName: storesPool[idx % storesPool.length],
+              isOfficialReal: false
+            });
+          }
+        }
+      });
+
+      return {
+        user: {
+          nickname: '麦门信徒 (DEMO)',
+          avatarPixel: 'pixel-avatar-mcd',
+          memberLevel: '黄金会员',
+          points: 3820,
+          accumulativePoints: 6400,
+          expiredPoints: 120,
+          title: '首席板烧鉴赏家'
+        },
+        today: {
+          spent: 23.5,
+          calories: 445,
+          orderCount: 1,
+          saved: 8.5,
+          hp: 88,
+          mp: 65,
+          latestMeal: '板烧鸡腿堡 + 鲜萃冰咖'
+        },
+        stats: {
+          totalOrders: demoOrderList.length + 35,
+          totalSpent: Number(totalSpent.toFixed(1)),
+          totalSaved: Number(totalSaved.toFixed(1)),
+          activeDays: 48,
+          currentStreak: 5,
+          longestStreak: 12,
+          totalCalories: 38200,
+          avgOrderPrice: 24.8,
+          savingRatePercent: Number(((totalSaved / (totalSpent + totalSaved)) * 100).toFixed(1))
+        },
+        heatmap: days2026,
+        yearHeatmaps: {
+          '2026': days2026,
+          '2025': days2025,
+          'recent24': daysRecent
+        },
+        breakdown: [
+          { category: 'burger', label: '主食汉堡', spent: 480, percentage: 48, pixelColor: '#FFC72C' },
+          { category: 'snack', label: '小食配餐', spent: 260, percentage: 26, pixelColor: '#DA291C' },
+          { category: 'drink', label: '鲜煮咖啡', spent: 150, percentage: 15, pixelColor: '#00D2D3' },
+          { category: 'breakfast', label: '晨光早餐', spent: 80, percentage: 8, pixelColor: '#E67E22' },
+          { category: 'dessert', label: '甜品饮品', spent: 30, percentage: 3, pixelColor: '#9B59B6' }
+        ],
+        topItems: [
+          { name: '板烧鸡腿堡', category: 'burger', count: 22, rank: 1, totalSpent: 517.0, pixelBadge: '[TOP 1]' },
+          { name: '鲜萃冰咖', category: 'drink', count: 18, rank: 2, totalSpent: 180.0, pixelBadge: '[TOP 2]' },
+          { name: '中薯条', category: 'snack', count: 15, rank: 3, totalSpent: 195.0, pixelBadge: '[TOP 3]' },
+          { name: '麦辣鸡翅(2块)', category: 'snack', count: 11, rank: 4, totalSpent: 159.5, pixelBadge: '[TOP 4]' },
+          { name: '原味板烧麦满分', category: 'breakfast', count: 7, rank: 5, totalSpent: 112.0, pixelBadge: '[TOP 5]' }
+        ],
+        achievements: [
+          { id: 'first_order', title: '麦门初心', description: '完成首笔麦当劳就餐打卡', unlocked: true, progress: 1, maxProgress: 1 },
+          { id: 'streak_3', title: '麦门三日连击', description: '连续 3 天光顾麦当劳', unlocked: true, progress: 3, maxProgress: 3 },
+          { id: 'coffee_lover', title: '咖啡续命先锋', description: '累计饮用 10 杯麦咖啡', unlocked: true, progress: 10, maxProgress: 10 },
+          { id: 'big_saver', title: '薅麦羊毛大师', description: '累计通过优惠券省下超 100 元', unlocked: true, progress: 100, maxProgress: 100 },
+          { id: 'streak_7', title: '七日麦门信徒', description: '连续 7 天光顾麦当劳', unlocked: false, progress: 5, maxProgress: 7 },
+          { id: 'burger_king', title: '汉堡收割机', description: '累计吃掉 50 个主食汉堡', unlocked: false, progress: 32, maxProgress: 50 },
+        ],
+        usageInsights: {
+          timeDistribution: [
+            { period: 'breakfast', label: '早晨元气 (05:00-10:30)', count: 8, percentage: 15, pixelColor: '#FFC72C' },
+            { period: 'lunch', label: '午间主力 (10:30-14:00)', count: 26, percentage: 48, pixelColor: '#DA291C' },
+            { period: 'afternoon', label: '下午茶黑咖 (14:00-17:00)', count: 12, percentage: 22, pixelColor: '#00D2D3' },
+            { period: 'dinner', label: '晚间犒赏 (17:00-21:00)', count: 6, percentage: 11, pixelColor: '#E67E22' },
+            { period: 'night', label: '深夜加餐 (21:00-05:00)', count: 2, percentage: 4, pixelColor: '#9B59B6' }
+          ],
+          storeFootprints: [
+            { storeName: '麦当劳杭州西湖旗舰店', visitCount: 24, totalSpent: 580.0, lastVisit: '2026-10-09' },
+            { storeName: '麦当劳城西银泰餐厅', visitCount: 15, totalSpent: 360.5, lastVisit: '2026-10-05' },
+            { storeName: '麦当劳滨江天街餐厅', visitCount: 8, totalSpent: 195.0, lastVisit: '2026-09-28' },
+            { storeName: '麦当劳萧山机场餐厅', visitCount: 4, totalSpent: 112.0, lastVisit: '2026-09-12' },
+          ],
+          monthlySpending: [],
+          pointsEfficiency: {
+            available: 3820,
+            accumulated: 6400,
+            expired: 120,
+            expiryRatePercent: 1.9
+          }
+        },
+        recentOrders: demoOrderList,
+        mcpStatus: {
+          isConnected: true,
+          isSandbox: true,
+          tokenConfigured: false,
+          timePeriod: 'lunch',
+          couponsAvailable: 4
+        }
+      };
+    }
+
     async function loadDemoFromSettings() {
       playCoin();
       const alertEl = document.getElementById('settingsAlert');
+      let data = null;
+
       try {
-        const res = await fetchWithTimeout(`${API_BASE}/api/vibe/summary?demo=true`, {}, 8000);
-        const data = await res.json();
-        currentSummary = data;
-        renderDashboard(data);
-        if (alertEl) {
-          alertEl.style.display = 'block';
-          alertEl.style.backgroundColor = '#2a2717';
-          alertEl.style.borderColor = 'var(--pixel-yellow)';
-          alertEl.style.color = 'var(--pixel-yellow)';
-          alertEl.textContent = '[DEMO] 已载入沙盒模拟演示数据！';
-        }
-        updateSettingsStatusText();
-        setTimeout(closeSettingsModal, 900);
+        const res = await fetchWithTimeout(`${API_BASE}/api/vibe/summary?demo=true`, {}, 4000);
+        if (res.ok) data = await res.json();
       } catch (err) {
-        if (alertEl) {
-          alertEl.style.display = 'block';
-          alertEl.style.backgroundColor = '#38161b';
-          alertEl.style.borderColor = 'var(--pixel-red)';
-          alertEl.style.color = '#FFF';
-          alertEl.textContent = '无法加载演示: ' + err.message;
-        }
+        console.warn('API 离线，自动使用本地沙盒演示数据生成器:', err);
       }
+
+      if (!data || !data.heatmap) {
+        data = createClientDemoSummary();
+      }
+
+      currentSummary = data;
+      renderDashboard(data);
+
+      if (alertEl) {
+        alertEl.style.display = 'block';
+        alertEl.style.backgroundColor = '#2a2717';
+        alertEl.style.borderColor = 'var(--pixel-yellow)';
+        alertEl.style.color = 'var(--pixel-yellow)';
+        alertEl.textContent = '[DEMO] 已载入沙盒模拟演示数据！';
+      }
+      updateSettingsStatusText();
+      setTimeout(closeSettingsModal, 600);
     }
 
     // 兼容别名
