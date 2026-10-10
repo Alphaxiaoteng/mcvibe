@@ -13,7 +13,7 @@ async function main() {
   console.log('\x1b[31m%s\x1b[0m', '  ██║╚██╔╝██║██║     ╚██╗ ██╔╝██║██╔══██╗██╔══╝  ');
   console.log('\x1b[31m%s\x1b[0m', '  ██║ ╚═╝ ██║╚██████╗ ╚████╔╝ ██║██████╔╝███████╗');
   console.log('\x1b[31m%s\x1b[0m', '  ╚═╝     ╚═╝ ╚═════╝  ╚═══╝  ╚═╝╚═════╝ ╚══════╝');
-  console.log('\x1b[36m%s\x1b[0m\n', '   🍟 McVibe · 麦门足迹 | 8-Bit 像素级麦当劳用量仪表盘\n');
+  console.log('\x1b[36m%s\x1b[0m\n', '   🍟 McVibe · 麦门足迹\n');
 
   console.log('\x1b[1m=== 今日状态 & 极客生命槽 ===\x1b[0m');
   console.log(`[👤 用户] ${summary.user.nickname} (${summary.user.title})`);
