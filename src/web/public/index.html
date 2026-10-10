@@ -920,7 +920,7 @@
 
       <div class="header-actions">
         <button class="pixel-btn" id="btnHeaderConnect" onclick="openSettingsModal()" title="连接麦当劳账号并点亮个人足迹" style="background:var(--pixel-yellow); color:#000; border-color:#000; font-weight:bold;">
-          <span id="headerConnectIcon">🔑</span>
+          <span id="headerConnectIcon">[LOGIN]</span>
           <span id="headerConnectText">连接麦当劳账号</span>
         </button>
         <button class="pixel-btn btn-outline" id="btnAudioToggle" title="切换 8-Bit 像素音效">
@@ -935,7 +935,7 @@
     <!-- 尚未连接提示横幅 (空状态醒目呼应) -->
     <div id="unconnectedBanner" onclick="openSettingsModal()" style="display:none; cursor:pointer; background:#181625; border:2px dashed var(--pixel-yellow); padding:10px 16px; margin-bottom:16px; align-items:center; justify-content:space-between; gap:12px;" title="点击立即输入 Token 点亮足迹">
       <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--pixel-yellow);">
-        <span>🔑</span>
+        <span>[LOGIN]</span>
         <span><b>麦当劳账号待连接</b>：点击此处输入官方 MCP Token，即可瞬间点亮你的 53 周就餐点阵谱与消费用量</span>
       </div>
       <span class="pixel-btn btn-sm" style="background:var(--pixel-yellow); color:#000; font-size:11px; padding:3px 10px; border-color:#000; flex-shrink:0;">立即输入 ↗</span>
@@ -945,7 +945,7 @@
     <section class="time-filter-hero" id="timeFilterHero">
       <div class="time-filter-header">
         <div class="time-filter-title pixel-font">
-          <span>⏳ 足迹周期筛选</span>
+          <span>TIME_FILTER / 周期筛选</span>
         </div>
         <div class="filter-count-badge pixel-font" id="filterMatchBadge">
           全部历史 · 0 笔记录
@@ -954,8 +954,8 @@
       <div class="time-filter-controls">
         <div class="time-filter-tabs">
           <button class="t-filter-tab active" data-filter="all" onclick="applyTimeFilter('all', this)">🌟 全部历史</button>
-          <button class="t-filter-tab" data-filter="2026" onclick="applyTimeFilter('2026', this)">📅 2026 年度</button>
-          <button class="t-filter-tab" data-filter="2025" onclick="applyTimeFilter('2025', this)">📅 2025 年度</button>
+          <button class="t-filter-tab" data-filter="2026" onclick="applyTimeFilter('2026', this)">2026</button>
+          <button class="t-filter-tab" data-filter="2025" onclick="applyTimeFilter('2025', this)">2025</button>
           <button class="t-filter-tab" data-filter="12m" onclick="applyTimeFilter('12m', this)">近 12 个月</button>
           <button class="t-filter-tab" data-filter="30d" onclick="applyTimeFilter('30d', this)">近 30 天</button>
         </div>
@@ -974,7 +974,7 @@
       <div class="metric-card" style="--accent-color: var(--pixel-yellow);">
         <div class="metric-header">
           <span class="metric-label pixel-font">消费总额与单数</span>
-          <span class="metric-icon">🍔</span>
+          <span class="metric-icon">TOTAL</span>
         </div>
         <div class="metric-value">
           ¥<span id="mTotalSpent">0.0</span>
@@ -989,7 +989,7 @@
       <div class="metric-card" style="--accent-color: var(--pixel-green);">
         <div class="metric-header">
           <span class="metric-label pixel-font">优惠减免</span>
-          <span class="metric-icon">💰</span>
+          <span class="metric-icon">¥</span>
         </div>
         <div class="metric-value">
           ¥<span id="mTotalSaved">0.0</span>
@@ -1004,7 +1004,7 @@
       <div class="metric-card" style="--accent-color: var(--pixel-blue);">
         <div class="metric-header">
           <span class="metric-label pixel-font">麦当劳积分资产</span>
-          <span class="metric-icon">✨</span>
+          <span class="metric-icon">STREAK</span>
         </div>
         <div class="metric-value">
           <span id="mPointsBalance">0</span> <span class="metric-unit">POINTS</span>
@@ -1019,7 +1019,7 @@
       <div class="metric-card" style="--accent-color: var(--pixel-orange);">
         <div class="metric-header">
           <span class="metric-label pixel-font">可用券与连击</span>
-          <span class="metric-icon">🔥</span>
+          <span class="metric-icon">FIRE</span>
         </div>
         <div class="metric-value">
           <span id="mCouponsCount">0</span> <span class="metric-unit">张可用券</span>
@@ -1035,7 +1035,7 @@
     <section class="heatmap-card">
       <div class="heatmap-title-row">
         <div class="section-title pixel-font">
-          <span>📅 麦当劳年度点阵谱</span>
+          <span>HEATMAP / 年度点阵谱</span>
           <span style="font-size:12px; color:var(--pixel-subtext); font-weight:normal;" id="heatmapTitleDesc">· 53 周全景就餐点阵图</span>
         </div>
 
@@ -1116,7 +1116,7 @@
       <!-- 探店版图与常去餐厅 -->
       <div class="pixel-card">
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
-          <span>📍 常去餐厅与探店足迹</span>
+          <span>LOCATIONS / 餐厅足迹</span>
         </div>
         <div id="storeFootprintsContainer">
           <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:20px 0;">
@@ -1143,7 +1143,7 @@
       <!-- 常驻英雄榜 -->
       <div class="pixel-card">
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
-          <span>👑 最爱单品榜</span>
+          <span>FAVORITES / 最爱单品</span>
         </div>
         <div id="championsContainer">
           <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:20px 0;">
@@ -1156,7 +1156,7 @@
     <!-- 8-Bit 像素成就勋章馆 -->
     <section class="pixel-card">
       <div class="section-title pixel-font" style="margin-bottom: 18px;">
-        <span>🏆 8-Bit 成就勋章馆</span>
+        <span>ACHIEVEMENTS / 极客勋章馆</span>
       </div>
       <div class="badges-grid" id="badgesContainer"></div>
     </section>
@@ -1165,11 +1165,11 @@
     <section class="pixel-card" id="orderStreamSection">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
         <div class="section-title pixel-font">
-          <span>📜 官方核销订单流水</span>
-          <span style="font-size:11px; color:var(--pixel-subtext); font-weight:normal;" id="orderStreamSub">(官方 MCP 真实核销流水)</span>
+          <span>TRANSACTION_LOG / 官方核销流水</span>
+          <span style="font-size:11px; color:var(--pixel-subtext); font-weight:normal;" id="orderStreamSub">(基于 MCP 接口实时获取)</span>
         </div>
         <button class="pixel-btn btn-sm" style="border-color:var(--pixel-green); background:#12261b; color:var(--pixel-green);" id="btnAutoBindStream" onclick="triggerAutoBindCoupons()">
-          🎁 自动领券 (麦麦省)
+          [ Execute Auto-Claim ] 自动省钱
         </button>
       </div>
       <div id="orderStreamContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
@@ -1187,7 +1187,7 @@
     <div class="modal-content" style="text-align: center;">
       <button class="modal-close" onclick="closeShareModal()">×</button>
       <h2 class="section-title pixel-font" style="margin-bottom: 12px; justify-content:center;">
-        🎮 麦门像素战绩卡
+        DATA_CARD / 战绩卡
       </h2>
       <p style="font-size:12px; color:var(--pixel-subtext); margin-bottom: 16px;">
         已根据你的真实麦当劳足迹生成 8-bit 复古像素海报：
@@ -1197,10 +1197,10 @@
 
       <div style="display:flex; justify-content:center; gap:12px; margin-top:16px; flex-wrap:wrap;">
         <button class="pixel-btn" onclick="downloadShareCard()">
-          💾 下载 PNG 海报
+          [ DOWNLOAD PNG ]
         </button>
         <button class="pixel-btn btn-outline" onclick="copyCardData()">
-          📋 复制文本战报
+          [ COPY LOG ]
         </button>
       </div>
     </div>
@@ -1211,7 +1211,7 @@
     <div class="modal-content">
       <button class="modal-close" onclick="closeDayModal()">×</button>
       <h2 class="section-title pixel-font" style="margin-bottom: 14px;" id="dayModalTitle">
-        📅 单日麦门足迹明细
+        LOG / 单日记录
       </h2>
       <div id="dayModalBody" style="font-size:13px; line-height:1.6;"></div>
     </div>
@@ -1224,7 +1224,7 @@
       
       <div style="margin-bottom: 14px;">
         <h2 class="section-title pixel-font" style="font-size: 15px; color: var(--pixel-yellow); margin-bottom: 6px;">
-          🍔 连接麦当劳官方账号
+          AUTH / 官方终端接入
         </h2>
         <p style="font-size: 12px; color: var(--pixel-subtext);">
           填入个人官方 MCP Token，瞬间点亮你的 53 周就餐点阵图
@@ -1234,7 +1234,7 @@
       <!-- 1 2 3 步使用指引 -->
       <div style="background: #141220; border: 2px solid #2d2b3d; padding: 12px 14px; margin-bottom: 16px; font-size: 12px; line-height: 1.6;">
         <div class="pixel-font" style="color: var(--pixel-yellow); font-size: 11px; margin-bottom: 8px;">
-          📋 3 步获取你的官方 Token：
+          > INITIALIZATION_STEPS:
         </div>
         <div style="display: flex; flex-direction: column; gap: 6px; color: var(--pixel-text);">
           <div style="display: flex; align-items: center; gap: 8px;">
@@ -1288,7 +1288,7 @@
 
       <!-- 极简轻量信任小字 -->
       <div style="text-align: center; margin-top: 14px; font-size: 11px; color: #777;">
-        🔒 Token 仅存于本地浏览器单次会话，不入库不落盘
+        [SECURE] Token 仅存于本地会话，不发生持久化落盘
       </div>
     </div>
   </div>
@@ -1786,10 +1786,10 @@
         });
       });
       const sorted = Array.from(map.values()).sort((a, b) => b.count - a.count).slice(0, 5);
-      const badges = ['👑 麦门最爱', '🥈 忠实搭子', '🥉 续命常客', '🎖️ 随心优选', '✨ 特色尝鲜'];
+      const badges = ['[TOP 1]', '[TOP 2]', '[TOP 3]', '[TOP 4]', '[TOP 5]'];
       return sorted.map((s, idx) => ({
         ...s,
-        pixelBadge: badges[idx] || '⭐ 麦门印记',
+        pixelBadge: badges[idx] || 'ACHIEVED',
         totalSpent: Number(s.totalSpent.toFixed(1))
       }));
     }
@@ -1970,7 +1970,7 @@
       const isSandbox = !!(data.mcpStatus && data.mcpStatus.isSandbox);
 
       if (isConnected) {
-        if (headerConnectIcon) headerConnectIcon.textContent = '🟢';
+        if (headerConnectIcon) headerConnectIcon.textContent = '[LIVE]';
         if (headerConnectText) headerConnectText.textContent = `官方账号 (${data.mcpStatus.tokenMasked || 'LIVE'}) · 设置`;
         if (btnHeaderConnect) {
           btnHeaderConnect.style.background = '#11261b';
@@ -1980,7 +1980,7 @@
         }
         if (unconnectedBanner) unconnectedBanner.style.display = 'none';
         if (statusPill) {
-          statusPill.textContent = `🟢 官方真实 MCP (${data.mcpStatus.tokenMasked || 'LIVE'})`;
+          statusPill.textContent = `LIVE / 官方 MCP (${data.mcpStatus.tokenMasked || 'LIVE'})`;
           if (statusPill.parentElement) {
             statusPill.parentElement.style.borderColor = 'var(--pixel-green)';
             statusPill.parentElement.style.color = 'var(--pixel-green)';
@@ -2008,7 +2008,7 @@
         if (mcpDot) mcpDot.style.backgroundColor = 'var(--pixel-yellow)';
         if (activeStatus) activeStatus.innerHTML = `<span style="color:var(--pixel-yellow);">正在浏览沙盒示例数据</span>`;
       } else {
-        if (headerConnectIcon) headerConnectIcon.textContent = '🔑';
+        if (headerConnectIcon) headerConnectIcon.textContent = '[LOGIN]';
         if (headerConnectText) headerConnectText.textContent = '连接麦当劳账号';
         if (btnHeaderConnect) {
           btnHeaderConnect.style.background = 'var(--pixel-yellow)';
@@ -2131,7 +2131,7 @@
             <div class="store-left">
               <div class="store-title">
                 <span style="color:var(--pixel-subtext); font-family:monospace;">${gs.rank}</span>
-                <span style="color:var(--pixel-subtext);">📍 ${gs.name}</span>
+                <span style="color:var(--pixel-subtext);">@ ${gs.name}</span>
               </div>
               <div class="store-date">${gs.sub}</div>
             </div>
@@ -2155,7 +2155,7 @@
           <div class="store-left">
             <div class="store-title">
               <span style="color:var(--pixel-yellow); font-family:monospace;">#${idx + 1}</span>
-              <span>📍 ${store.storeName}</span>
+              <span>@ ${store.storeName}</span>
             </div>
             <div class="store-date">最近光顾: ${store.lastVisit || '近期'}</div>
           </div>
@@ -2178,10 +2178,10 @@
 
       if (!breakdown || breakdown.length === 0) {
         const ghostCats = [
-          { label: '🍔 主食汉堡类' },
+          { label: 'MAINS / 主食类' },
           { label: '☕ 鲜煮咖啡与饮品' },
           { label: '🍳 晨光早餐麦满分' },
-          { label: '🍟 小食配餐与甜品' }
+          { label: 'SNACKS / 小食类' }
         ];
         ghostCats.forEach(c => {
           const div = document.createElement('div');
@@ -2287,7 +2287,7 @@
           <div class="badge-info">
             <div class="badge-title">
               <span>${ach.title}</span>
-              ${ach.unlocked ? '<span style="font-size:10px;">✨</span>' : '<span style="font-size:10px;">🔒</span>'}
+              ${ach.unlocked ? '<span style="font-size:10px;">[ON]</span>' : '<span style="font-size:10px;">[OFF]</span>'}
             </div>
             <div class="badge-desc">${ach.description}</div>
             <div class="badge-prog-text pixel-font">
@@ -2311,16 +2311,16 @@
       if (!orders || orders.length === 0) {
         container.innerHTML = `
           <div style="background:#171524; border:2px dashed #3a3754; padding:28px 20px; text-align:center;">
-            <div style="font-size:32px; margin-bottom:10px;">🍟</div>
+            <div style="font-size:32px; margin-bottom:10px; opacity:0.5; font-family:monospace; color:var(--pixel-subtext);">[ NO_DATA ]</div>
             <div class="pixel-font" style="font-size:13px; color:var(--pixel-yellow); margin-bottom:8px;">
-              麦门足迹待连接 (0 信息采集 · 每个人打开都是纯净空状态)
+              MCP 终端未连接 (当前为空数据视图)
             </div>
             <p style="font-size:12px; color:var(--pixel-subtext); line-height:1.6; max-width:540px; margin:0 auto 16px;">
-              本站绝不采集或储存任何隐私信息，Token 仅保存在您当前浏览器的单次会话中。<br>
-              请点击下方按钮填入麦当劳官方开放平台 MCP Token，即可实时拉取真实吃麦足迹与消费点阵！
+              系统不收集隐私。Token 仅存留于本地内存。<br>
+              请接入麦当劳官方开放平台 Token 以同步核销流水。
             </p>
             <div style="display:flex; justify-content:center; gap:12px;">
-              <button class="pixel-btn btn-sm" onclick="openSettingsModal()" style="background:var(--pixel-yellow); color:#000; border-color:#000; font-weight:bold;">🔑 连接麦当劳账号 (输入 Token 点亮)</button>
+              <button class="pixel-btn btn-sm" onclick="openSettingsModal()" style="background:var(--pixel-yellow); color:#000; border-color:#000; font-weight:bold;">[ INIT CONNECTION ] 接入 Token</button>
             </div>
           </div>
         `;
@@ -2329,14 +2329,14 @@
 
       if (sub) {
         const officialCount = orders.filter(o => o.isOfficialReal).length;
-        sub.textContent = officialCount > 0 ? `(含 ${officialCount} 笔麦当劳官方核销订单)` : '(官方订单流水)';
+        sub.textContent = officialCount > 0 ? `(已包含 ${officialCount} 笔 MCP 实盘数据)` : '(本地终端流水)';
       }
 
       orders.forEach(order => {
         const itemRow = document.createElement('div');
         const isOfficial = !!order.isOfficialReal;
         itemRow.style.backgroundColor = isOfficial ? '#15251d' : '#1d1b2a';
-        itemRow.style.border = isOfficial ? '2px solid var(--pixel-green)' : '2px solid #000';
+        itemRow.style.border = isOfficial ? '1px solid var(--pixel-green)' : '1px solid #3d3a54';
         itemRow.style.padding = '12px 14px';
         itemRow.style.boxShadow = 'var(--pixel-shadow-sm)';
         itemRow.style.display = 'flex';
@@ -2348,11 +2348,11 @@
         itemRow.innerHTML = `
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <div style="display:flex; align-items:center; gap:8px;">
-              <span class="pixel-font" style="font-size:11px; color:${isOfficial ? 'var(--pixel-green)' : 'var(--pixel-yellow)'};">
-                ${isOfficial ? '🟢 官方核销订单' : '🏷️ 麦门流水'}
+              <span class="pixel-font" style="background:${isOfficial ? 'var(--pixel-green)' : '#3d3a54'}; color:${isOfficial ? '#000' : '#FFF'}; padding:2px 4px; font-size:9px; border-radius:2px;">
+                ${isOfficial ? 'VERIFIED' : 'LOCAL'}
               </span>
               <span style="font-size:12px; font-weight:bold; color:#FFF;">
-                ${order.storeName ? '📍 ' + order.storeName : '📍 麦当劳餐厅'}
+                @ ${order.storeName ? order.storeName : '麦当劳餐厅'}
               </span>
             </div>
             <div style="font-size:11px; color:var(--pixel-subtext); font-family:monospace;">
@@ -2382,7 +2382,7 @@
       const btn = document.getElementById('btnAutoBindStream');
       const originalText = btn ? btn.textContent : '';
       if (btn) {
-        btn.textContent = '⏳ 正在领券...';
+        btn.textContent = '[ PROCESSING ]';
         btn.disabled = true;
       }
       try {
@@ -2548,7 +2548,7 @@
       const title = document.getElementById('dayModalTitle');
       const body = document.getElementById('dayModalBody');
 
-      title.textContent = `📅 ${day.date} 吃麦日志`;
+      title.textContent = `[LOG] ${day.date}`;
       if (day.count === 0) {
         body.innerHTML = `
           <div style="padding:20px; text-align:center; color:var(--pixel-subtext);">
@@ -2861,7 +2861,7 @@
       ctx.fillStyle = '#FFC72C';
       ctx.font = 'bold 18px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('🍟 McVibe · 麦门足迹', w / 2, 54);
+      ctx.fillText('McVibe', w / 2, 54);
 
       ctx.fillStyle = '#A4B0BE';
       ctx.font = '11px monospace';
@@ -2915,7 +2915,7 @@
       ctx.fillStyle = '#A4B0BE';
       ctx.fillText('• 点亮连击天数:', 48, 380);
       ctx.fillStyle = '#DA291C';
-      ctx.fillText(`${stats.currentStreak} DAYS 🔥`, 260, 380);
+      ctx.fillText(`${stats.currentStreak} DAYS [STREAK]`, 260, 380);
 
       drawPixelBarcode(ctx, 36, 440, w - 72, 38);
 
@@ -3017,7 +3017,7 @@
   <!-- 麦门桌宠 (MCD Desktop Pet) -->
   <!-- ========================================== -->
   <div id="mcd-pet" style="position: fixed; bottom: 10px; left: 10px; font-size: 32px; z-index: 9999; cursor: pointer; transition: transform 0.2s; user-select: none; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.5));">
-    🍟
+    [MCD_PET]
   </div>
   <div id="mcd-pet-dialog" style="position: fixed; bottom: 60px; left: 10px; background: white; color: black; border: 4px solid black; padding: 8px 12px; font-family: 'Press Start 2P', 'Silkscreen', 'PingFang SC', 'Microsoft YaHei', monospace; font-weight: bold; font-size: 10px; z-index: 9999; display: none; white-space: nowrap; box-shadow: 4px 4px 0 rgba(0,0,0,0.5); pointer-events: none;">
     麦门！
@@ -3101,7 +3101,7 @@
 
     // 点击互动 (内容驱动智能对话算法)
     const getSmartDialogs = () => {
-      const dialogs = ["麦门！", "1024 快乐！", "🍟🍟🍟", "BUG 退散！"];
+      const dialogs = ["麦门！", "1024 快乐！", "MCD_OVERFLOW", "BUG 退散！"];
       
       const hour = new Date().getHours();
       if (hour >= 5 && hour < 10) dialogs.push("早起吃麦满分了吗？");
@@ -3124,7 +3124,7 @@
           }
 
           if (currentSummary.stats && currentSummary.stats.currentStreak >= 3) {
-            dialogs.push(`连续吃麦 ${currentSummary.stats.currentStreak} 天了，真正的麦门信徒！🔥`);
+            dialogs.push(`连续吃麦 ${currentSummary.stats.currentStreak} 天了，真正的麦门信徒！`);
           }
 
           if (currentSummary.today && currentSummary.today.orderCount > 0) {
