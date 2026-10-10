@@ -1104,7 +1104,7 @@
       <!-- 就餐时段分布 -->
       <div class="pixel-card">
         <div class="section-title pixel-font" style="margin-bottom: 16px;">
-          <span>⏰ 就餐时段分布</span>
+          <span>HOURS / 就餐时段分布</span>
         </div>
         <div id="timeDistributionContainer">
           <div style="font-size:12px; color:var(--pixel-subtext); text-align:center; padding:20px 0;">
@@ -1287,8 +1287,8 @@
       </div>
 
       <!-- 极简轻量信任小字 -->
-      <div style="text-align: center; margin-top: 14px; font-size: 11px; color: #777;">
-        [SECURE] 零隐私收集：Token 绝不上传后端，刷新页面即刻自动销毁，多人使用安全无痕
+      <div style="text-align: center; margin-top: 14px; font-size: 11px; color: var(--pixel-subtext); line-height: 1.5;">
+        [SECURE] 零隐私收集 · Token 仅在单次会话有效，刷新即销毁
       </div>
     </div>
   </div>
@@ -2623,7 +2623,7 @@
       if (alertEl) alertEl.style.display = 'none';
       const btn = document.getElementById('btnSettingsConnect');
       if (btn) {
-        btn.textContent = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹';
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹';
         btn.disabled = false;
         btn.style.boxShadow = '';
         btn.style.background = 'var(--pixel-yellow)';
@@ -2737,7 +2737,7 @@
             btn.style.background = 'var(--pixel-yellow)';
             btn.style.borderColor = '#000';
             btn.style.color = '#000';
-            btn.textContent = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹';
+            btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹';
             btn.disabled = false;
           }
           if (alertEl) {
@@ -2759,7 +2759,7 @@
           btn.style.background = 'var(--pixel-yellow)';
           btn.style.borderColor = '#000';
           btn.style.color = '#000';
-          btn.textContent = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹';
+          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:-1px; margin-right:4px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>点亮足迹';
           btn.disabled = false;
         }
         if (alertEl) {
@@ -2820,7 +2820,7 @@
           alertEl.style.backgroundColor = '#2a2717';
           alertEl.style.borderColor = 'var(--pixel-yellow)';
           alertEl.style.color = 'var(--pixel-yellow)';
-          alertEl.textContent = 'ℹ️ 已载入沙盒模拟演示数据！';
+          alertEl.textContent = '[DEMO] 已载入沙盒模拟演示数据！';
         }
         updateSettingsStatusText();
         setTimeout(closeSettingsModal, 900);
@@ -3017,8 +3017,26 @@
   <!-- ========================================== -->
   <!-- 麦门桌宠 (MCD Desktop Pet) -->
   <!-- ========================================== -->
-  <div id="mcd-pet" style="position: fixed; bottom: 10px; left: 10px; font-size: 32px; z-index: 9999; cursor: pointer; transition: transform 0.2s; user-select: none; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.5));">
-    [MCD_PET]
+  <div id="mcd-pet" style="position: fixed; bottom: 12px; left: 12px; z-index: 9999; cursor: pointer; transition: transform 0.2s; user-select: none; filter: drop-shadow(2px 3px 0px rgba(0,0,0,0.7));">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="38" height="38" shape-rendering="crispEdges" style="display:block;">
+      <!-- Pixel Fries Bag (Red) -->
+      <rect x="6" y="12" width="20" height="16" fill="#DA291C" stroke="#000" stroke-width="2"/>
+      <!-- Golden M on Bag -->
+      <rect x="11" y="18" width="2" height="6" fill="#FFC72C"/>
+      <rect x="19" y="18" width="2" height="6" fill="#FFC72C"/>
+      <rect x="13" y="19" width="3" height="2" fill="#FFC72C"/>
+      <rect x="16" y="19" width="3" height="2" fill="#FFC72C"/>
+      <rect x="15" y="21" width="2" height="3" fill="#DA291C"/>
+      <!-- Golden Fries Sticks -->
+      <rect x="8" y="4" width="3" height="9" fill="#FFC72C" stroke="#000" stroke-width="1"/>
+      <rect x="12" y="2" width="3" height="11" fill="#FFE17D" stroke="#000" stroke-width="1"/>
+      <rect x="16" y="3" width="3" height="10" fill="#FFC72C" stroke="#000" stroke-width="1"/>
+      <rect x="20" y="5" width="3" height="8" fill="#FFE17D" stroke="#000" stroke-width="1"/>
+      <!-- Cute Pixel Face -->
+      <rect x="12" y="14" width="2" height="2" fill="#000"/>
+      <rect x="18" y="14" width="2" height="2" fill="#000"/>
+      <rect x="14" y="16" width="4" height="1" fill="#000"/>
+    </svg>
   </div>
   <div id="mcd-pet-dialog" style="position: fixed; bottom: 60px; left: 10px; background: white; color: black; border: 4px solid black; padding: 8px 12px; font-family: 'Press Start 2P', 'Silkscreen', 'PingFang SC', 'Microsoft YaHei', monospace; font-weight: bold; font-size: 10px; z-index: 9999; display: none; white-space: nowrap; box-shadow: 4px 4px 0 rgba(0,0,0,0.5); pointer-events: none;">
     麦门！
@@ -3102,7 +3120,7 @@
 
     // 点击互动 (内容驱动智能对话算法)
     const getSmartDialogs = () => {
-      const dialogs = ["麦门！", "1024 快乐！", "MCD_OVERFLOW", "BUG 退散！"];
+      const dialogs = ["麦门！", "1024 快乐！", "今日份能量已满格！", "BUG 退散！"];
       
       const hour = new Date().getHours();
       if (hour >= 5 && hour < 10) dialogs.push("早起吃麦满分了吗？");
