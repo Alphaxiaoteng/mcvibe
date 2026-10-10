@@ -3020,7 +3020,7 @@
   <div id="mcd-pet" style="position: fixed; bottom: 10px; left: 10px; font-size: 32px; z-index: 9999; cursor: pointer; transition: transform 0.2s; user-select: none; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.5));">
     🍟
   </div>
-  <div id="mcd-pet-dialog" style="position: fixed; bottom: 60px; left: 10px; background: white; color: black; border: 4px solid black; padding: 8px 12px; font-family: 'Press Start 2P', monospace; font-size: 10px; z-index: 9999; display: none; white-space: nowrap; box-shadow: 4px 4px 0 rgba(0,0,0,0.5); pointer-events: none;">
+  <div id="mcd-pet-dialog" style="position: fixed; bottom: 60px; left: 10px; background: white; color: black; border: 4px solid black; padding: 8px 12px; font-family: 'Press Start 2P', 'Silkscreen', 'PingFang SC', 'Microsoft YaHei', monospace; font-weight: bold; font-size: 10px; z-index: 9999; display: none; white-space: nowrap; box-shadow: 4px 4px 0 rgba(0,0,0,0.5); pointer-events: none;">
     麦门！
   </div>
 
@@ -3031,8 +3031,6 @@
     let petX = 10;
     let petBottom = 10;
     let petDirection = 1;
-    let petSpeed = 1.0;
-    let petState = 'walking';
     
     // 拖拽逻辑
     let isDragging = false;
@@ -3042,7 +3040,6 @@
     const dragStart = (e) => {
       isDragging = true;
       isClick = true;
-      petState = 'idle'; // 拖拽时停止巡逻
       startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
       startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
       pet.style.transition = 'none';
@@ -3081,7 +3078,6 @@
       if (!isDragging) return;
       isDragging = false;
       pet.style.transition = 'transform 0.2s';
-      petState = 'walking';
     };
 
     pet.addEventListener('mousedown', dragStart);
@@ -3091,44 +3087,22 @@
     window.addEventListener('touchmove', dragMove, {passive: false});
     window.addEventListener('touchend', dragEnd);
 
-    // 随机漫步
-    setInterval(() => {
-      if (petState === 'idle' || isDragging) return;
-      petX += petSpeed * petDirection;
-      pet.style.left = petX + 'px';
-      
-      if (petX >= window.innerWidth - 40) {
-        petDirection = -1;
-        pet.style.transform = 'scaleX(-1)';
-      } else if (petX <= 0) {
-        petDirection = 1;
-        pet.style.transform = 'scaleX(1)';
-      }
-      
-      if (petDialog.style.display !== 'none') {
-        petDialog.style.left = Math.min(Math.max(10, petX - 20), window.innerWidth - 120) + 'px';
-      }
-    }, 30);
-
-    // 随机状态改变
+    // 偶尔原地点点头或换个方向，但绝不自动走动乱跑，避免覆盖重要信息
     setInterval(() => {
       if (isDragging) return;
-      if (Math.random() > 0.7) {
-        petState = petState === 'walking' ? 'idle' : 'walking';
-        if (petState === 'idle') {
-          pet.style.transform = `scaleX(${petDirection}) translateY(-10px)`;
-          setTimeout(() => { if (!isDragging) pet.style.transform = `scaleX(${petDirection}) translateY(0)` }, 150);
-        }
-      }
       if (Math.random() > 0.8) {
+        pet.style.transform = `scaleX(${petDirection}) translateY(-8px)`;
+        setTimeout(() => { if (!isDragging) pet.style.transform = `scaleX(${petDirection}) translateY(0)` }, 150);
+      }
+      if (Math.random() > 0.9) {
         petDirection *= -1;
         pet.style.transform = `scaleX(${petDirection})`;
       }
-    }, 3000);
+    }, 4000);
 
     // 点击互动 (内容驱动智能对话算法)
     const getSmartDialogs = () => {
-      const dialogs = ["麦门！", "Vibe Coding!", "1024 快乐！", "🍟🍟🍟", "BUG 退散！"];
+      const dialogs = ["麦门！", "1024 快乐！", "🍟🍟🍟", "BUG 退散！"];
       
       const hour = new Date().getHours();
       if (hour >= 5 && hour < 10) dialogs.push("早起吃麦满分了吗？");
