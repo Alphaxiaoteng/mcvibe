@@ -3020,7 +3020,7 @@
   <div id="mcd-pet" style="position: fixed; bottom: 10px; left: 10px; font-size: 32px; z-index: 9999; cursor: pointer; transition: transform 0.2s; user-select: none; filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.5));">
     🍟
   </div>
-  <div id="mcd-pet-dialog" style="position: fixed; bottom: 60px; left: 10px; background: white; border: 4px solid black; padding: 8px 12px; font-family: 'Press Start 2P', monospace; font-size: 10px; z-index: 9999; display: none; white-space: nowrap; box-shadow: 4px 4px 0 rgba(0,0,0,0.5); pointer-events: none;">
+  <div id="mcd-pet-dialog" style="position: fixed; bottom: 60px; left: 10px; background: white; color: black; border: 4px solid black; padding: 8px 12px; font-family: 'Press Start 2P', monospace; font-size: 10px; z-index: 9999; display: none; white-space: nowrap; box-shadow: 4px 4px 0 rgba(0,0,0,0.5); pointer-events: none;">
     麦门！
   </div>
 
@@ -3029,20 +3029,78 @@
     const pet = document.getElementById('mcd-pet');
     const petDialog = document.getElementById('mcd-pet-dialog');
     let petX = 10;
+    let petBottom = 10;
     let petDirection = 1;
     let petSpeed = 1.0;
     let petState = 'walking';
     
+    // 拖拽逻辑
+    let isDragging = false;
+    let isClick = true;
+    let startX = 0, startY = 0;
+
+    const dragStart = (e) => {
+      isDragging = true;
+      isClick = true;
+      petState = 'idle'; // 拖拽时停止巡逻
+      startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+      startY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+      pet.style.transition = 'none';
+      e.preventDefault();
+    };
+
+    const dragMove = (e) => {
+      if (!isDragging) return;
+      const currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+      const currentY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
+      const dx = currentX - startX;
+      const dy = currentY - startY;
+      
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) isClick = false;
+
+      petX += dx;
+      petBottom -= dy; // 屏幕 Y 轴向下，而 bottom 是向上
+      
+      // 边界限制
+      petX = Math.max(0, Math.min(petX, window.innerWidth - 40));
+      petBottom = Math.max(0, Math.min(petBottom, window.innerHeight - 40));
+
+      startX = currentX;
+      startY = currentY;
+      
+      pet.style.left = petX + 'px';
+      pet.style.bottom = petBottom + 'px';
+      
+      if (petDialog.style.display !== 'none') {
+        petDialog.style.left = Math.min(Math.max(10, petX - 20), window.innerWidth - 120) + 'px';
+        petDialog.style.bottom = (petBottom + 50) + 'px';
+      }
+    };
+
+    const dragEnd = () => {
+      if (!isDragging) return;
+      isDragging = false;
+      pet.style.transition = 'transform 0.2s';
+      petState = 'walking';
+    };
+
+    pet.addEventListener('mousedown', dragStart);
+    window.addEventListener('mousemove', dragMove);
+    window.addEventListener('mouseup', dragEnd);
+    pet.addEventListener('touchstart', dragStart, {passive: false});
+    window.addEventListener('touchmove', dragMove, {passive: false});
+    window.addEventListener('touchend', dragEnd);
+
     // 随机漫步
     setInterval(() => {
-      if (petState === 'idle') return;
+      if (petState === 'idle' || isDragging) return;
       petX += petSpeed * petDirection;
       pet.style.left = petX + 'px';
       
-      if (petX > window.innerWidth - 40) {
+      if (petX >= window.innerWidth - 40) {
         petDirection = -1;
         pet.style.transform = 'scaleX(-1)';
-      } else if (petX < 0) {
+      } else if (petX <= 0) {
         petDirection = 1;
         pet.style.transform = 'scaleX(1)';
       }
@@ -3054,11 +3112,12 @@
 
     // 随机状态改变
     setInterval(() => {
+      if (isDragging) return;
       if (Math.random() > 0.7) {
         petState = petState === 'walking' ? 'idle' : 'walking';
         if (petState === 'idle') {
           pet.style.transform = `scaleX(${petDirection}) translateY(-10px)`;
-          setTimeout(() => pet.style.transform = `scaleX(${petDirection}) translateY(0)`, 150);
+          setTimeout(() => { if (!isDragging) pet.style.transform = `scaleX(${petDirection}) translateY(0)` }, 150);
         }
       }
       if (Math.random() > 0.8) {
@@ -3071,7 +3130,8 @@
     const petDialogs = [
       "麦门！", "吃板烧了吗？", "Vibe Coding!", "积分别过期啦！", "1024 快乐！", "🍟🍟🍟", "加个鸡腿！", "BUG 退散！"
     ];
-    pet.onclick = () => {
+    pet.onclick = (e) => {
+      if (!isClick) return; // 如果是拖拽则不触发对话
       if (typeof playCoin === 'function') playCoin();
       pet.style.transform = `scaleX(${petDirection}) translateY(-15px) scale(1.2)`;
       setTimeout(() => pet.style.transform = `scaleX(${petDirection}) translateY(0) scale(1)`, 200);
@@ -3079,6 +3139,7 @@
       petDialog.textContent = petDialogs[Math.floor(Math.random() * petDialogs.length)];
       petDialog.style.display = 'block';
       petDialog.style.left = Math.min(Math.max(10, petX - 20), window.innerWidth - 120) + 'px';
+      petDialog.style.bottom = (petBottom + 50) + 'px';
       
       setTimeout(() => petDialog.style.display = 'none', 2500);
     };
