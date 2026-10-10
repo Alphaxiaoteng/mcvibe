@@ -3126,17 +3126,57 @@
       }
     }, 3000);
 
-    // 点击互动
-    const petDialogs = [
-      "麦门！", "吃板烧了吗？", "Vibe Coding!", "积分别过期啦！", "1024 快乐！", "🍟🍟🍟", "加个鸡腿！", "BUG 退散！"
-    ];
+    // 点击互动 (内容驱动智能对话算法)
+    const getSmartDialogs = () => {
+      const dialogs = ["麦门！", "Vibe Coding!", "1024 快乐！", "🍟🍟🍟", "BUG 退散！"];
+      
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 10) dialogs.push("早起吃麦满分了吗？");
+      if (hour >= 22 || hour < 4) dialogs.push("深夜写代码，来份麦乐鸡？", "夜宵时间到！");
+      if (hour >= 11 && hour < 14) dialogs.push("午餐时间，想好吃啥了吗？");
+
+      // 结合业务数据 Context 感知
+      if (typeof currentSummary !== 'undefined' && currentSummary) {
+        if (currentSummary.mcpStatus && currentSummary.mcpStatus.isSandbox) {
+          dialogs.push("当前是沙盒模式，右上角绑 Token 解锁真实战绩！");
+        } else {
+          if (currentSummary.user && currentSummary.user.points !== undefined) {
+            if (currentSummary.user.points > 2000) dialogs.push(`你有 ${currentSummary.user.points} 积分大户！够换好几个汉堡了！`);
+            else if (currentSummary.user.points === 0) dialogs.push("积分见底啦，赶紧去吃点充值！");
+            else dialogs.push(`你的 ${currentSummary.user.points} 积分打算怎么花？`);
+          }
+
+          if (currentSummary.mcpStatus && currentSummary.mcpStatus.couponsAvailable > 0) {
+            dialogs.push(`兜里还有 ${currentSummary.mcpStatus.couponsAvailable} 张券没用呢，别过期啦！`);
+          }
+
+          if (currentSummary.stats && currentSummary.stats.currentStreak >= 3) {
+            dialogs.push(`连续吃麦 ${currentSummary.stats.currentStreak} 天了，真正的麦门信徒！🔥`);
+          }
+
+          if (currentSummary.today && currentSummary.today.orderCount > 0) {
+            dialogs.push(`今天已经吃了 ${currentSummary.today.orderCount} 顿麦记，嗝~`);
+            if (currentSummary.today.saved > 0) dialogs.push(`今天靠优惠省了 ¥${currentSummary.today.saved}，勤俭持家！`);
+          }
+
+          if (currentSummary.topItems && currentSummary.topItems.length > 0) {
+            const top = currentSummary.topItems[0];
+            if (top.count >= 5) {
+              dialogs.push(`你的最爱是【${top.name}】，竟然吃了 ${top.count} 次！`);
+            }
+          }
+        }
+      }
+      return dialogs[Math.floor(Math.random() * dialogs.length)];
+    };
+
     pet.onclick = (e) => {
       if (!isClick) return; // 如果是拖拽则不触发对话
       if (typeof playCoin === 'function') playCoin();
       pet.style.transform = `scaleX(${petDirection}) translateY(-15px) scale(1.2)`;
       setTimeout(() => pet.style.transform = `scaleX(${petDirection}) translateY(0) scale(1)`, 200);
       
-      petDialog.textContent = petDialogs[Math.floor(Math.random() * petDialogs.length)];
+      petDialog.textContent = getSmartDialogs();
       petDialog.style.display = 'block';
       petDialog.style.left = Math.min(Math.max(10, petX - 20), window.innerWidth - 120) + 'px';
       petDialog.style.bottom = (petBottom + 50) + 'px';
