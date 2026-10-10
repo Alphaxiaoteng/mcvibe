@@ -940,6 +940,34 @@
       color: var(--pixel-yellow);
       text-decoration: none;
     }
+
+    /* 浮动 8-Bit 像素 Toast 提示框 */
+    .pixel-toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #181625;
+      border: 2px solid var(--pixel-yellow);
+      box-shadow: 4px 4px 0 #000;
+      color: #fff;
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 99999;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.22s ease, transform 0.22s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      max-width: 90vw;
+      white-space: nowrap;
+    }
+    .pixel-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
   </style>
 </head>
 <body>
@@ -980,10 +1008,10 @@
     <div id="unconnectedBanner" style="display:none; background:#181625; border:2px dashed var(--pixel-yellow); padding:10px 16px; margin-bottom:16px; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
       <div style="display:flex; align-items:center; gap:8px; font-size:12px; color:var(--pixel-yellow);">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px; flex-shrink:0;"><path d="M21 2l-2 2m-1.5 1.5L14 9l-1.5-1.5-2 2 1.5 1.5L4 19a3 3 0 1 1-2-2l8-8 1.5 1.5 2-2L12 7l3.5-3.5L19 2z"></path></svg>
-        <span><b>麦当劳官方账号待连接</b>：输入 MCP Token 即可实时点亮 53 周就餐点阵谱；或一键体验沙盒演示</span>
+        <span id="unconnectedBannerText"><b>麦当劳官方账号待连接</b>：输入 MCP Token 即可实时点亮 53 周就餐点阵谱；或一键体验沙盒演示</span>
       </div>
       <div style="display:flex; gap:8px;">
-        <button class="pixel-btn btn-sm" onclick="loadDemoFromSettings()" style="display:inline-flex; align-items:center; gap:4px; background:#242236; color:var(--pixel-yellow); font-size:11px; padding:4px 10px; border-color:#3d3a54;" title="无需 Token 即可体验全功能"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>沙盒演示</button>
+        <button class="pixel-btn btn-sm" id="btnBannerDemo" onclick="loadDemoFromSettings()" style="display:inline-flex; align-items:center; gap:4px; background:#242236; color:var(--pixel-yellow); font-size:11px; padding:4px 10px; border-color:#3d3a54;" title="无需 Token 即可体验全功能"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>沙盒演示</button>
         <button class="pixel-btn btn-sm" onclick="openSettingsModal()" style="display:inline-flex; align-items:center; gap:4px; background:var(--pixel-yellow); color:#000; font-size:11px; padding:4px 10px; border-color:#000; font-weight:bold;"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>输入 Token</button>
       </div>
     </div>
@@ -1984,11 +2012,6 @@
         if (token) {
           const inputEl = document.getElementById('inputSettingsToken');
           if (inputEl) inputEl.value = token;
-        } else {
-          // 未配置 Token 时弹出引导说明
-          if (!safeStorage.get('local', 'mcd_hide_guide')) {
-            setTimeout(openGuideModal, 500);
-          }
         }
         const headers = token ? { 'x-mcd-token': token } : {};
         const url = `${API_BASE}/api/vibe/summary`;
@@ -2001,9 +2024,6 @@
         console.warn('API 不可用或纯静态部署环境，自动降级为浏览器本地纯净空状态:', err);
         currentSummary = createClientEmptySummary();
         renderDashboard(currentSummary);
-        if (!safeStorage.get('session', 'mcd_token') && !safeStorage.get('local', 'mcd_hide_guide')) {
-          setTimeout(openGuideModal, 500);
-        }
       }
     }
 
@@ -2911,92 +2931,307 @@
       updateSettingsStatusText();
     }
 
+    function showPixelToast(msg, duration = 2600) {
+      let toast = document.getElementById('pixelToast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'pixelToast';
+        toast.className = 'pixel-toast pixel-font';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--pixel-yellow)" stroke-width="2.5" style="flex-shrink:0;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span>${msg}</span>`;
+      toast.classList.add('show');
+      if (toast._timer) clearTimeout(toast._timer);
+      toast._timer = setTimeout(() => {
+        toast.classList.remove('show');
+      }, duration);
+    }
+
     function createClientDemoSummary() {
       const days2026 = generateLocalHeatmap(2026, false);
       const days2025 = generateLocalHeatmap(2025, false);
       const daysRecent = generateLocalHeatmap(24, true);
 
-      const itemsPool = [
+      // 菜单单品候选池 (涵盖五大类别与标准营养定价)
+      const menuPool = [
         { name: '板烧鸡腿堡', price: 23.5, calories: 430, category: 'burger' },
         { name: '麦辣鸡腿堡', price: 21.0, calories: 480, category: 'burger' },
+        { name: '巨无霸', price: 25.5, calories: 520, category: 'burger' },
+        { name: '双层吉士堡', price: 22.0, calories: 450, category: 'burger' },
+        { name: '培根蔬萃双层牛肉堡', price: 24.5, calories: 460, category: 'burger' },
+        { name: '不素之霸双层牛堡', price: 26.0, calories: 540, category: 'burger' },
         { name: '中薯条', price: 13.0, calories: 320, category: 'snack' },
-        { name: '鲜萃冰咖', price: 10.0, calories: 15, category: 'drink' },
         { name: '麦辣鸡翅(2块)', price: 14.5, calories: 230, category: 'snack' },
+        { name: '麦乐鸡(5块)', price: 13.5, calories: 220, category: 'snack' },
+        { name: '麦麦脆汁鸡(1块)', price: 15.0, calories: 290, category: 'snack' },
+        { name: '鲜萃冰咖', price: 10.0, calories: 15, category: 'drink' },
+        { name: '麦咖啡拿铁', price: 16.0, calories: 150, category: 'drink' },
+        { name: '零度可乐(中)', price: 10.5, calories: 0, category: 'drink' },
         { name: '原味板烧麦满分', price: 16.0, calories: 320, category: 'breakfast' },
+        { name: '猪柳蛋麦满分', price: 17.5, calories: 380, category: 'breakfast' },
+        { name: '吉士蛋麦满分', price: 13.5, calories: 300, category: 'breakfast' },
         { name: '奥利奥麦旋风', price: 14.5, calories: 260, category: 'dessert' },
+        { name: '香芋派', price: 8.5, calories: 210, category: 'dessert' },
+        { name: '菠萝派', price: 8.5, calories: 205, category: 'dessert' }
       ];
 
-      const storesPool = ['麦当劳杭州西湖旗舰店', '麦当劳城西银泰餐厅', '麦当劳萧山机场餐厅', '麦当劳滨江天街餐厅'];
+      const storesPool = [
+        '麦当劳杭州西湖断桥餐厅',
+        '麦当劳城西银泰数智餐厅',
+        '麦当劳滨江天街旗舰店',
+        '麦当劳萧山国际机场枢纽店',
+        '麦当劳西溪印象城餐厅',
+        '麦当劳钱江新城万象城店'
+      ];
+
+      const couponsPool = [
+        '麦麦省专属优惠',
+        '随心配1+1特惠券',
+        '疯狂周四立减券',
+        '麦咖啡升杯特惠',
+        '晨光早餐满25减6券',
+        '会员专享88折券'
+      ];
+
+      const diningTypes = ['dine_in', 'takeout', 'drive_thru'];
+
+      // 动态生成连续打卡天数 (3 到 8 天)
+      const currentStreak = Math.floor(3 + Math.random() * 6);
+      const longestStreak = currentStreak + Math.floor(4 + Math.random() * 10);
+
+      // 计算可点亮的 2026 年就餐打卡日期 (严格在 2026-10-10 及以前)
+      const validDays2026 = days2026.filter(d => d.date <= '2026-10-10');
+      
+      // 选取连击打卡日期集：最近 currentStreak 天保证就餐
+      const streakDates = new Set();
+      const recentValid = [...validDays2026].reverse();
+      for (let i = 0; i < Math.min(currentStreak, recentValid.length); i++) {
+        streakDates.add(recentValid[i].date);
+      }
+
+      // 生成订单总数：动态随机 32 到 52 笔历史订单
+      const targetOrderCount = Math.floor(32 + Math.random() * 21);
+      const chosenDates = [];
+
+      // 先放入连击打卡日期
+      streakDates.forEach(d => chosenDates.push(d));
+
+      // 其余随机选取 2026 打卡日
+      const available2026 = validDays2026.filter(d => !streakDates.has(d.date));
+      const shuffled2026 = [...available2026].sort(() => Math.random() - 0.5);
+      const count2026 = Math.min(targetOrderCount - chosenDates.length - 8, shuffled2026.length);
+      for (let i = 0; i < count2026; i++) {
+        chosenDates.push(shuffled2026[i].date);
+      }
+
+      // 选取 2025 年 8 到 14 笔订单，支持跨年份与足迹筛选
+      const validDays2025 = days2025.filter(d => d.date >= '2025-06-01');
+      const shuffled2025 = [...validDays2025].sort(() => Math.random() - 0.5);
+      const count2025 = Math.floor(8 + Math.random() * 7);
+      for (let i = 0; i < count2025; i++) {
+        chosenDates.push(shuffled2025[i].date);
+      }
+
+      chosenDates.sort();
+
       const demoOrderList = [];
       let totalSpent = 0;
       let totalSaved = 0;
-      let orderIdx = 1;
+      let orderSeq = 1;
+      const dateOrderMap = new Map();
 
-      days2026.forEach((day, idx) => {
-        const hasMeal = (idx % 3 === 0) || (day.dayOfWeek === 5) || (idx % 7 === 2);
-        if (hasMeal) {
-          const item1 = itemsPool[idx % itemsPool.length];
-          const item2 = itemsPool[(idx + 2) % itemsPool.length];
-          const paid = Number((item1.price + item2.price * 0.7).toFixed(1));
-          const saved = Number((item2.price * 0.3).toFixed(1));
-          
-          day.count = 1;
-          day.totalSpent = paid;
-          day.savedAmount = saved;
-          day.calories = item1.calories + item2.calories;
-          day.intensity = paid > 30 ? 3 : 2;
-          day.itemHighlights = [item1.name, item2.name];
+      chosenDates.forEach(dateStr => {
+        const randTimeType = Math.random();
+        let hour = 12;
+        let minute = Math.floor(Math.random() * 60);
+        let itemsForMeal = [];
 
-          totalSpent += paid;
-          totalSaved += saved;
-
-          if (demoOrderList.length < 25) {
-            demoOrderList.push({
-              id: `DEMO-ORDER-${orderIdx++}`,
-              date: day.date,
-              timestamp: `${day.date}T12:30:00`,
-              items: [{ name: item1.name, count: 1, price: item1.price }, { name: item2.name, count: 1, price: item2.price }],
-              totalPrice: paid + saved,
-              discountAmount: saved,
-              paidAmount: paid,
-              couponUsed: '麦麦省专属优惠',
-              pointsEarned: Math.floor(paid * 10),
-              diningType: 'dine_in',
-              storeName: storesPool[idx % storesPool.length],
-              isOfficialReal: false
-            });
+        if (randTimeType < 0.22) {
+          // 早餐时段 (07:00 - 10:00)
+          hour = Math.floor(7 + Math.random() * 3);
+          const bfItems = menuPool.filter(m => m.category === 'breakfast');
+          const drinkItems = menuPool.filter(m => m.category === 'drink');
+          const bf = bfItems[Math.floor(Math.random() * bfItems.length)];
+          const dr = drinkItems[Math.floor(Math.random() * drinkItems.length)];
+          itemsForMeal = [
+            { name: bf.name, price: bf.price, calories: bf.calories, category: bf.category, count: 1 },
+            { name: dr.name, price: dr.price, calories: dr.calories, category: dr.category, count: 1 }
+          ];
+        } else if (randTimeType < 0.62) {
+          // 午餐主力 (11:30 - 13:45)
+          hour = Math.floor(11 + Math.random() * 3);
+          const burgerItems = menuPool.filter(m => m.category === 'burger');
+          const snackItems = menuPool.filter(m => m.category === 'snack');
+          const drinkItems = menuPool.filter(m => m.category === 'drink');
+          const bg = burgerItems[Math.floor(Math.random() * burgerItems.length)];
+          const sn = snackItems[Math.floor(Math.random() * snackItems.length)];
+          itemsForMeal = [
+            { name: bg.name, price: bg.price, calories: bg.calories, category: bg.category, count: 1 },
+            { name: sn.name, price: sn.price, calories: sn.calories, category: sn.category, count: 1 }
+          ];
+          if (Math.random() > 0.4) {
+            const dr = drinkItems[Math.floor(Math.random() * drinkItems.length)];
+            itemsForMeal.push({ name: dr.name, price: dr.price, calories: dr.calories, category: dr.category, count: 1 });
           }
+        } else if (randTimeType < 0.78) {
+          // 下午茶 (14:30 - 16:45)
+          hour = Math.floor(14 + Math.random() * 3);
+          const drinkItems = menuPool.filter(m => m.category === 'drink');
+          const dessertItems = menuPool.filter(m => m.category === 'dessert' || m.category === 'snack');
+          const dr = drinkItems[Math.floor(Math.random() * drinkItems.length)];
+          const ds = dessertItems[Math.floor(Math.random() * dessertItems.length)];
+          itemsForMeal = [
+            { name: dr.name, price: dr.price, calories: dr.calories, category: dr.category, count: 1 },
+            { name: ds.name, price: ds.price, calories: ds.calories, category: ds.category, count: 1 }
+          ];
+        } else if (randTimeType < 0.94) {
+          // 晚间犒赏 (17:30 - 20:30)
+          hour = Math.floor(17 + Math.random() * 4);
+          const burgerItems = menuPool.filter(m => m.category === 'burger');
+          const snackItems = menuPool.filter(m => m.category === 'snack');
+          const bg = burgerItems[Math.floor(Math.random() * burgerItems.length)];
+          const sn = snackItems[Math.floor(Math.random() * snackItems.length)];
+          itemsForMeal = [
+            { name: bg.name, price: bg.price, calories: bg.calories, category: bg.category, count: 1 },
+            { name: sn.name, price: sn.price, calories: sn.calories, category: sn.category, count: 1 }
+          ];
+        } else {
+          // 深夜加餐 (21:30 - 23:45)
+          hour = Math.floor(21 + Math.random() * 3);
+          const snackItems = menuPool.filter(m => m.category === 'snack');
+          const sn = snackItems[Math.floor(Math.random() * snackItems.length)];
+          itemsForMeal = [
+            { name: sn.name, price: sn.price, calories: sn.calories, category: sn.category, count: 1 }
+          ];
         }
+
+        const mealOriginalPrice = itemsForMeal.reduce((sum, item) => sum + item.price * item.count, 0);
+        const discountRate = 0.16 + Math.random() * 0.20;
+        const discountAmount = Number((mealOriginalPrice * discountRate).toFixed(1));
+        const paidAmount = Number((mealOriginalPrice - discountAmount).toFixed(1));
+
+        totalSpent += paidAmount;
+        totalSaved += discountAmount;
+
+        const timeStr = `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}:00`;
+        const timestamp = `${dateStr}T${timeStr}`;
+        const orderId = `DEMO-${dateStr.replace(/-/g, '')}-${String(orderSeq++).padStart(3, '0')}`;
+        const storeName = storesPool[Math.floor(Math.random() * storesPool.length)];
+        const couponUsed = couponsPool[Math.floor(Math.random() * couponsPool.length)];
+        const diningType = diningTypes[Math.random() > 0.4 ? 0 : (Math.random() > 0.5 ? 1 : 2)];
+
+        const orderObj = {
+          id: orderId,
+          date: dateStr,
+          timestamp: timestamp,
+          items: itemsForMeal,
+          totalPrice: Number(mealOriginalPrice.toFixed(1)),
+          discountAmount: discountAmount,
+          paidAmount: paidAmount,
+          couponUsed: couponUsed,
+          pointsEarned: Math.floor(paidAmount * 10),
+          diningType: diningType,
+          storeName: storeName,
+          isOfficialReal: false
+        };
+
+        demoOrderList.push(orderObj);
+
+        if (!dateOrderMap.has(dateStr)) {
+          dateOrderMap.set(dateStr, []);
+        }
+        dateOrderMap.get(dateStr).push(orderObj);
       });
+
+      // 点亮热力图点阵 (2026, 2025, recent24)
+      const updateHeatmapDays = (days) => {
+        days.forEach(day => {
+          const ordersOnDay = dateOrderMap.get(day.date);
+          if (ordersOnDay && ordersOnDay.length > 0) {
+            day.count = ordersOnDay.length;
+            day.totalSpent = Number(ordersOnDay.reduce((s, o) => s + o.paidAmount, 0).toFixed(1));
+            day.savedAmount = Number(ordersOnDay.reduce((s, o) => s + o.discountAmount, 0).toFixed(1));
+            day.calories = ordersOnDay.reduce((s, o) => s + o.items.reduce((cs, i) => cs + (i.calories || 200), 0), 0);
+            day.intensity = Math.min(3, Math.max(1, Math.ceil(day.totalSpent / 26)));
+            day.itemHighlights = Array.from(new Set(ordersOnDay.flatMap(o => o.items.map(i => i.name))));
+          }
+        });
+      };
+
+      updateHeatmapDays(days2026);
+      updateHeatmapDays(days2025);
+      updateHeatmapDays(daysRecent);
+
+      // 动态用户昵称与称号
+      const demoTitles = [
+        '首席板烧鉴赏家',
+        '麦咖啡品鉴大师',
+        '脆汁鸡守护者',
+        '深夜麦门夜行者',
+        '羊毛精算特工',
+        '随心配架构师',
+        '五星打卡麦客'
+      ];
+      const randomUserId = Math.floor(1000 + Math.random() * 9000);
+      const randomTitle = demoTitles[Math.floor(Math.random() * demoTitles.length)];
+      const randomMemberLevel = Math.random() > 0.45 ? '黄金会员' : '黑金会员';
+      const pointsBase = Math.floor(2600 + Math.random() * 4600);
+      const accumPoints = pointsBase + Math.floor(3200 + Math.random() * 5000);
+      const expiredPoints = Math.floor(40 + Math.random() * 220);
+
+      // 动态今日状态
+      const todaySpent = Number((18 + Math.random() * 22).toFixed(1));
+      const todaySaved = Number((5 + Math.random() * 11).toFixed(1));
+      const todayCalories = Math.floor(380 + Math.random() * 260);
+
+      // 动态成就状态
+      const coffeeOrdersCount = demoOrderList.filter(o => o.items.some(i => i.category === 'drink')).length;
+      const burgerOrdersCount = demoOrderList.filter(o => o.items.some(i => i.category === 'burger')).length;
+
+      const achievements = [
+        { id: 'first_order', title: '麦门初心', description: '完成首笔麦当劳就餐打卡', unlocked: true, progress: 1, maxProgress: 1 },
+        { id: 'streak_3', title: '麦门三日连击', description: '连续 3 天光顾麦当劳', unlocked: currentStreak >= 3, progress: Math.min(3, currentStreak), maxProgress: 3 },
+        { id: 'coffee_lover', title: '咖啡续命先锋', description: '累计饮用 10 杯麦咖啡/鲜饮', unlocked: coffeeOrdersCount >= 10, progress: Math.min(10, coffeeOrdersCount), maxProgress: 10 },
+        { id: 'big_saver', title: '薅麦羊毛大师', description: '累计通过优惠券省下超 100 元', unlocked: totalSaved >= 100, progress: Math.min(100, Math.round(totalSaved)), maxProgress: 100 },
+        { id: 'streak_7', title: '七日麦门信徒', description: '连续 7 天光顾麦当劳', unlocked: currentStreak >= 7, progress: Math.min(7, currentStreak), maxProgress: 7 },
+        { id: 'burger_king', title: '汉堡收割机', description: '累计吃掉 50 个主食汉堡', unlocked: burgerOrdersCount >= 50, progress: Math.min(50, burgerOrdersCount), maxProgress: 50 },
+      ];
+
+      // 动态单品排行与类别占比
+      const topItems = computeTopItems(demoOrderList);
+      const breakdown = computeCategoryBreakdown(demoOrderList);
+      const timeDistribution = computeTimeDistribution(demoOrderList);
+      const storeFootprints = computeStoreFootprints(demoOrderList);
+      const activeDaysCount = new Set(demoOrderList.map(o => o.date)).size;
 
       return {
         user: {
-          nickname: '麦门信徒 (DEMO)',
+          nickname: `麦门信徒#${randomUserId}`,
           avatarPixel: 'pixel-avatar-mcd',
-          memberLevel: '黄金会员',
-          points: 3820,
-          accumulativePoints: 6400,
-          expiredPoints: 120,
-          title: '首席板烧鉴赏家'
+          memberLevel: randomMemberLevel,
+          points: pointsBase,
+          accumulativePoints: accumPoints,
+          expiredPoints: expiredPoints,
+          title: randomTitle
         },
         today: {
-          spent: 23.5,
-          calories: 445,
+          spent: todaySpent,
+          calories: todayCalories,
           orderCount: 1,
-          saved: 8.5,
-          hp: 88,
-          mp: 65,
-          latestMeal: '板烧鸡腿堡 + 鲜萃冰咖'
+          saved: todaySaved,
+          hp: Math.floor(82 + Math.random() * 16),
+          mp: Math.floor(68 + Math.random() * 28),
+          latestMeal: `${topItems[0]?.name || '板烧鸡腿堡'} + 鲜萃冰咖`
         },
         stats: {
-          totalOrders: demoOrderList.length + 35,
+          totalOrders: demoOrderList.length,
           totalSpent: Number(totalSpent.toFixed(1)),
           totalSaved: Number(totalSaved.toFixed(1)),
-          activeDays: 48,
-          currentStreak: 5,
-          longestStreak: 12,
-          totalCalories: 38200,
-          avgOrderPrice: 24.8,
+          activeDays: activeDaysCount,
+          currentStreak: currentStreak,
+          longestStreak: longestStreak,
+          totalCalories: demoOrderList.reduce((s, o) => s + o.items.reduce((cs, i) => cs + (i.calories || 200), 0), 0),
+          avgOrderPrice: Number((totalSpent / demoOrderList.length).toFixed(1)),
           savingRatePercent: Number(((totalSaved / (totalSpent + totalSaved)) * 100).toFixed(1))
         },
         heatmap: days2026,
@@ -3005,89 +3240,98 @@
           '2025': days2025,
           'recent24': daysRecent
         },
-        breakdown: [
-          { category: 'burger', label: '主食汉堡', spent: 480, percentage: 48, pixelColor: '#FFC72C' },
-          { category: 'snack', label: '小食配餐', spent: 260, percentage: 26, pixelColor: '#DA291C' },
-          { category: 'drink', label: '鲜煮咖啡', spent: 150, percentage: 15, pixelColor: '#00D2D3' },
-          { category: 'breakfast', label: '晨光早餐', spent: 80, percentage: 8, pixelColor: '#E67E22' },
-          { category: 'dessert', label: '甜品饮品', spent: 30, percentage: 3, pixelColor: '#9B59B6' }
-        ],
-        topItems: [
-          { name: '板烧鸡腿堡', category: 'burger', count: 22, rank: 1, totalSpent: 517.0, pixelBadge: '麦门最爱' },
-          { name: '鲜萃冰咖', category: 'drink', count: 18, rank: 2, totalSpent: 180.0, pixelBadge: '忠实搭子' },
-          { name: '中薯条', category: 'snack', count: 15, rank: 3, totalSpent: 195.0, pixelBadge: '续命常客' },
-          { name: '麦辣鸡翅(2块)', category: 'snack', count: 11, rank: 4, totalSpent: 159.5, pixelBadge: '随心优选' },
-          { name: '原味板烧麦满分', category: 'breakfast', count: 7, rank: 5, totalSpent: 112.0, pixelBadge: '特色尝鲜' }
-        ],
-        achievements: [
-          { id: 'first_order', title: '麦门初心', description: '完成首笔麦当劳就餐打卡', unlocked: true, progress: 1, maxProgress: 1 },
-          { id: 'streak_3', title: '麦门三日连击', description: '连续 3 天光顾麦当劳', unlocked: true, progress: 3, maxProgress: 3 },
-          { id: 'coffee_lover', title: '咖啡续命先锋', description: '累计饮用 10 杯麦咖啡', unlocked: true, progress: 10, maxProgress: 10 },
-          { id: 'big_saver', title: '薅麦羊毛大师', description: '累计通过优惠券省下超 100 元', unlocked: true, progress: 100, maxProgress: 100 },
-          { id: 'streak_7', title: '七日麦门信徒', description: '连续 7 天光顾麦当劳', unlocked: false, progress: 5, maxProgress: 7 },
-          { id: 'burger_king', title: '汉堡收割机', description: '累计吃掉 50 个主食汉堡', unlocked: false, progress: 32, maxProgress: 50 },
-        ],
+        breakdown: breakdown,
+        topItems: topItems,
+        achievements: achievements,
         usageInsights: {
-          timeDistribution: [
-            { period: 'breakfast', label: '早晨元气 (05:00-10:30)', count: 8, percentage: 15, pixelColor: '#FFC72C' },
-            { period: 'lunch', label: '午间主力 (10:30-14:00)', count: 26, percentage: 48, pixelColor: '#DA291C' },
-            { period: 'afternoon', label: '下午茶黑咖 (14:00-17:00)', count: 12, percentage: 22, pixelColor: '#00D2D3' },
-            { period: 'dinner', label: '晚间犒赏 (17:00-21:00)', count: 6, percentage: 11, pixelColor: '#E67E22' },
-            { period: 'night', label: '深夜加餐 (21:00-05:00)', count: 2, percentage: 4, pixelColor: '#9B59B6' }
-          ],
-          storeFootprints: [
-            { storeName: '麦当劳杭州西湖旗舰店', visitCount: 24, totalSpent: 580.0, lastVisit: '2026-10-09' },
-            { storeName: '麦当劳城西银泰餐厅', visitCount: 15, totalSpent: 360.5, lastVisit: '2026-10-05' },
-            { storeName: '麦当劳滨江天街餐厅', visitCount: 8, totalSpent: 195.0, lastVisit: '2026-09-28' },
-            { storeName: '麦当劳萧山机场餐厅', visitCount: 4, totalSpent: 112.0, lastVisit: '2026-09-12' },
-          ],
+          timeDistribution: timeDistribution,
+          storeFootprints: storeFootprints,
           monthlySpending: [],
           pointsEfficiency: {
-            available: 3820,
-            accumulated: 6400,
-            expired: 120,
-            expiryRatePercent: 1.9
+            available: pointsBase,
+            accumulated: accumPoints,
+            expired: expiredPoints,
+            expiryRatePercent: Number(((expiredPoints / accumPoints) * 100).toFixed(1))
           }
         },
-        recentOrders: demoOrderList,
+        recentOrders: [...demoOrderList].reverse(),
+        allOrders: [...demoOrderList].reverse(),
         mcpStatus: {
           isConnected: true,
           isSandbox: true,
           tokenConfigured: false,
+          tokenMasked: 'SANDBOX',
           timePeriod: 'lunch',
-          couponsAvailable: 4
+          couponsAvailable: Math.floor(3 + Math.random() * 6)
         }
       };
     }
 
-    async function loadDemoFromSettings() {
-      playCoin();
-      const alertEl = document.getElementById('settingsAlert');
-      let data = null;
+    function loadDemoFromSettings() {
+      if (typeof playCoin === 'function') playCoin();
+      if (typeof launchPixelConfetti === 'function') launchPixelConfetti();
 
-      try {
-        const res = await fetchWithTimeout(`${API_BASE}/api/vibe/summary?demo=true`, {}, 4000);
-        if (res.ok) data = await res.json();
-      } catch (err) {
-        console.warn('API 离线，自动使用本地沙盒演示数据生成器:', err);
+      // 按钮即时微交互视觉反馈
+      const bannerBtn = document.getElementById('btnBannerDemo');
+      const settingsBtn = document.getElementById('btnSettingsDemo');
+      const origBannerHtml = bannerBtn ? bannerBtn.innerHTML : '';
+      const origSettingsHtml = settingsBtn ? settingsBtn.innerHTML : '';
+
+      if (bannerBtn) {
+        bannerBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>已生成新随机数据!';
+        bannerBtn.style.borderColor = 'var(--pixel-green)';
+        bannerBtn.style.color = 'var(--pixel-green)';
+      }
+      if (settingsBtn) {
+        settingsBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>已生成新随机数据!';
+        settingsBtn.style.borderColor = 'var(--pixel-green)';
+        settingsBtn.style.color = 'var(--pixel-green)';
       }
 
-      if (!data || !data.heatmap) {
-        data = createClientDemoSummary();
-      }
-
+      // 生成全新动态随机数沙盒数据集 (0ms 离线即时响应)
+      const data = createClientDemoSummary();
       currentSummary = data;
-      renderDashboard(data);
 
+      // 重新执行全部仪表盘图表与点阵渲染，并激活滚动数字动画
+      renderDashboard(data, true);
+
+      // 顶部沙盒横幅文案同步更新
+      const bannerText = document.getElementById('unconnectedBannerText');
+      if (bannerText) {
+        bannerText.innerHTML = `<b>沙盒演示模式（已生成 ${data.stats.totalOrders} 笔随机就餐流水）</b>：再次点击可重新生成随机数；输入 Token 即可连接真实账号`;
+      }
+
+      // 浮动 8-Bit 像素 Toast 弹出通知
+      showPixelToast(`沙盒随机数已更新：${data.stats.totalOrders} 笔流水 · 消费 ¥${data.stats.totalSpent} · 省下 ¥${data.stats.totalSaved}`);
+
+      const alertEl = document.getElementById('settingsAlert');
       if (alertEl) {
         alertEl.style.display = 'block';
         alertEl.style.backgroundColor = '#2a2717';
         alertEl.style.borderColor = 'var(--pixel-yellow)';
         alertEl.style.color = 'var(--pixel-yellow)';
-        alertEl.innerHTML = '<span style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>已载入沙盒模拟演示数据！</span>';
+        alertEl.innerHTML = `<span style="display:inline-flex; align-items:center; gap:4px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>已生成 ${data.stats.totalOrders} 笔随机演示数据 (¥${data.stats.totalSpent})！</span>`;
       }
       updateSettingsStatusText();
-      setTimeout(closeSettingsModal, 600);
+
+      setTimeout(() => {
+        if (bannerBtn && origBannerHtml) {
+          bannerBtn.innerHTML = origBannerHtml;
+          bannerBtn.style.borderColor = '#3d3a54';
+          bannerBtn.style.color = 'var(--pixel-yellow)';
+        }
+        if (settingsBtn && origSettingsHtml) {
+          settingsBtn.innerHTML = origSettingsHtml;
+          settingsBtn.style.borderColor = '#3d3a54';
+          settingsBtn.style.color = '';
+        }
+      }, 1600);
+
+      // 若在设置弹窗中触发，延迟 600ms 平滑关闭
+      const settingsModal = document.getElementById('settingsModal');
+      if (settingsModal && settingsModal.classList.contains('active')) {
+        setTimeout(closeSettingsModal, 600);
+      }
     }
 
     // 兼容别名

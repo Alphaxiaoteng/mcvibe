@@ -1,5 +1,6 @@
 import { VibeAggregator } from '../src/core/vibe_aggregator.js';
 import { McpClient } from '../src/core/mcp_client.js';
+import { generateRealisticOrderHistory } from '../src/core/mock_data.js';
 
 export default {
   async fetch(request: Request): Promise<Response> {
@@ -61,6 +62,16 @@ export default {
 
     // 2. GET /api/vibe/summary
     if (url.pathname === '/api/vibe/summary') {
+      const isDemo = url.searchParams.get('demo') === 'true';
+      if (isDemo) {
+        const client = new McpClient({ forceSandbox: true });
+        const orders = generateRealisticOrderHistory();
+        const summary = await VibeAggregator.computeSummary(orders, client);
+        return new Response(JSON.stringify(summary), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       const headerToken = request.headers.get('x-mcd-token');
       const authHeader = request.headers.get('authorization');
       const queryToken = url.searchParams.get('token');
