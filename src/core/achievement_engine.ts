@@ -68,7 +68,7 @@ export class AchievementEngine {
       {
         id: 'ACH_STREAK_3',
         title: '初级麦客',
-        pixelIcon: '🌱',
+        pixelIcon: 'sprout',
         description: '连续 3 天打卡麦当劳',
         category: 'streak',
         unlocked: longestStreak >= 3,
@@ -79,7 +79,7 @@ export class AchievementEngine {
       {
         id: 'ACH_STREAK_7',
         title: '麦门狂信徒',
-        pixelIcon: '👑',
+        pixelIcon: 'crown',
         description: '连续 7 天不间断吃麦',
         category: 'streak',
         unlocked: longestStreak >= 7,
@@ -90,7 +90,7 @@ export class AchievementEngine {
       {
         id: 'ACH_CAFFEINE_LOOP',
         title: '咖啡因永动机',
-        pixelIcon: '☕',
+        pixelIcon: 'coffee',
         description: '累计消耗 15 杯鲜煮/现磨黑咖啡',
         category: 'taste',
         unlocked: coffeeCount >= 15,
@@ -101,7 +101,7 @@ export class AchievementEngine {
       {
         id: 'ACH_POOR_COMBO',
         title: '穷鬼护体',
-        pixelIcon: '🛡️',
+        pixelIcon: 'shield',
         description: '单笔订单实付 ≤ ¥18 达到 10 次',
         category: 'saving',
         unlocked: budgetOrders >= 10,
@@ -112,7 +112,7 @@ export class AchievementEngine {
       {
         id: 'ACH_THURSDAY_CRAZY',
         title: '疯狂星期四',
-        pixelIcon: '⚡',
+        pixelIcon: 'bolt',
         description: '周四会员狂欢日吃麦达到 6 次',
         category: 'loyalty',
         unlocked: thursdayCount >= 6,
@@ -123,7 +123,7 @@ export class AchievementEngine {
       {
         id: 'ACH_BURGER_CHAMP',
         title: '双吉终结者',
-        pixelIcon: '🍔',
+        pixelIcon: 'burger',
         description: '累计享用汉堡主食超过 20 个',
         category: 'taste',
         unlocked: burgerCount >= 20,
@@ -134,7 +134,7 @@ export class AchievementEngine {
       {
         id: 'ACH_COUPON_SAVER',
         title: '羊毛精算大师',
-        pixelIcon: '💰',
+        pixelIcon: 'coin',
         description: '累计通过优惠券抵扣省下超过 ¥100',
         category: 'saving',
         unlocked: totalSaved >= 100,
@@ -145,7 +145,7 @@ export class AchievementEngine {
       {
         id: 'ACH_HEALTH_HACK',
         title: '养生极客',
-        pixelIcon: '🥗',
+        pixelIcon: 'salad',
         description: '累计特制去酱或换大份甜玉米达到 5 次',
         category: 'special',
         unlocked: healthHacks >= 5,

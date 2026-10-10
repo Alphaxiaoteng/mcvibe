@@ -255,7 +255,7 @@ async function runMultiTenantIsolationStress(userCount: number): Promise<{ succe
 // ---------------------------------------------------------------------
 async function main() {
   console.log('========================================================================');
-  console.log('🔥 McVibe · 麦门足迹 全景高压性能与边界鲁棒性基准压测 (Full Stress Benchmark)');
+  console.log('[McVibe Benchmark] 麦门足迹 全景高压性能与边界鲁棒性基准压测 (Full Stress Benchmark)');
   console.log('========================================================================\n');
 
   console.log('▶ [1/4] 压测项目: 核心聚合引擎 500 次高并发突发调用...');
@@ -283,7 +283,7 @@ async function main() {
   console.log(`  ✔ 多租户隔离验证: ${mIso.success ? '100% 严格隔离，零数据与 Token 穿透' : 'FAILED'} (耗时 ${mIso.elapsedMs.toFixed(2)}ms)\n`);
 
   console.log('========================================================================');
-  console.log('🎉 压测总结: 全链路压测圆满通过，所有指标均达到生产级超高性能要求！');
+  console.log('压测总结: 全链路压测圆满通过，所有指标均达到生产级超高性能要求！');
   console.log('========================================================================');
   process.exit(0);
 }

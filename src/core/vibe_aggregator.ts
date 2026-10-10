@@ -143,7 +143,7 @@ export class VibeAggregator {
       .sort((a, b) => b[1].count - a[1].count)
       .slice(0, 5);
 
-    const badges = ['👑 麦门最爱', '🥈 忠实搭子', '🥉 续命常客', '🎖️ 随心优选', '✨ 特色尝鲜'];
+    const badges = ['麦门最爱', '忠实搭子', '续命常客', '随心优选', '特色尝鲜'];
 
     return sorted.map(([name, stat], idx) => ({
       name,
@@ -151,7 +151,7 @@ export class VibeAggregator {
       count: stat.count,
       rank: idx + 1,
       totalSpent: Number(stat.spent.toFixed(1)),
-      pixelBadge: badges[idx] || '⭐ 麦门印记'
+      pixelBadge: badges[idx] || '麦门印记'
     }));
   }
 
@@ -350,8 +350,8 @@ export class VibeAggregator {
             itemHighlights.push(item.name);
           }
         }
-        if (o.storeName && !itemHighlights.some(h => h.startsWith('📍'))) {
-          itemHighlights.unshift(`📍 ${o.storeName}`);
+        if (o.storeName && !itemHighlights.includes(o.storeName)) {
+          itemHighlights.unshift(o.storeName);
         }
       }
 
